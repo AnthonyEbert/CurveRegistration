@@ -40,7 +40,7 @@ OutputsModel <-
                 RunOptions = RunOptions,
                 Param = Param[1:4])
 
-var_mat <- diag(c(100, 1))
+var_mat <- diag(c(100, 1e-2))
 
 obs_syn <- simulator_hydro(Param, InputsModel, RunOptions)
 
