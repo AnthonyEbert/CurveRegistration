@@ -1,0 +1,1098 @@
+
+R version 3.4.2 (2017-09-28) -- "Short Summer"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> library(airGR)
+> library(protoABC)
+> library(parallel)
+> library(CurveRegistration)
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> 
+> # Settings -------------------
+> 
+> 
+> data(L0123001)
+> 
+> InputsModel <-
++   CreateInputsModel(
++     FUN_MOD = RunModel_GR4J,
++     DatesR = BasinObs$DatesR,
++     Precip = BasinObs$P,
++     PotEvap = BasinObs$E
++   )
+> 
+> Ind_Run <-
++   seq(which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/03/1997"),
++       which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/01/1998"))
+> 
+> RunOptions <- CreateRunOptions(
++   FUN_MOD = RunModel_GR4J,
++   InputsModel = InputsModel,
++   IndPeriod_Run = Ind_Run,
++   IniStates = NULL,
++   IniResLevels = NULL,
++   IndPeriod_WarmUp = NULL
++ )
+Warning message:
+In CreateRunOptions(FUN_MOD = RunModel_GR4J, InputsModel = InputsModel,  :
+  	 Model warm up period not defined -> default configuration used 
+	    The year preceding the run period is used 
+
+> 
+> Param <- c(257, 1, 88, 2.2, 0.05)
+> 
+> #Param <- c(115, 1.07, 128, 2.8)
+> 
+> OutputsModel <-
++   RunModel_GR4J(InputsModel = InputsModel,
++                 RunOptions = RunOptions,
++                 Param = Param[1:4])
+> 
+> var_mat <- diag(c(100, 1))
+> 
+> obs_syn <- simulator_hydro(Param, InputsModel, RunOptions)
+> 
+> distance_args <- list(
++   InputsModel = InputsModel,
++   RunOptions = RunOptions,
++   obs = obs_syn,
++   var = var_mat,
++   y_kmmd = EasyMMD::kmmd(obs_syn, var = var_mat),
++   registration = FALSE,
++   distance = "FR",
++   threshold = 6,
++   method = "DP2"
++ )
+> 
+> loss_hydro(Param, distance_args)
+[1] 5.518589
+> 
+> n_runs <- 2000
+> pacc_final <- 0.02
+> 
+> # ABC -----------------
+> 
+> prior_hydro <- protoABC::prior_unif(lhs_lim = c(100, -5, 20, 1.1, 0.01), rhs_lim = c(1200, 3, 300, 2.9, 0.08), var_names = c("x1", "x2", "x3", "x4", "sigma"))
+> 
+> prior_eval_hydro <- protoABC::prior_unif(lhs_lim = c(100, -5, 20, 1.1, 0.01), rhs_lim = c(1200, 3, 300, 2.9, 0.08), var_names = c("x1", "x2", "x3", "x4", "sigma"), eval = TRUE)
+> 
+> abc_control <- list(
++   n = n_runs,
++   prior_eval = prior_eval_hydro,
++   pacc_final = pacc_final
++ )
+> 
+> #cl <- makeCluster(detectCores() - 1) #USER
+> cl <- "mclapply" #HPC
+> 
+> ## Synthetic data ------------------
+> 
+> ### Registration <- FALSE -------------
+> 
+> distance_args$registration <- FALSE
+> 
+> #### Distance <- "FR" ------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ABC_hydro_syn_RF_FR <- protoABC::abc_start(prior_hydro, loss_hydro, distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     data = "synthetic",
++     registration = distance_args$registration,
++     distance = distance_args$distance
++   )
+********************************
+Acceptance prob of MCMC was 0.244
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1885
+dist_max is 6.403262909046
+dist_next is 5.77474632805631
+********************************
+Acceptance prob of MCMC was 0.232823529411765
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 1919
+dist_max is 5.77474632805631
+dist_next is 5.39612371324744
+********************************
+Acceptance prob of MCMC was 0.210055555555556
+Number of MCMC moves for next iteration is 20
+Number of unique particles is 1932
+dist_max is 5.39612371324744
+dist_next is 5.14207928619025
+********************************
+Acceptance prob of MCMC was 0.19325
+Number of MCMC moves for next iteration is 22
+Number of unique particles is 1919
+dist_max is 5.14207928619025
+dist_next is 4.95563301842321
+********************************
+Acceptance prob of MCMC was 0.173318181818182
+Number of MCMC moves for next iteration is 25
+Number of unique particles is 1919
+dist_max is 4.95563301842321
+dist_next is 4.81246073305019
+********************************
+Acceptance prob of MCMC was 0.15388
+Number of MCMC moves for next iteration is 28
+Number of unique particles is 1906
+dist_max is 4.81246073305019
+dist_next is 4.69538417311211
+********************************
+Acceptance prob of MCMC was 0.139071428571429
+Number of MCMC moves for next iteration is 31
+Number of unique particles is 1926
+dist_max is 4.69538417311211
+dist_next is 4.60298470125146
+********************************
+Acceptance prob of MCMC was 0.114387096774194
+Number of MCMC moves for next iteration is 38
+Number of unique particles is 1888
+dist_max is 4.60298470125146
+dist_next is 4.52740006591393
+********************************
+Acceptance prob of MCMC was 0.0957894736842105
+Number of MCMC moves for next iteration is 46
+Number of unique particles is 1875
+dist_max is 4.52740006591393
+dist_next is 4.46091267234461
+********************************
+Acceptance prob of MCMC was 0.0678478260869565
+Number of MCMC moves for next iteration is 66
+Number of unique particles is 1827
+dist_max is 4.46091267234461
+dist_next is 4.4084550023605
+********************************
+Acceptance prob of MCMC was 0.0489242424242424
+Number of MCMC moves for next iteration is 92
+Number of unique particles is 1821
+dist_max is 4.4084550023605
+dist_next is 4.36238082340772
+********************************
+Acceptance prob of MCMC was 0.037554347826087
+Number of MCMC moves for next iteration is 121
+Number of unique particles is 1830
+dist_max is 4.36238082340772
+dist_next is 4.31840659606978
+********************************
+Acceptance prob of MCMC was 0.0245371900826446
+Number of MCMC moves for next iteration is 186
+Number of unique particles is 1766
+dist_max is 4.31840659606978
+dist_next is 4.28179487414427
+> 
+> save(ABC_hydro_syn_RF_FR, file = "ABC_hydro_syn_RF_FR.RData")
+> 
+> summary(ABC_hydro_syn_RF_FR)
+       x1              x2                x3               x4       
+ Min.   :101.4   Min.   :-4.9417   Min.   : 35.68   Min.   :1.861  
+ 1st Qu.:197.9   1st Qu.:-0.2527   1st Qu.: 76.51   1st Qu.:2.162  
+ Median :272.5   Median : 0.5734   Median : 92.06   Median :2.237  
+ Mean   :309.2   Mean   : 0.5430   Mean   : 92.94   Mean   :2.243  
+ 3rd Qu.:390.3   3rd Qu.: 1.6057   3rd Qu.:108.97   3rd Qu.:2.323  
+ Max.   :846.4   Max.   : 2.9993   Max.   :168.97   Max.   :2.690  
+     sigma             data           registration      distance        
+ Min.   :0.01000   Length:2000        Mode :logical   Length:2000       
+ 1st Qu.:0.01070   Class :character   FALSE:2000      Class :character  
+ Median :0.01165   Mode  :character                   Mode  :character  
+ Mean   :0.01230                                                        
+ 3rd Qu.:0.01338                                                        
+ Max.   :0.02451                                                        
+> 
+> #### Distance <- "MMD" ------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ABC_hydro_syn_RF_MD <- protoABC::abc_start(prior_hydro, loss_hydro, distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     data = "synthetic",
++     registration = distance_args$registration,
++     distance = distance_args$distance
++   )
+********************************
+Acceptance prob of MCMC was 0.2649
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1933
+dist_max is 0.00587012117390054
+dist_next is 0.00342908156311872
+********************************
+Acceptance prob of MCMC was 0.264733333333333
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1950
+dist_max is 0.00342908156311872
+dist_next is 0.00200854265098158
+********************************
+Acceptance prob of MCMC was 0.267466666666667
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1955
+dist_max is 0.00200854265098158
+dist_next is 0.00127955248544076
+********************************
+Acceptance prob of MCMC was 0.2702
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1952
+dist_max is 0.00127955248544076
+dist_next is 0.000886901301493825
+********************************
+Acceptance prob of MCMC was 0.265466666666667
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1944
+dist_max is 0.000886901301493825
+dist_next is 0.000619676470085373
+********************************
+Acceptance prob of MCMC was 0.272733333333333
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1955
+dist_max is 0.000619676470085373
+dist_next is 0.000442881733988598
+********************************
+Acceptance prob of MCMC was 0.2766
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1957
+dist_max is 0.000442881733988598
+dist_next is 0.000323974909680252
+********************************
+Acceptance prob of MCMC was 0.2764
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1966
+dist_max is 0.000323974909680252
+dist_next is 0.000243021427022094
+********************************
+Acceptance prob of MCMC was 0.2668
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 1964
+dist_max is 0.000243021427022094
+dist_next is 0.000190433070120594
+********************************
+Acceptance prob of MCMC was 0.2528
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 1950
+dist_max is 0.000190433070120594
+dist_next is 0.00015413173338566
+********************************
+Acceptance prob of MCMC was 0.234625
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 1942
+dist_max is 0.00015413173338566
+dist_next is 0.000130054298178306
+********************************
+Acceptance prob of MCMC was 0.2185
+Number of MCMC moves for next iteration is 19
+Number of unique particles is 1944
+dist_max is 0.000130054298178306
+dist_next is 0.000113188729744085
+********************************
+Acceptance prob of MCMC was 0.200684210526316
+Number of MCMC moves for next iteration is 21
+Number of unique particles is 1948
+dist_max is 0.000113188729744085
+dist_next is 9.9687337686033e-05
+********************************
+Acceptance prob of MCMC was 0.17747619047619
+Number of MCMC moves for next iteration is 24
+Number of unique particles is 1918
+dist_max is 9.9687337686033e-05
+dist_next is 8.9652238336374e-05
+********************************
+Acceptance prob of MCMC was 0.155666666666667
+Number of MCMC moves for next iteration is 28
+Number of unique particles is 1894
+dist_max is 8.9652238336374e-05
+dist_next is 8.1013170982025e-05
+********************************
+Acceptance prob of MCMC was 0.14525
+Number of MCMC moves for next iteration is 30
+Number of unique particles is 1902
+dist_max is 8.1013170982025e-05
+dist_next is 7.38524208050706e-05
+********************************
+Acceptance prob of MCMC was 0.123166666666667
+Number of MCMC moves for next iteration is 36
+Number of unique particles is 1858
+dist_max is 7.38524208050706e-05
+dist_next is 6.7532878739035e-05
+********************************
+Acceptance prob of MCMC was 0.103638888888889
+Number of MCMC moves for next iteration is 43
+Number of unique particles is 1845
+dist_max is 6.7532878739035e-05
+dist_next is 6.24153836990826e-05
+********************************
+Acceptance prob of MCMC was 0.0779302325581395
+Number of MCMC moves for next iteration is 57
+Number of unique particles is 1812
+dist_max is 6.24153836990826e-05
+dist_next is 5.80554725939098e-05
+********************************
+Acceptance prob of MCMC was 0.0548070175438597
+Number of MCMC moves for next iteration is 82
+Number of unique particles is 1783
+dist_max is 5.80554725939098e-05
+dist_next is 5.45013892944701e-05
+********************************
+Acceptance prob of MCMC was 0.0350609756097561
+Number of MCMC moves for next iteration is 130
+Number of unique particles is 1740
+dist_max is 5.45013892944701e-05
+dist_next is 5.16100999094216e-05
+********************************
+Acceptance prob of MCMC was 0.0217538461538462
+Number of MCMC moves for next iteration is 210
+Number of unique particles is 1736
+dist_max is 5.16100999094216e-05
+dist_next is 4.8784440753874e-05
+> 
+> save(ABC_hydro_syn_RF_MD, file = "ABC_hydro_syn_RF_MD.RData")
+> 
+> summary(ABC_hydro_syn_RF_MD)
+       x1              x2               x3               x4       
+ Min.   :222.2   Min.   :0.7734   Min.   : 73.51   Min.   :1.930  
+ 1st Qu.:266.4   1st Qu.:0.9132   1st Qu.: 85.47   1st Qu.:2.137  
+ Median :277.4   Median :0.9547   Median : 88.65   Median :2.189  
+ Mean   :279.0   Mean   :0.9549   Mean   : 88.73   Mean   :2.192  
+ 3rd Qu.:292.0   3rd Qu.:0.9943   3rd Qu.: 91.48   3rd Qu.:2.251  
+ Max.   :339.8   Max.   :1.1452   Max.   :103.61   Max.   :2.442  
+     sigma             data           registration      distance        
+ Min.   :0.01000   Length:2000        Mode :logical   Length:2000       
+ 1st Qu.:0.02304   Class :character   FALSE:2000      Class :character  
+ Median :0.03058   Mode  :character                   Mode  :character  
+ Mean   :0.03185                                                        
+ 3rd Qu.:0.03948                                                        
+ Max.   :0.06760                                                        
+> 
+> ### Registration <- TRUE -----------
+> 
+> distance_args$registration <- TRUE
+> 
+> #### Distance <- "FR" ------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ABC_hydro_syn_RT_FR <- protoABC::abc_start(prior_hydro, loss_hydro, distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     data = "synthetic",
++     registration = distance_args$registration,
++     distance = distance_args$distance
++   )
+********************************
+Acceptance prob of MCMC was 0.2306
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 1857
+dist_max is 4.51676736008944
+dist_next is 4.18603406726218
+********************************
+Acceptance prob of MCMC was 0.205444444444444
+Number of MCMC moves for next iteration is 21
+Number of unique particles is 1911
+dist_max is 4.18603406726218
+dist_next is 3.97310569756353
+********************************
+Acceptance prob of MCMC was 0.163380952380952
+Number of MCMC moves for next iteration is 26
+Number of unique particles is 1896
+dist_max is 3.97310569756353
+dist_next is 3.82012523922309
+********************************
+Acceptance prob of MCMC was 0.135846153846154
+Number of MCMC moves for next iteration is 32
+Number of unique particles is 1879
+dist_max is 3.82012523922309
+dist_next is 3.70498231589126
+********************************
+Acceptance prob of MCMC was 0.09590625
+Number of MCMC moves for next iteration is 46
+Number of unique particles is 1833
+dist_max is 3.70498231589126
+dist_next is 3.61828858331171
+********************************
+Acceptance prob of MCMC was 0.0721521739130435
+Number of MCMC moves for next iteration is 62
+Number of unique particles is 1860
+dist_max is 3.61828858331171
+dist_next is 3.55154596414597
+********************************
+Acceptance prob of MCMC was 0.0456129032258065
+Number of MCMC moves for next iteration is 99
+Number of unique particles is 1790
+dist_max is 3.55154596414597
+dist_next is 3.494560637429
+********************************
+Acceptance prob of MCMC was 0.0305050505050505
+Number of MCMC moves for next iteration is 149
+Number of unique particles is 1783
+dist_max is 3.494560637429
+dist_next is 3.44219368368751
+> 
+> save(ABC_hydro_syn_RT_FR, file = "ABC_hydro_syn_RT_FR.RData")
+> 
+> summary(ABC_hydro_syn_RT_FR)
+       x1               x2                x3               x4       
+ Min.   : 101.6   Min.   :-4.8943   Min.   : 24.73   Min.   :1.175  
+ 1st Qu.: 219.7   1st Qu.:-0.6333   1st Qu.: 66.30   1st Qu.:1.635  
+ Median : 338.9   Median : 0.5412   Median : 88.08   Median :1.887  
+ Mean   : 387.6   Mean   : 0.3245   Mean   : 89.48   Mean   :1.943  
+ 3rd Qu.: 519.7   3rd Qu.: 1.7193   3rd Qu.:109.66   3rd Qu.:2.218  
+ Max.   :1177.8   Max.   : 2.9991   Max.   :198.37   Max.   :2.900  
+     sigma             data           registration     distance        
+ Min.   :0.01001   Length:2000        Mode:logical   Length:2000       
+ 1st Qu.:0.01490   Class :character   TRUE:2000      Class :character  
+ Median :0.01929   Mode  :character                  Mode  :character  
+ Mean   :0.02050                                                       
+ 3rd Qu.:0.02436                                                       
+ Max.   :0.04538                                                       
+> 
+> #### Distance <- "MMD" ------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ABC_hydro_syn_RT_MD <- protoABC::abc_start(prior_hydro, loss_hydro, distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     data = "synthetic",
++     registration = distance_args$registration,
++     distance = distance_args$distance
++   )
+********************************
+Acceptance prob of MCMC was 0.26
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 1915
+dist_max is 0.00572535305109662
+dist_next is 0.0032241767200033
+********************************
+Acceptance prob of MCMC was 0.2415625
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1926
+dist_max is 0.0032241767200033
+dist_next is 0.00198842433725044
+********************************
+Acceptance prob of MCMC was 0.245588235294118
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1954
+dist_max is 0.00198842433725044
+dist_next is 0.00131924772643466
+********************************
+Acceptance prob of MCMC was 0.243823529411765
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1946
+dist_max is 0.00131924772643466
+dist_next is 0.000954722557244103
+********************************
+Acceptance prob of MCMC was 0.236705882352941
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 1951
+dist_max is 0.000954722557244103
+dist_next is 0.000694699889444678
+********************************
+Acceptance prob of MCMC was 0.231888888888889
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 1955
+dist_max is 0.000694699889444678
+dist_next is 0.000530260494887524
+********************************
+Acceptance prob of MCMC was 0.217166666666667
+Number of MCMC moves for next iteration is 19
+Number of unique particles is 1944
+dist_max is 0.000530260494887524
+dist_next is 0.000413074834352517
+********************************
+Acceptance prob of MCMC was 0.184157894736842
+Number of MCMC moves for next iteration is 23
+Number of unique particles is 1930
+dist_max is 0.000413074834352517
+dist_next is 0.000335890925527604
+********************************
+Acceptance prob of MCMC was 0.162608695652174
+Number of MCMC moves for next iteration is 26
+Number of unique particles is 1903
+dist_max is 0.000335890925527604
+dist_next is 0.000281579123639103
+********************************
+Acceptance prob of MCMC was 0.137038461538462
+Number of MCMC moves for next iteration is 32
+Number of unique particles is 1895
+dist_max is 0.000281579123639103
+dist_next is 0.000241386558867046
+********************************
+Acceptance prob of MCMC was 0.10440625
+Number of MCMC moves for next iteration is 42
+Number of unique particles is 1878
+dist_max is 0.000241386558867046
+dist_next is 0.000211010279758894
+********************************
+Acceptance prob of MCMC was 0.0765238095238095
+Number of MCMC moves for next iteration is 58
+Number of unique particles is 1861
+dist_max is 0.000211010279758894
+dist_next is 0.000187859137078888
+********************************
+Acceptance prob of MCMC was 0.0534310344827586
+Number of MCMC moves for next iteration is 84
+Number of unique particles is 1822
+dist_max is 0.000187859137078888
+dist_next is 0.000168683405200876
+********************************
+Acceptance prob of MCMC was 0.04075
+Number of MCMC moves for next iteration is 111
+Number of unique particles is 1853
+dist_max is 0.000168683405200876
+dist_next is 0.000152730736842355
+********************************
+Acceptance prob of MCMC was 0.0277117117117117
+Number of MCMC moves for next iteration is 164
+Number of unique particles is 1799
+dist_max is 0.000152730736842355
+dist_next is 0.000139799366967425
+> 
+> save(ABC_hydro_syn_RT_MD, file = "ABC_hydro_syn_RT_MD.RData")
+> 
+> summary(ABC_hydro_syn_RT_MD)
+       x1              x2               x3               x4       
+ Min.   :174.8   Min.   :0.5206   Min.   : 68.01   Min.   :1.100  
+ 1st Qu.:261.9   1st Qu.:0.7686   1st Qu.: 85.36   1st Qu.:1.632  
+ Median :289.3   Median :0.8483   Median : 91.21   Median :1.992  
+ Mean   :291.3   Mean   :0.8551   Mean   : 91.20   Mean   :2.022  
+ 3rd Qu.:320.2   3rd Qu.:0.9451   3rd Qu.: 97.10   3rd Qu.:2.447  
+ Max.   :412.5   Max.   :1.2467   Max.   :115.23   Max.   :2.899  
+     sigma             data           registration     distance        
+ Min.   :0.01001   Length:2000        Mode:logical   Length:2000       
+ 1st Qu.:0.01608   Class :character   TRUE:2000      Class :character  
+ Median :0.02473   Mode  :character                  Mode  :character  
+ Mean   :0.02760                                                       
+ 3rd Qu.:0.03610                                                       
+ Max.   :0.07924                                                       
+> 
+> ## Observed data -----------
+> 
+> n_days <- length(Ind_Run)
+> day_num <- seq(1, n_days)
+> 
+> obs_true <- as.matrix(data.frame(day_num = day_num, value = BasinObs$Qmm[Ind_Run]))
+> 
+> distance_args$obs <- obs_true
+> distance_args$y_kmmd <- EasyMMD::kmmd(obs_true, var = var_mat)
+> 
+> loss_hydro(Param, distance_args)
+[1] 0.006348611
+> 
+> ### Registration <- FALSE -------------
+> 
+> distance_args$registration <- FALSE
+> 
+> #### Distance <- "FR" ------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ABC_hydro_obs_RF_FR <- protoABC::abc_start(prior_hydro, loss_hydro, distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     data = "synthetic",
++     registration = distance_args$registration,
++     distance = distance_args$distance
++   )
+********************************
+Acceptance prob of MCMC was 0.2629
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 1924
+dist_max is 6.75245963018867
+dist_next is 6.18845578707253
+********************************
+Acceptance prob of MCMC was 0.239375
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1935
+dist_max is 6.18845578707253
+dist_next is 5.85813992144901
+********************************
+Acceptance prob of MCMC was 0.205941176470588
+Number of MCMC moves for next iteration is 20
+Number of unique particles is 1913
+dist_max is 5.85813992144901
+dist_next is 5.62097316649915
+********************************
+Acceptance prob of MCMC was 0.1924
+Number of MCMC moves for next iteration is 22
+Number of unique particles is 1903
+dist_max is 5.62097316649915
+dist_next is 5.45313801406047
+********************************
+Acceptance prob of MCMC was 0.197318181818182
+Number of MCMC moves for next iteration is 21
+Number of unique particles is 1927
+dist_max is 5.45313801406047
+dist_next is 5.31439454125316
+********************************
+Acceptance prob of MCMC was 0.183047619047619
+Number of MCMC moves for next iteration is 23
+Number of unique particles is 1924
+dist_max is 5.31439454125316
+dist_next is 5.20613098076205
+********************************
+Acceptance prob of MCMC was 0.169434782608696
+Number of MCMC moves for next iteration is 25
+Number of unique particles is 1923
+dist_max is 5.20613098076205
+dist_next is 5.1109636048083
+********************************
+Acceptance prob of MCMC was 0.16028
+Number of MCMC moves for next iteration is 27
+Number of unique particles is 1925
+dist_max is 5.1109636048083
+dist_next is 5.03364363537169
+********************************
+Acceptance prob of MCMC was 0.149222222222222
+Number of MCMC moves for next iteration is 29
+Number of unique particles is 1916
+dist_max is 5.03364363537169
+dist_next is 4.96879504063901
+********************************
+Acceptance prob of MCMC was 0.135586206896552
+Number of MCMC moves for next iteration is 32
+Number of unique particles is 1906
+dist_max is 4.96879504063901
+dist_next is 4.90957122314005
+********************************
+Acceptance prob of MCMC was 0.118
+Number of MCMC moves for next iteration is 37
+Number of unique particles is 1885
+dist_max is 4.90957122314005
+dist_next is 4.85430367640658
+********************************
+Acceptance prob of MCMC was 0.114432432432432
+Number of MCMC moves for next iteration is 38
+Number of unique particles is 1909
+dist_max is 4.85430367640658
+dist_next is 4.80702063723112
+********************************
+Acceptance prob of MCMC was 0.115921052631579
+Number of MCMC moves for next iteration is 38
+Number of unique particles is 1911
+dist_max is 4.80702063723112
+dist_next is 4.76254506503261
+********************************
+Acceptance prob of MCMC was 0.0946842105263158
+Number of MCMC moves for next iteration is 47
+Number of unique particles is 1861
+dist_max is 4.76254506503261
+dist_next is 4.72464982039841
+********************************
+Acceptance prob of MCMC was 0.0767446808510638
+Number of MCMC moves for next iteration is 58
+Number of unique particles is 1849
+dist_max is 4.72464982039841
+dist_next is 4.69057878371904
+********************************
+Acceptance prob of MCMC was 0.0606724137931034
+Number of MCMC moves for next iteration is 74
+Number of unique particles is 1850
+dist_max is 4.69057878371904
+dist_next is 4.66002575262102
+********************************
+Acceptance prob of MCMC was 0.0451621621621622
+Number of MCMC moves for next iteration is 100
+Number of unique particles is 1828
+dist_max is 4.66002575262102
+dist_next is 4.63441950252056
+********************************
+Acceptance prob of MCMC was 0.03294
+Number of MCMC moves for next iteration is 138
+Number of unique particles is 1820
+dist_max is 4.63441950252056
+dist_next is 4.61151128969007
+********************************
+Acceptance prob of MCMC was 0.0251521739130435
+Number of MCMC moves for next iteration is 181
+Number of unique particles is 1826
+dist_max is 4.61151128969007
+dist_next is 4.59116574202821
+> 
+> save(ABC_hydro_obs_RF_FR, file = "ABC_hydro_obs_RF_FR.RData")
+> 
+> summary(ABC_hydro_obs_RF_FR)
+       x1              x2                x3               x4       
+ Min.   :100.0   Min.   :-4.9210   Min.   : 48.76   Min.   :1.627  
+ 1st Qu.:107.4   1st Qu.:-3.1882   1st Qu.: 67.17   1st Qu.:2.064  
+ Median :116.5   Median :-2.5106   Median : 74.43   Median :2.127  
+ Mean   :121.0   Mean   :-2.6648   Mean   : 75.10   Mean   :2.103  
+ 3rd Qu.:130.0   3rd Qu.:-2.0377   3rd Qu.: 82.21   3rd Qu.:2.175  
+ Max.   :214.6   Max.   :-0.9953   Max.   :112.05   Max.   :2.319  
+     sigma             data           registration      distance        
+ Min.   :0.01000   Length:2000        Mode :logical   Length:2000       
+ 1st Qu.:0.01033   Class :character   FALSE:2000      Class :character  
+ Median :0.01076   Mode  :character                   Mode  :character  
+ Mean   :0.01107                                                        
+ 3rd Qu.:0.01149                                                        
+ Max.   :0.01693                                                        
+> 
+> #### Distance <- "MMD" ------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ABC_hydro_obs_RF_MD <- protoABC::abc_start(prior_hydro, loss_hydro, distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     data = "synthetic",
++     registration = distance_args$registration,
++     distance = distance_args$distance
++   )
+********************************
+Acceptance prob of MCMC was 0.264
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 1917
+dist_max is 0.0101033123094932
+dist_next is 0.00706418577122564
+********************************
+Acceptance prob of MCMC was 0.2551875
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 1926
+dist_max is 0.00706418577122564
+dist_next is 0.00570018555563384
+********************************
+Acceptance prob of MCMC was 0.2435
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1936
+dist_max is 0.00570018555563384
+dist_next is 0.00485389240788939
+********************************
+Acceptance prob of MCMC was 0.242529411764706
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1936
+dist_max is 0.00485389240788939
+dist_next is 0.00424841782434623
+********************************
+Acceptance prob of MCMC was 0.230294117647059
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 1930
+dist_max is 0.00424841782434623
+dist_next is 0.0038034274519228
+********************************
+Acceptance prob of MCMC was 0.246944444444444
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1952
+dist_max is 0.0038034274519228
+dist_next is 0.0034905294021492
+********************************
+Acceptance prob of MCMC was 0.230352941176471
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 1957
+dist_max is 0.0034905294021492
+dist_next is 0.00327087748978427
+********************************
+Acceptance prob of MCMC was 0.215277777777778
+Number of MCMC moves for next iteration is 19
+Number of unique particles is 1929
+dist_max is 0.00327087748978427
+dist_next is 0.00312615091258775
+********************************
+Acceptance prob of MCMC was 0.179368421052632
+Number of MCMC moves for next iteration is 24
+Number of unique particles is 1917
+dist_max is 0.00312615091258775
+dist_next is 0.00301538538772991
+********************************
+Acceptance prob of MCMC was 0.132083333333333
+Number of MCMC moves for next iteration is 33
+Number of unique particles is 1887
+dist_max is 0.00301538538772991
+dist_next is 0.00293697386013891
+********************************
+Acceptance prob of MCMC was 0.0811818181818182
+Number of MCMC moves for next iteration is 55
+Number of unique particles is 1820
+dist_max is 0.00293697386013891
+dist_next is 0.00287413483008384
+********************************
+Acceptance prob of MCMC was 0.0555272727272727
+Number of MCMC moves for next iteration is 81
+Number of unique particles is 1818
+dist_max is 0.00287413483008384
+dist_next is 0.00281352226045922
+********************************
+Acceptance prob of MCMC was 0.0358395061728395
+Number of MCMC moves for next iteration is 127
+Number of unique particles is 1793
+dist_max is 0.00281352226045922
+dist_next is 0.00275583555361086
+********************************
+Acceptance prob of MCMC was 0.0225748031496063
+Number of MCMC moves for next iteration is 202
+Number of unique particles is 1757
+dist_max is 0.00275583555361086
+dist_next is 0.00270047387138672
+> 
+> save(ABC_hydro_obs_RF_MD, file = "ABC_hydro_obs_RF_MD.RData")
+> 
+> summary(ABC_hydro_obs_RF_MD)
+       x1              x2                 x3               x4       
+ Min.   :111.2   Min.   :-0.59705   Min.   : 35.93   Min.   :1.100  
+ 1st Qu.:161.0   1st Qu.:-0.04729   1st Qu.: 73.68   1st Qu.:1.762  
+ Median :179.8   Median : 0.07888   Median : 86.44   Median :2.245  
+ Mean   :183.5   Mean   : 0.07820   Mean   : 87.50   Mean   :2.175  
+ 3rd Qu.:201.9   3rd Qu.: 0.20790   3rd Qu.:101.26   3rd Qu.:2.615  
+ Max.   :329.9   Max.   : 0.60785   Max.   :148.60   Max.   :2.899  
+     sigma             data           registration      distance        
+ Min.   :0.02532   Length:2000        Mode :logical   Length:2000       
+ 1st Qu.:0.06024   Class :character   FALSE:2000      Class :character  
+ Median :0.06838   Mode  :character                   Mode  :character  
+ Mean   :0.06638                                                        
+ 3rd Qu.:0.07472                                                        
+ Max.   :0.08000                                                        
+> 
+> ### Registration <- TRUE -----------
+> 
+> distance_args$registration <- TRUE
+> 
+> #### Distance <- "FR" ------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ABC_hydro_obs_RT_FR <- protoABC::abc_start(prior_hydro, loss_hydro, distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     data = "synthetic",
++     registration = distance_args$registration,
++     distance = distance_args$distance
++   )
+********************************
+Acceptance prob of MCMC was 0.206
+Number of MCMC moves for next iteration is 20
+Number of unique particles is 1857
+dist_max is 5.70786556354884
+dist_next is 5.2357346609577
+********************************
+Acceptance prob of MCMC was 0.176
+Number of MCMC moves for next iteration is 24
+Number of unique particles is 1883
+dist_max is 5.2357346609577
+dist_next is 4.93236997590836
+********************************
+Acceptance prob of MCMC was 0.144416666666667
+Number of MCMC moves for next iteration is 30
+Number of unique particles is 1869
+dist_max is 4.93236997590836
+dist_next is 4.69762172137917
+********************************
+Acceptance prob of MCMC was 0.128733333333333
+Number of MCMC moves for next iteration is 34
+Number of unique particles is 1897
+dist_max is 4.69762172137917
+dist_next is 4.504285983511
+********************************
+Acceptance prob of MCMC was 0.0989117647058824
+Number of MCMC moves for next iteration is 45
+Number of unique particles is 1871
+dist_max is 4.504285983511
+dist_next is 4.34798486822992
+********************************
+Acceptance prob of MCMC was 0.0807555555555556
+Number of MCMC moves for next iteration is 55
+Number of unique particles is 1861
+dist_max is 4.34798486822992
+dist_next is 4.21927255609041
+********************************
+Acceptance prob of MCMC was 0.0686181818181818
+Number of MCMC moves for next iteration is 65
+Number of unique particles is 1879
+dist_max is 4.21927255609041
+dist_next is 4.11139471658121
+********************************
+Acceptance prob of MCMC was 0.0537230769230769
+Number of MCMC moves for next iteration is 84
+Number of unique particles is 1861
+dist_max is 4.11139471658121
+dist_next is 4.01654158738001
+********************************
+Acceptance prob of MCMC was 0.0399404761904762
+Number of MCMC moves for next iteration is 113
+Number of unique particles is 1846
+dist_max is 4.01654158738001
+dist_next is 3.92711569169791
+********************************
+Acceptance prob of MCMC was 0.0281238938053097
+Number of MCMC moves for next iteration is 162
+Number of unique particles is 1837
+dist_max is 3.92711569169791
+dist_next is 3.84908157986594
+********************************
+Acceptance prob of MCMC was 0.023358024691358
+Number of MCMC moves for next iteration is 195
+Number of unique particles is 1857
+dist_max is 3.84908157986594
+dist_next is 3.77630467241394
+> 
+> save(ABC_hydro_obs_RT_FR, file = "ABC_hydro_obs_RT_FR.RData")
+> 
+> summary(ABC_hydro_obs_RT_FR)
+       x1              x2                x3               x4       
+ Min.   :100.0   Min.   :-4.9814   Min.   : 21.09   Min.   :1.100  
+ 1st Qu.:119.3   1st Qu.:-2.0820   1st Qu.: 42.84   1st Qu.:1.298  
+ Median :145.3   Median :-0.9455   Median : 62.71   Median :1.483  
+ Mean   :164.6   Mean   :-0.6940   Mean   : 65.70   Mean   :1.697  
+ 3rd Qu.:186.4   3rd Qu.: 0.8101   3rd Qu.: 86.66   3rd Qu.:1.982  
+ Max.   :561.6   Max.   : 2.9999   Max.   :136.60   Max.   :2.900  
+     sigma             data           registration     distance        
+ Min.   :0.01000   Length:2000        Mode:logical   Length:2000       
+ 1st Qu.:0.01139   Class :character   TRUE:2000      Class :character  
+ Median :0.01306   Mode  :character                  Mode  :character  
+ Mean   :0.01401                                                       
+ 3rd Qu.:0.01567                                                       
+ Max.   :0.02901                                                       
+> 
+> #### Distance <- "MMD" ------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ABC_hydro_obs_RT_MD <- protoABC::abc_start(prior_hydro, loss_hydro, distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     data = "synthetic",
++     registration = distance_args$registration,
++     distance = distance_args$distance
++   )
+********************************
+Acceptance prob of MCMC was 0.2437
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 1890
+dist_max is 0.0100803643134162
+dist_next is 0.00719185351673263
+********************************
+Acceptance prob of MCMC was 0.199705882352941
+Number of MCMC moves for next iteration is 21
+Number of unique particles is 1904
+dist_max is 0.00719185351673263
+dist_next is 0.00563152649508558
+********************************
+Acceptance prob of MCMC was 0.163
+Number of MCMC moves for next iteration is 26
+Number of unique particles is 1882
+dist_max is 0.00563152649508558
+dist_next is 0.00464522098821255
+********************************
+Acceptance prob of MCMC was 0.141076923076923
+Number of MCMC moves for next iteration is 31
+Number of unique particles is 1874
+dist_max is 0.00464522098821255
+dist_next is 0.00392748231685017
+********************************
+Acceptance prob of MCMC was 0.117645161290323
+Number of MCMC moves for next iteration is 37
+Number of unique particles is 1854
+dist_max is 0.00392748231685017
+dist_next is 0.0033866081292683
+********************************
+Acceptance prob of MCMC was 0.0951891891891892
+Number of MCMC moves for next iteration is 47
+Number of unique particles is 1867
+dist_max is 0.0033866081292683
+dist_next is 0.0029867910035957
+********************************
+Acceptance prob of MCMC was 0.0702978723404255
+Number of MCMC moves for next iteration is 64
+Number of unique particles is 1828
+dist_max is 0.0029867910035957
+dist_next is 0.00266851623417491
+********************************
+Acceptance prob of MCMC was 0.04353125
+Number of MCMC moves for next iteration is 104
+Number of unique particles is 1759
+dist_max is 0.00266851623417491
+dist_next is 0.00243256584011023
+********************************
+Acceptance prob of MCMC was 0.0311923076923077
+Number of MCMC moves for next iteration is 146
+Number of unique particles is 1797
+dist_max is 0.00243256584011023
+dist_next is 0.00221988316041569
+********************************
+Acceptance prob of MCMC was 0.0215958904109589
+Number of MCMC moves for next iteration is 211
+Number of unique particles is 1803
+dist_max is 0.00221988316041569
+dist_next is 0.00202433140471669
+> 
+> save(ABC_hydro_obs_RT_MD, file = "ABC_hydro_obs_RT_MD.RData")
+> 
+> summary(ABC_hydro_obs_RT_MD)
+       x1              x2                 x3               x4       
+ Min.   :104.0   Min.   :-1.17045   Min.   : 20.91   Min.   :1.100  
+ 1st Qu.:179.8   1st Qu.:-0.19111   1st Qu.: 63.60   1st Qu.:1.599  
+ Median :221.4   Median : 0.05281   Median : 80.99   Median :2.070  
+ Mean   :239.2   Mean   : 0.05397   Mean   : 87.82   Mean   :2.049  
+ 3rd Qu.:283.0   3rd Qu.: 0.30211   3rd Qu.:105.57   3rd Qu.:2.514  
+ Max.   :535.2   Max.   : 1.09898   Max.   :229.67   Max.   :2.893  
+     sigma             data           registration     distance        
+ Min.   :0.01006   Length:2000        Mode:logical   Length:2000       
+ 1st Qu.:0.04236   Class :character   TRUE:2000      Class :character  
+ Median :0.05678   Mode  :character                  Mode  :character  
+ Mean   :0.05443                                                       
+ 3rd Qu.:0.06950                                                       
+ Max.   :0.07995                                                       
+> 
+> 
+> sessionInfo()
+R version 3.4.2 (2017-09-28)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: SUSE Linux Enterprise Server 12 SP2
+
+Matrix products: default
+BLAS/LAPACK: /pkg/suse12/software/openblas/0.2.19-gcc-6.3.0-2.27-lapack-3.7.0/lib/libopenblas_sandybridgep-r0.2.19.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] bindrcpp_0.2.2          dplyr_0.7.6             CurveRegistration_0.0.1
+[4] protoABC_0.4.8          airGR_1.0.15.2         
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.19      bindr_0.1.1       magrittr_1.5      splines_3.4.2    
+ [5] maps_3.2.0        tidyselect_0.2.3  doParallel_1.0.10 EasyMMD_0.4.0    
+ [9] viridisLite_0.3.0 lattice_0.20-35   R6_2.2.2          rlang_0.2.2      
+[13] foreach_1.4.3     matrixcalc_1.0-3  fields_9.0        tools_3.4.2      
+[17] dotCall64_0.9-04  grid_3.4.2        spam_2.1-1        coda_0.19-1      
+[21] iterators_1.0.8   assertthat_0.2.0  tibble_1.4.2      purrr_0.2.4      
+[25] codetools_0.2-15  glue_1.3.0        fdasrvf_1.8.3     pracma_2.1.5     
+[29] compiler_3.4.2    pillar_1.2.3      mvtnorm_1.0-6     pkgconfig_2.0.1  
+> 
+> ABC_hydro_syn <- dplyr::bind_rows(ABC_hydro_syn_RF_FR, ABC_hydro_syn_RF_MD, ABC_hydro_syn_RT_FR, ABC_hydro_syn_RT_MD)
+> 
+> ABC_hydro_obs <- dplyr::bind_rows(ABC_hydro_obs_RF_FR, ABC_hydro_obs_RF_MD, ABC_hydro_obs_RT_FR, ABC_hydro_obs_RT_MD)
+> 
+> save(ABC_hydro_syn, file = "ABC_hydro_syn.RData")
+> save(ABC_hydro_obs, file = "ABC_hydro_obs.RData")
+> 
+> save.image(file = "ABC_hydro_everything.RData")
+> 
+> 
+> 
+> proc.time()
+      user     system    elapsed 
+119041.565    106.219   9378.318 

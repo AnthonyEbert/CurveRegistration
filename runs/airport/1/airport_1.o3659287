@@ -1,0 +1,8 @@
+/var/spool/PBS/mom_priv/jobs/3659287.pbs.SC: line 13: git: command not found
+/var/spool/PBS/mom_priv/jobs/3659287.pbs.SC: line 14: git: command not found
+
+-----
+PBS Job 3659287.pbs
+CPU time  : 90:16:10
+Wall time : 06:55:56
+Mem usage : 2267168kb

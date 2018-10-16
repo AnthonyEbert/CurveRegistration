@@ -1,0 +1,20 @@
+On branch master
+Your branch is ahead of 'origin/master' by 1 commit.
+  (use "git push" to publish your local commits)
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+	new file:   ../../airport/2/main.sub
+	new file:   ../2/main.sub
+	new file:   ../../sGaussian/2/main.sub
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	../../airport/1/ABC_airport_RF_FR_CF.RData
+	../../airport/1/airport_script.Rout
+	../../airport/1/git_log
+	../../airport/1/git_status
+	git_log
+	git_status
+
