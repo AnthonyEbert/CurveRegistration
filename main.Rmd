@@ -91,11 +91,12 @@ The prior distributions for each parameter of interest are $\sigma_{\phi} \sim U
 ```{r sGexample, fig.cap="\\label{fig:sGexample}Example of a draw from the Gaussian peak shift model with $\\sigma_a = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\alpha$ values. The distribution of peak shifts is controlled by $\\sigma_a$, the peak widths are controlled by $\\sigma_{\\phi }$ and the noise is controlled by $\\sigma_{\\epsilon}$."}
 t <- seq(0, 300, by = 0.5)
 alpha = seq(20, 280, by = 20)
-theta = c(0, 5, 1, 0.01)
+theta = c(1, 0.01, 0, 5)
 
 
 y <- simulator_sGaussian(t, param = theta, alpha = alpha)
-plot(t, y, type = "l", lwd = 1, xaxs = "i", yaxs = "i", ylim = c(-0.1, 0.5))
+
+plot(y, type = "l", lwd = 1, xaxs = "i", yaxs = "i", ylim = c(-0.1, 0.5))
 abline(v = alpha, lty = 2)
 ```
 
@@ -104,6 +105,42 @@ To test the effectiveness of the registered MMD method we compare it with the un
 ## Results
 
 The posterior distributions are shown in Figure . As expected the Registered MMD performs better than MMD and this is more obvious when $\sigma_a$ is large. What is surprising is that the Registered MMD performs better than the Elastic distance. @joshi2007novel
+
+```{r}
+load("runs/sGaussian/test/ABC_sG_5.RData")
+
+output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance) %>%
+  mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
+
+output_tidy$parameter <- factor(output_tidy$parameter, labels = c("sigma[epsilon]", "sigma[phi]"))
+
+true_params = c(1, 0.01)
+
+vline_df = data.frame(parameter = c("sigma_phi", "sigma_e"), input = true_params, value = rep(1, 2))
+
+vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma[epsilon]", "sigma[phi]"))
+
+vline_df$legend_key = "True parameter values"
+
+ggplot(output_tidy) +
+  aes(x = value, col = distance) +
+  stat_density(position = "identity", geom = "line") +
+  facet_wrap(~parameter, scales = "free", labeller = label_parsed) +
+  scale_linetype_manual(values = 1) +
+  geom_vline(data = vline_df , mapping = aes(xintercept = input, lty = legend_key), col = "black") +
+  labs(colour = "Registration status") +
+  scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  ggthemes::theme_few() +
+  ylab(latex2exp::TeX('$\\pi_{ABC} (\\theta | y)$')) +
+  theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
+  ggthemes::scale_color_wsj() +
+  geom_blank(data = blank_df, aes(x = input), inherit.aes = FALSE) +
+  guides(
+    color = guide_legend(order = 0),
+    lty = guide_legend(order = 1)
+  )
+```
 
 We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
 
@@ -139,6 +176,40 @@ $$
 
 ## Results
 
+```{r, message=FALSE}
+load(file = "runs/airport/test/ABC_airport.RData")
+
+# data file ABC_airport
+
+param_names <- c("mu", "nu[2]", "lambda[f]", "lambda[l]")
+true_params <- c(0.02, 0.64, 0.4, 0.5)
+
+vline_df = data.frame(parameter = param_names, input = true_params, value = rep(1, 4))
+
+airport_tidy <- ABC_airport %>% tidyr::gather("parameter", , -registration, -distance, -correction) %>%
+  mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
+
+airport_tidy$parameter <- factor(airport_tidy$parameter, labels = c("lambda[f]", "lambda[l]", "mu", "nu[2]"))
+
+vline_df$legend_key = "True parameter values"
+
+other_df <- data.frame(value = c(1, 1), registration = c(TRUE, FALSE))
+
+vline_df <- vline_df %>% left_join(other_df)
+
+blank_df <- vline_df
+blank_df$input <- c(0.05, 1, 1, 1)
+
+registration_names <- c("0" = "MMD", "3" = "Registered MMD")
+
+ggplot(airport_tidy %>% filter(correction == FALSE)) +
+  aes(x = value, col = distance) +
+  stat_density(position = "identity", geom = "line") +
+  facet_wrap(~parameter, scales = "free", labeller = label_parsed) + 
+  geom_vline(data = vline_df , mapping = aes(xintercept = input, lty = legend_key), col = "black") +
+  ggthemes::theme_few()
+```
+
 # Counter example: Hydrological modelling
 
 ```{r Hydrosetup,include=FALSE}
@@ -155,8 +226,8 @@ InputsModel <-
   )
 
 Ind_Run <-
-  seq(which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/02/1997"),
-      which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/01/1998"))
+  seq(which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/03/1997"),
+      which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/07/1998"))
 
 RunOptions <- CreateRunOptions(
   FUN_MOD = RunModel_GR4J,
@@ -187,12 +258,12 @@ Water flows in hydrology are represented by hydrographs representing volumetric 
 ```{r Hydroexample, fig.cap="\\label{fig:Hydroexample}Hydrograph with associated rain and evaporation data from airGR package"}
 
 ggplot(Hydrodata) +
-  geom_line(aes(y = P, group = "Rainfall", col = E), size = 0.5) +
+  geom_line(aes(y = P/4, group = "Rainfall", col = E), size = 0.5) +
   aes(x = DatesR, y = Qmm, group = "Flow rate", linetype = "Flow rate") +
   geom_line(col = "black") +
   ggthemes::theme_few() +
   scale_x_datetime(breaks = scales::pretty_breaks(12), date_labels = "%b") +
-  scale_y_continuous(sec.axis = sec_axis(~.*1, name = "Rainfall (mm/day)")) +
+  scale_y_continuous(sec.axis = sec_axis(~.*4, name = "Rainfall (mm/day)")) +
   labs(y = "Flow rate (mm/day)") +
   theme(legend.position = "top", axis.title.x = element_blank()) + scale_color_gradient2(midpoint = 2, low = "blue", high = "red", mid = "grey") + guides(col = guide_colourbar(title = "Evaporation"), linetype = guide_legend(title = element_blank()))
 ```
@@ -234,6 +305,63 @@ Once again we test all three distances.
 
 In this example we find that registered distances perform more poorly than their unregistered counterparts. 
 
+```{r}
+load("runs/hydrology/test/ABC_hydro_syn.RData")
+
+true_params <- c(257, 1, 88, 2.2, 0.05)
+param_names <- names(ABC_hydro_syn)[1:5]
+
+hydro_syn_tidy <- ABC_hydro_syn %>%
+  tidyr::gather("parameter", ,-data, -registration, -distance) %>%
+  mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
+
+hydro_syn_tidy$parameter <- factor(hydro_syn_tidy$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
+
+vline_df = data.frame(parameter = param_names, input = true_params, value = rep(1, 5))
+
+vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
+
+vline_df$legend_key = "True parameter values"
+
+ggplot(hydro_syn_tidy) +
+  aes(x = value, col = distance) +
+  stat_density(position = "identity", geom = "line") +
+  facet_wrap(~parameter, scales = "free", labeller = label_parsed)  + 
+  geom_vline(data = vline_df , mapping = aes(xintercept = input, lty = legend_key), col = "black") + 
+  ggthemes::theme_few() + 
+  theme(legend.position = "bottom")
+
+
+```
+
+
+```{r}
+load("runs/hydrology/test2/ABC_hydro_obs_RF_MD.RData")
+load("runs/hydrology/test2/ABC_hydro_obs_RT_MD.RData")
+
+sim_data <- simulator_hydro(true_params, InputsModel, RunOptions)
+
+predictions_noreg <- apply(ABC_hydro_obs_RF_MD[,1:5], 1, simulator_hydro, InputsModel = InputsModel, RunOptions = RunOptions, one_d = TRUE)
+
+predictions_reg <- apply(ABC_hydro_obs_RT_MD[,1:5], 1, simulator_hydro, InputsModel = InputsModel, RunOptions = RunOptions, one_d = TRUE)
+
+quantiles_noreg <- apply(predictions_noreg, 1, quantile, probs = c(0.1, 0.5, 0.9)) %>% t()
+
+quantiles_reg <- apply(predictions_reg, 1, quantile, probs = c(0.1, 0.5, 0.9)) %>% t()
+
+day_num <- sim_data[,1]
+obs_true <- as.matrix(data.frame(day_num = day_num, value = BasinObs$Qmm[Ind_Run]))
+
+tidy_noreg <- quantiles_noreg %>% as_data_frame() %>% mutate(day_num = day_num) %>% mutate(reg = FALSE)
+
+tidy_reg <- quantiles_reg %>% as_data_frame() %>% mutate(day_num = day_num) %>% mutate(reg = TRUE)
+
+
+tidy_df <- dplyr::bind_rows(tidy_noreg, tidy_reg)
+
+ggplot(tidy_df) + aes(x = day_num, ymin = `10%`, ymax = `90%`) + geom_ribbon(alpha = 0.5, fill = "red") + facet_wrap(~reg) + geom_line(data = as_data_frame(obs_true), mapping = aes(x = day_num, y = value), inherit.aes = FALSE)
+
+```
 # Discussion
 
 We have compared likelihood-free inference for three problems using three distances. The distances were the elastic distance (as proposed by ...), maximum mean discrepancy (Gretton et al...) and a distance incorporating techniques from both registered maximum mean discrepancy. 

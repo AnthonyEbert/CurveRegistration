@@ -1,0 +1,145 @@
+# Simulator sG
+
+library(CurveRegistration)
+library(protoABC)
+library(parallel)
+library(dplyr)
+
+# Settings ----------------------
+
+run_number = 1
+
+set.seed(1)
+
+Time <- seq(0, 300, by = 0.5)
+alpha = seq(25, 300, by = 20)
+theta = c(1, 0.01)
+
+n_runs = 10
+pacc_final = 0.05
+
+var_mat <- diag(c(9, 0.01^2))
+
+y <- simulator_sGaussian(Time, param = theta, alpha = alpha)
+y_kmmd <- EasyMMD::kmmd(y, var = var_mat)
+x <- simulator_sGaussian(Time, param = theta, alpha = alpha)
+
+distance_fun(y, x, registration = TRUE, distance = "MMD", y_kmmd = y_kmmd, var = var_mat, threshold = 6)
+
+distance_args <- list(
+  Time = Time,
+  alpha = alpha,
+  obs = y,
+  var = var_mat,
+  threshold = 6,
+  registration = TRUE,
+  distance = "MMD",
+  method = "DP2",
+  mean_global = 0,
+  sigma_a = 5
+)
+
+distance_args$y_kmmd <- EasyMMD::kmmd(distance_args$obs, var = distance_args$var)
+
+loss_sG(theta, distance_args)
+
+# ABC -----------------
+
+prior_sGaussian <- prior_unif(c(0, 0), c(3, 0.02), var_names = c("sigma_phi", "sigma_e"), eval = FALSE)
+
+prior_sGaussian_eval <- prior_unif(c(0, 0), c(3, 0.02), var_names = c("sigma_phi", "sigma_e"), eval = TRUE)
+
+abc_control <- list(
+  prior_eval = prior_sGaussian_eval,
+  n = n_runs,
+  pacc_final = pacc_final
+)
+
+cl <- makeCluster(detectCores() - 1) #USER
+#cl <- "mclapply" #HPC
+
+## sigma_a <- 5 -----------------
+
+distance_args$sigma_a <- 5
+
+### Registration <- FALSE -------------
+
+distance_args$registration <- FALSE
+
+#### Distance <- "FR" -------------------
+
+distance_args$distance <- "FR"
+
+ABC_sG_5_RF_FR <- abc_start(prior_sGaussian, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
+  mutate(
+    registration = distance_args$registration,
+    distance     = distance_args$distance,
+    sigma_a      = distance_args$sigma_a
+  )
+
+save(ABC_sG_5_RF_FR, file = "ABC_sG_5_RF_FR.RData")
+
+summary(ABC_sG_5_RF_FR)
+
+#### Distance <- "MMD" -------------------
+
+distance_args$distance <- "MMD"
+
+ABC_sG_5_RF_MD <- abc_start(prior_sGaussian, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
+  mutate(
+    registration = distance_args$registration,
+    distance     = distance_args$distance,
+    sigma_a      = distance_args$sigma_a
+  )
+
+save(ABC_sG_5_RF_MD, file = "ABC_sG_5_RF_MD.RData")
+
+summary(ABC_sG_5_RF_MD)
+
+### Registration <- TRUE -------------
+
+distance_args$registration <- TRUE
+
+#### Distance <- "FR" -------------------
+
+distance_args$distance <- "FR"
+
+ABC_sG_5_RT_FR <- abc_start(prior_sGaussian, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
+  mutate(
+    registration = distance_args$registration,
+    distance     = distance_args$distance,
+    sigma_a      = distance_args$sigma_a
+  )
+
+save(ABC_sG_5_RT_FR, file = "ABC_sG_5_RT_FR.RData")
+
+summary(ABC_sG_5_RT_FR)
+
+#### Distance <- "MMD" -------------------
+
+distance_args$distance <- "MMD"
+
+ABC_sG_5_RT_MD <- abc_start(prior_sGaussian, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
+  mutate(
+    registration = distance_args$registration,
+    distance     = distance_args$distance,
+    sigma_a      = distance_args$sigma_a
+  )
+
+save(ABC_sG_5_RT_MD, file = "ABC_sG_5_RT_MD.RData")
+
+summary(ABC_sG_5_RT_MD)
+
+# Packaging everything up
+
+sessionInfo()
+
+ABC_sG_5 <- dplyr::bind_rows(ABC_sG_5_RF_FR, ABC_sG_5_RF_MD, ABC_sG_5_RT_FR, ABC_sG_5_RT_MD)
+
+save(ABC_sG_5, file = "ABC_sG_5.RData")
+
+save.image()
+
+
+
+

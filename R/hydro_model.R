@@ -23,69 +23,16 @@ simulator_hydro <- function(param, InputsModel, RunOptions, one_d = FALSE, lambd
 }
 
 #' @export
-distance_hydro <- function(obs, sim, var, y_kmmd, reg = FALSE, phase_coef = 0){
+loss_hydro <- function(param, inp){
 
-  phase_dist <- 0
+  sim <- simulator_hydro(param, inp$InputsModel, inp$RunOptions)
 
-  if(reg){
-
-    reg_output <- reg_hydro(obs, sim)
-    sim[,2] <- reg_output$value
-    phase_dist <- reg_output$phase
-
-  }
-
-  output <- EasyMMD::MMD(obs, sim, y_kmmd = y_kmmd, bias = TRUE, threshold = 6,  var = var) + phase_coef * phase_dist
-
-  return(output)
-
-}
-
-#' @export
-distance_hydro_simple <- function(obs, sim, var, y_kmmd, reg = FALSE, phase_coef = 0){
-
-  phase_dist <- 0
-
-  if(reg){
-
-    reg_output <- reg_hydro(obs, sim)
-    sim[,2] <- reg_output$value
-    phase_dist <- reg_output$phase
-
-  }
-
-  output <- sum((obs - sim)^2)
-
-  return(output)
-
-}
-
-#' @export
-loss_hydro <- function(param, distance_args){
-
-  sim <- simulator_hydro(param, distance_args$InputsModel, distance_args$RunOptions)
-
-  output <- distance_hydro(distance_args$obs, sim, var = distance_args$var, y_kmmd = distance_args$y_kmmd, reg = distance_args$reg)
+  output <- distance_fun(inp$obs, sim, registration = inp$reg, distance = inp$distance, method = inp$method,  y_kmmd = inp$y_kmmd, var = inp$var, threshold = inp$threshold)
 
   return(output)
 }
 
-#' @export
-reg_hydro <- function(obs, sim){
 
-  reg_output <- fdasrvf::pair_align_functions(obs[,2], sim[,2], time = obs[,1], method = "DP2")
-
-  values <- reg_output$f2tilde
-
-  time1 <- seq(0, 1, length.out =  length(obs[,2]))
-  phase <- acos(pracma::trapz(time1[-1], sqrt(diff(reg_output$gam) / diff(time1))))
-
-
-
-
-  return(list(values = values, phase = phase))
-
-}
 
 
 #' @export
