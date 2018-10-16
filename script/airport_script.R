@@ -43,13 +43,15 @@ prior_airport <- protoABC::prior_unif(c(0, 0, 0, 0), c(0.05, 1, 1, 1), var_names
 prior_eval_airport <- protoABC::prior_unif(c(0, 0, 0, 0), c(0.05, 1, 1, 1), var_names = param_names, eval = TRUE)
 
 abc_control <- list(
-  n          = 200,
-  pacc_final = 0.05,
+  n          = 2000,
+  pacc_final = 0.02,
   prior_eval = prior_eval_airport
 )
 
-cl <- parallel::makeCluster(parallel::detectCores() - 1)
-parallel::clusterEvalQ(cl = cl, expr = library(dplyr))
+#cl <- parallel::makeCluster(parallel::detectCores() - 1)
+#parallel::clusterEvalQ(cl = cl, expr = library(dplyr))
+
+cl <- "mclapply"
 
 ## Registration <- FALSE
 

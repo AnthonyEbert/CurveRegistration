@@ -58,8 +58,8 @@ distance_args <- list(
 
 loss_hydro(Param, distance_args)
 
-n_runs <- 20
-pacc_final <- 0.05
+n_runs <- 2000
+pacc_final <- 0.02
 
 # ABC -----------------
 
@@ -73,8 +73,8 @@ abc_control <- list(
   pacc_final = pacc_final
 )
 
-cl <- makeCluster(detectCores() - 1) #USER
-#cl <- "mclapply" #HPC
+#cl <- makeCluster(detectCores() - 1) #USER
+cl <- "mclapply" #HPC
 
 ## Synthetic data ------------------
 

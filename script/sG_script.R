@@ -15,8 +15,8 @@ Time <- seq(0, 300, by = 0.5)
 alpha = seq(25, 300, by = 20)
 theta = c(1, 0.01)
 
-n_runs = 10
-pacc_final = 0.05
+n_runs = 1000
+pacc_final = 0.02
 
 var_mat <- diag(c(9, 0.01^2))
 
@@ -55,8 +55,8 @@ abc_control <- list(
   pacc_final = pacc_final
 )
 
-cl <- makeCluster(detectCores() - 1) #USER
-#cl <- "mclapply" #HPC
+#cl <- makeCluster(detectCores() - 1) #USER
+cl <- "mclapply" #HPC
 
 ## sigma_a <- 5 -----------------
 
