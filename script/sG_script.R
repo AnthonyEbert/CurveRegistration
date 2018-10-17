@@ -15,7 +15,7 @@ Time <- seq(0, 300, by = 0.5)
 alpha = seq(25, 300, by = 20)
 theta = c(1, 0.01)
 
-n_runs = 1000
+n_runs = 4000
 pacc_final = 0.02
 
 var_mat <- diag(c(9, 0.01^2))
@@ -34,7 +34,7 @@ distance_args <- list(
   threshold = 6,
   registration = TRUE,
   distance = "MMD",
-  method = "DP2",
+  method = "DP",
   mean_global = 0,
   sigma_a = 5
 )
@@ -49,10 +49,15 @@ prior_sGaussian <- prior_unif(c(0, 0), c(3, 0.02), var_names = c("sigma_phi", "s
 
 prior_sGaussian_eval <- prior_unif(c(0, 0), c(3, 0.02), var_names = c("sigma_phi", "sigma_e"), eval = TRUE)
 
+cov_func <- function(x){
+  robust::covRob(x)$cov
+}
+
 abc_control <- list(
   prior_eval = prior_sGaussian_eval,
   n = n_runs,
-  pacc_final = pacc_final
+  pacc_final = pacc_final, 
+  cov_func = cov_func
 )
 
 #cl <- makeCluster(detectCores() - 1) #USER
