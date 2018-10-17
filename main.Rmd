@@ -109,8 +109,10 @@ The posterior distributions are shown in Figure . As expected the Registered MMD
 ```{r}
 load("runs/sGaussian/test/ABC_sG_5.RData")
 
-output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance) %>%
-  mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
+output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
+
+# %>%
+#   mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
 
 output_tidy$parameter <- factor(output_tidy$parameter, labels = c("sigma[epsilon]", "sigma[phi]"))
 
@@ -120,22 +122,17 @@ vline_df = data.frame(parameter = c("sigma_phi", "sigma_e"), input = true_params
 
 vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma[epsilon]", "sigma[phi]"))
 
-vline_df$legend_key = "True parameter values"
-
 ggplot(output_tidy) +
-  aes(x = value, col = distance) +
+  aes(x = value, col = distance, linetype = registration) +
   stat_density(position = "identity", geom = "line") +
   facet_wrap(~parameter, scales = "free", labeller = label_parsed) +
-  scale_linetype_manual(values = 1) +
-  geom_vline(data = vline_df , mapping = aes(xintercept = input, lty = legend_key), col = "black") +
+  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", lty = 1) +
   labs(colour = "Registration status") +
   scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
   ggthemes::theme_few() +
   ylab(latex2exp::TeX('$\\pi_{ABC} (\\theta | y)$')) +
   theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
-  ggthemes::scale_color_wsj() +
-  geom_blank(data = blank_df, aes(x = input), inherit.aes = FALSE) +
   guides(
     color = guide_legend(order = 0),
     lty = guide_legend(order = 1)
@@ -177,7 +174,7 @@ $$
 ## Results
 
 ```{r, message=FALSE}
-load(file = "runs/airport/test/ABC_airport.RData")
+load(file = "runs/airport/1/ABC_airport.RData")
 
 # data file ABC_airport
 
@@ -186,28 +183,31 @@ true_params <- c(0.02, 0.64, 0.4, 0.5)
 
 vline_df = data.frame(parameter = param_names, input = true_params, value = rep(1, 4))
 
-airport_tidy <- ABC_airport %>% tidyr::gather("parameter", , -registration, -distance, -correction) %>%
-  mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
+airport_tidy <- ABC_airport %>% tidyr::gather("parameter", , -registration, -distance, -correction) 
+
+# %>% mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
 
 airport_tidy$parameter <- factor(airport_tidy$parameter, labels = c("lambda[f]", "lambda[l]", "mu", "nu[2]"))
 
-vline_df$legend_key = "True parameter values"
-
-other_df <- data.frame(value = c(1, 1), registration = c(TRUE, FALSE))
-
-vline_df <- vline_df %>% left_join(other_df)
-
-blank_df <- vline_df
-blank_df$input <- c(0.05, 1, 1, 1)
-
-registration_names <- c("0" = "MMD", "3" = "Registered MMD")
-
 ggplot(airport_tidy %>% filter(correction == FALSE)) +
-  aes(x = value, col = distance) +
+  aes(x = value, col = distance, linetype = registration) +
   stat_density(position = "identity", geom = "line") +
   facet_wrap(~parameter, scales = "free", labeller = label_parsed) + 
-  geom_vline(data = vline_df , mapping = aes(xintercept = input, lty = legend_key), col = "black") +
-  ggthemes::theme_few()
+  scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", linetype = 1) +
+  ggthemes::theme_few() + 
+  ggtitle("Uncorrected")
+
+ggplot(airport_tidy %>% filter(correction == TRUE)) +
+  aes(x = value, col = distance, linetype = registration) +
+  stat_density(position = "identity", geom = "line") +
+  scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  facet_wrap(~parameter, scales = "free", labeller = label_parsed) + 
+  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", linetype = 1) +
+  ggthemes::theme_few() + 
+  ggtitle("Corrected")
 ```
 
 # Counter example: Hydrological modelling
@@ -306,14 +306,16 @@ Once again we test all three distances.
 In this example we find that registered distances perform more poorly than their unregistered counterparts. 
 
 ```{r}
-load("runs/hydrology/test/ABC_hydro_syn.RData")
+load("runs/hydrology/1/ABC_hydro_syn.RData")
 
 true_params <- c(257, 1, 88, 2.2, 0.05)
 param_names <- names(ABC_hydro_syn)[1:5]
 
 hydro_syn_tidy <- ABC_hydro_syn %>%
-  tidyr::gather("parameter", ,-data, -registration, -distance) %>%
-  mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
+  tidyr::gather("parameter", ,-data, -registration, -distance) 
+
+# %>%
+#   mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
 
 hydro_syn_tidy$parameter <- factor(hydro_syn_tidy$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
 
@@ -321,13 +323,13 @@ vline_df = data.frame(parameter = param_names, input = true_params, value = rep(
 
 vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
 
-vline_df$legend_key = "True parameter values"
-
 ggplot(hydro_syn_tidy) +
-  aes(x = value, col = distance) +
+  aes(x = value, col = distance, linetype = registration) +
   stat_density(position = "identity", geom = "line") +
+  scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
   facet_wrap(~parameter, scales = "free", labeller = label_parsed)  + 
-  geom_vline(data = vline_df , mapping = aes(xintercept = input, lty = legend_key), col = "black") + 
+  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", linetype = 1) + 
   ggthemes::theme_few() + 
   theme(legend.position = "bottom")
 
@@ -335,7 +337,7 @@ ggplot(hydro_syn_tidy) +
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 load("runs/hydrology/test2/ABC_hydro_obs_RF_MD.RData")
 load("runs/hydrology/test2/ABC_hydro_obs_RT_MD.RData")
 
@@ -362,16 +364,19 @@ tidy_df <- dplyr::bind_rows(tidy_noreg, tidy_reg)
 ggplot(tidy_df) + aes(x = day_num, ymin = `10%`, ymax = `90%`) + geom_ribbon(alpha = 0.5, fill = "red") + facet_wrap(~reg) + geom_line(data = as_data_frame(obs_true), mapping = aes(x = day_num, y = value), inherit.aes = FALSE)
 
 ```
+
 # Discussion
 
 We have compared likelihood-free inference for three problems using three distances. The distances were the elastic distance (as proposed by ...), maximum mean discrepancy (Gretton et al...) and a distance incorporating techniques from both registered maximum mean discrepancy. 
 
 The first two problems were amenable to this new distance and the last problem was not. Although all three problems incorporate some aspect of peak position uncertainty, the degrees of freedom for the first two problems was much larger than the last. 
 
+# Information for Anthony
 
 ```{r}
 writeLines(capture.output(sessionInfo()))
 ```
 
+# References
 
 
