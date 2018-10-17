@@ -42,10 +42,15 @@ prior_airport <- protoABC::prior_unif(c(0, 0, 0, 0), c(0.05, 1, 1, 1), var_names
 
 prior_eval_airport <- protoABC::prior_unif(c(0, 0, 0, 0), c(0.05, 1, 1, 1), var_names = param_names, eval = TRUE)
 
+cov_func <- function(x){
+  robust::covRob(x)$cov
+}
+
 abc_control <- list(
-  n          = 2000,
+  n          = 4000,
   pacc_final = 0.02,
-  prior_eval = prior_eval_airport
+  prior_eval = prior_eval_airport,
+  cov_func   = cov_func
 )
 
 #cl <- parallel::makeCluster(parallel::detectCores() - 1)
