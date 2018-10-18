@@ -12,7 +12,7 @@ set.seed(3)
 
 flight_level <- AirportSim::generate_flightlevel(5, 1000)
 
-true_params <- c(0.02, 0.64, 0.4, 0.5)
+true_params <- c(0.02, 0.64, 0.25, 0.4)
 
 distance_args <- list(
   flight_effect = TRUE,
@@ -125,7 +125,7 @@ save(ABC_airport_RF_MD_CT, file = "ABC_airport_RF_MD_CT.RData")
 ## Registration <- TRUE
 
 distance_args$registration <- TRUE
-distance_args$registration_imm <- TRUE
+distance_args$registration_imm <- FALSE
 
 #### Distance <- "FR" -------------------
 
