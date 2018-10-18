@@ -242,8 +242,8 @@ Hydrograph with associated rain and evaporation data from airGR package
 <h1>References</h1>
 <p>Run-off predictions are positively valued, and it is well known that heteroscedasticity exists in the errors <span class="citation">(Kavetski 2018)</span>. A common strategy is to perform a Box-Cox transformation <span class="math inline">\(Z(Y, \lambda) = (Y^{\lambda} - 1) / \lambda\)</span> to transformed predictions with normalised errors <span class="math inline">\(\eta\)</span>:</p>
 <span class="math display">\[\begin{align}
-    Y_Z &amp;= Z(\mathcal{H}(\theta, X)) + \eta,
-    \eta \sim N(0, \sigma^2)
+    Y_Z &amp;= Z(\mathcal{H}(\theta, X)) + \eta, \\
+    \eta &amp;\sim N(0, \sigma^2)
 \end{align}\]</span>
 <p>We apply the MMD, Registered-MMD and elastic distances as shown previously. Once again we test all three distances.</p>
 <div id="results-and-discussion" class="section level2">
