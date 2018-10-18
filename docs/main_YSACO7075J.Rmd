@@ -5,7 +5,7 @@ date: "16 October 2018"
 output: 
   html_document:
     self_contained: false
-bibliography: Zotero_link.bib
+bibliography: ../Zotero_link.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -91,6 +91,8 @@ We first construct an artificial problem to demonstrate the method we suggest. T
 The prior distributions for each parameter of interest are $\sigma_{\phi} \sim U(0, 10)$, and $\sigma_{\epsilon} \sim U(0, 0.1)$. An example of a model realisation from this distribution is shown in Figure \ref{fig:sGexample}.
 
 ```{r sGexample, fig.cap="\\label{fig:sGexample}Example of a draw from the Gaussian peak shift model with $\\sigma_a = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\alpha$ values. The distribution of peak shifts is controlled by $\\sigma_a$, the peak widths are controlled by $\\sigma_{\\phi }$ and the noise is controlled by $\\sigma_{\\epsilon}$."}
+set.seed(1)
+
 t <- seq(0, 300, by = 0.5)
 alpha = seq(20, 280, by = 20)
 theta = c(1, 0.01, 0, 5)
