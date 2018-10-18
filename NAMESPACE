@@ -2,6 +2,7 @@
 
 export(airport_control)
 export(box_cox)
+export(correction_airport)
 export(distance_fun)
 export(inv_box_cox)
 export(loss_airport)

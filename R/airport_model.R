@@ -46,27 +46,13 @@ loss_airport <- function(params, inp){
   sim_imm <- sim$x_imm
 
   if(inp$registration | inp$correction){
-    reg_output_ac <- register_functions(obs_ac, sim_ac, method = inp$method)
+    reg_output_ac <- register_functions(obs_ac, sim_ac, method = inp$method, warp_ret = TRUE)
   }
 
   if(inp$correction){
 
-    warp_fun <- warper(sim_ac[,1], reg_output_ac$gam)
+    sim_imm <- correction_airport(sim$Passenger_df, reg_output_ac$warp_fun, inp$breaks)
 
-    sim_out <- sim$Passenger_df %>%
-      group_by(nat) %>%
-      mutate(
-        depart_imm = queuecomputer::queue(warp_fun(arrive_imm), service_imm, server_imm[[1]])
-      )
-
-    sim_out <- sim_out %>%
-      AirportSim::post_process_1() %>%
-      AirportSim::convert_stamps_to_hist(breaks = inp$breaks)
-
-    sim_imm <- sim_out %>%
-      filter(key == "y_obs") %>%
-      select(-key) %>%
-      as.matrix()
   }
 
   if(inp$registration){
@@ -79,6 +65,32 @@ loss_airport <- function(params, inp){
 
   return(as.numeric(output_ac + output_imm))
 }
+
+
+#' @export
+correction_airport <- function(sim_Passenger_df, warp_fun, breaks){
+
+  sim_out <- sim_Passenger_df %>%
+    group_by(nat) %>%
+    mutate(
+      depart_imm = queuecomputer::queue(warp_fun(arrive_imm), service_imm, server_imm[[1]])
+    )
+
+  sim_out <- sim_out %>%
+    AirportSim::post_process_1() %>%
+    AirportSim::convert_stamps_to_hist(breaks = breaks)
+
+  sim_imm <- sim_out %>%
+    filter(key == "y_obs") %>%
+    select(-key) %>%
+    as.matrix()
+
+  return(sim_imm)
+}
+
+
+
+
 
 
 
