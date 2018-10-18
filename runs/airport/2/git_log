@@ -1,0 +1,83 @@
+commit 8face8d43d913a4500e9cd7dc4844979f7862d61
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 22:49:03 2018 +1000
+
+    Ready for airport/2
+
+commit 4c55e8029ce787d617491a41acc765fbf0433923
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Wed Oct 17 22:46:27 2018 +1000
+
+    Changes for airport HPC run 2.
+
+commit b555e68455a8d53cc2639e3029652c700f786dfe
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 20:40:46 2018 +1000
+
+    Add results from hydro_2.
+
+commit 6d582a99202b306e56dc60ee1e8c5b909c62d603
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 20:40:24 2018 +1000
+
+    sGaussian result from HPC 1.
+
+commit 7d0819f9c3f5abce171d2ff6e51dccd1a1fa22a8
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 11:14:57 2018 +1000
+
+    Try to run hydro_2 again.
+
+commit 61f98da403139e149b9fcab1397cd6dc07bc36df
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Wed Oct 17 11:12:15 2018 +1000
+
+    Standardise plots in main.Rmd
+
+commit be59398be48eee55d620abbc637de3886f7299a5
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 09:58:26 2018 +1000
+
+    Successful run 1 (Hydrology and airport)
+
+commit 4e71db9e62a4263d0998abf0880f9e716014d6cc
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 01:45:54 2018 +1000
+
+    Additional change for hydro_2 (HPC job)
+
+commit 79fdc72b225bbd54e40a3bc37f18711efe1177aa
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Tue Oct 16 23:57:54 2018 +1000
+
+    HPC runs 2.
+
+commit 7086b70868ca44fe9d222ac79a419125769c28e8
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Tue Oct 16 23:20:46 2018 +1000
+
+    HPC run 1 for sG, airport and hydro
+
+commit 6915db4f58baa10f02d7065adc3467779209777d
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Tue Oct 16 23:16:13 2018 +1000
+
+    Changes for HPC
+
+commit 8d4a33e33d62dc55d77efa16cfd28bba53a25143
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Tue Oct 16 23:05:55 2018 +1000
+
+    Ready for HPC.
+
+commit dac89e80d8851cee9d53726a3b77d4f5e262bb35
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Tue Oct 16 13:47:29 2018 +1000
+
+    Initial commit from paper3depfromP and paper3_distance-ABC
+
+commit 1a3ecc2a1bf8abc93b02313eb80c6da772b14dea
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Tue Oct 16 11:35:28 2018 +1000
+
+    first commit
