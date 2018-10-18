@@ -126,7 +126,7 @@ save(ABC_airport_RF_MD_CT, file = "ABC_airport_RF_MD_CT.RData")
 ## Registration <- TRUE
 
 distance_args$registration <- TRUE
-distance_args$registration_imm <- FALSE
+distance_args$registration_imm <- TRUE
 
 #### Distance <- "FR" -------------------
 
@@ -158,7 +158,7 @@ ABC_airport_RT_FR_CT <- abc_start(prior_airport, loss_airport, distance_args = d
 
 save(ABC_airport_RT_FR_CT, file = "ABC_airport_RT_FR_CT.RData")
 
-#### Distance <- "FR" -------------------
+#### Distance <- "MMD" -------------------
 
 distance_args$distance <- "MMD"
 
