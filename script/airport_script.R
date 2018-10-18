@@ -18,7 +18,6 @@ distance_args <- list(
   flight_effect = TRUE,
   registration = FALSE,
   registration_imm = FALSE,
-  flight_effect = FALSE,
   var = diag(c(2, 2)),
   method = "DP",
   threshold = 6,
