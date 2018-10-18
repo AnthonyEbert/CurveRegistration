@@ -13,6 +13,9 @@ knitr::opts_chunk$set(echo = FALSE)
 library(CurveRegistration)
 library(dplyr)
 library(ggplot2)
+
+true_color <- "black"
+color_scale <- scale_color_manual(values = c("red", "blue", "purple"))
 ```
 
 \newcommand{\fsf}{\mathsf{f}}
@@ -108,9 +111,9 @@ To test the effectiveness of the registered MMD method we compare it with the un
 
 ## Results
 
-The posterior distributions are shown in Figure . As expected the Registered MMD performs better than MMD and this is more obvious when $\sigma_a$ is large. What is surprising is that the Registered MMD performs better than the Elastic distance. @joshi2007novel
+The posterior distributions are shown in Figure. The registered distances performs better than the unregistered ones. Interestingly the distance used for registration, FR, performs less well than MMD. What is surprising is that the Registered MMD performs better than the Elastic distance.
 
-```{r}
+```{r, sGaussian_post}
 load("../runs/sGaussian/1/ABC_sG_5.RData")
 
 output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
@@ -126,11 +129,17 @@ vline_df = data.frame(parameter = c("sigma_phi", "sigma_e"), input = true_params
 
 vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma[epsilon]", "sigma[phi]"))
 
+output_tidy <- output_tidy %>%
+  mutate(distance = factor(distance)) %>%
+  mutate(distance = factor(distance, levels(distance)[c(2,1)])) %>%
+  mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
+  mutate(registration = factor(registration, levels(registration)[c(2,1)]))
+
 ggplot(output_tidy) +
-  aes(x = value, col = distance, linetype = registration) +
+  aes(x = value, col = registration, linetype = distance) +
   stat_density(position = "identity", geom = "line") +
   facet_wrap(~parameter, scales = "free", labeller = label_parsed) +
-  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", lty = 1) +
+  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = true_color, lty = 1) +
   labs(colour = "Registration status") +
   scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
@@ -140,7 +149,8 @@ ggplot(output_tidy) +
   guides(
     color = guide_legend(order = 0),
     lty = guide_legend(order = 1)
-  )
+  ) + 
+  color_scale
 ```
 
 We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
@@ -177,7 +187,7 @@ We compare three distances:
 
 ## Results
 
-```{r, message=FALSE}
+```{r, airport_post, message=FALSE}
 load(file = "../runs/airport/1/ABC_airport.RData")
 
 # data file ABC_airport
@@ -187,29 +197,35 @@ true_params <- c(0.02, 0.64, 0.4, 0.5)
 
 vline_df = data.frame(parameter = param_names, input = true_params, value = rep(1, 4))
 
-airport_tidy <- ABC_airport %>% tidyr::gather("parameter", , -registration, -distance, -correction) 
+airport_tidy <- ABC_airport %>% tidyr::gather("parameter", , -registration, -distance, -correction) %>%
+  filter(!(!registration & correction)) %>%
+  mutate(out = factor(paste0(ifelse(registration, "Registered", "Unregistered"), ifelse(correction, " (corrected)", "")))) %>%
+  mutate(out = factor(out, levels(out)[c(3,1,2)]))
 
 # %>% mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
 
 airport_tidy$parameter <- factor(airport_tidy$parameter, labels = c("lambda[f]", "lambda[l]", "mu", "nu[2]"))
 
-ggplot(airport_tidy %>% filter(correction == FALSE)) +
-  aes(x = value, y = stat(count), col = distance, linetype = registration) +
+ggplot(airport_tidy %>% filter(distance == "MMD")) +
+  aes(x = value, col = out) +
   stat_density(position = "identity", geom = "line") +
   facet_wrap(~parameter, scales = "free", labeller = label_parsed) + 
   scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
-  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", linetype = 1) +
-  ggthemes::theme_few()
+  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = true_color, linetype = 1) +
+  ggthemes::theme_few() +
+  ylab(latex2exp::TeX('$\\pi_{ABC} (\\theta | y)$')) +
+  theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
+  color_scale
 
-ggplot(airport_tidy %>% filter(correction == TRUE)) +
-  aes(x = value, y = stat(count), col = distance, linetype = registration) +
-  stat_density(position = "identity", geom = "line") +
-  facet_wrap(~parameter, scales = "free", labeller = label_parsed) + 
-  scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
-  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", linetype = 1) +
-  ggthemes::theme_few()
+# ggplot(airport_tidy %>% filter(correction == TRUE)) +
+#   aes(x = value, y = stat(count), col = distance, linetype = registration) +
+#   stat_density(position = "identity", geom = "line") +
+#   facet_wrap(~parameter, scales = "free", labeller = label_parsed) + 
+#   scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
+#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+#   geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", linetype = 1) +
+#   ggthemes::theme_few()
 ```
 
 # Counter example: Hydrological modelling
@@ -290,31 +306,26 @@ Predictions from the GR4J given parameters $\theta = (\theta_1, \theta_2, \theta
 Run-off predictions are positively valued, and it is well known that heteroscedasticity exists in the errors [@kavetski2018parameter]. A common strategy is to perform a Box-Cox transformation $Z(Y, \lambda) = (Y^{\lambda} - 1) / \lambda$ to transformed predictions with normalised errors $\eta$:
 
 \begin{align}
-	Y_Z = Z(\mathcal{H}(\theta, X)) + \eta.
+	Y_Z &= Z(\mathcal{H}(\theta, X)) + \eta,
+	\eta \sim N(0, \sigma^2)
 \end{align}
 
-It has been found that accurate predictions must account of auto-correlation amongst $\eta$, so we use an AR(1) model with parameter $\phi$ and white-noise variance $\sigma^2_W$. We apply the MMD, Registered-MMD and elastic distances as shown previously. The final model is therefore: 
-
-\begin{align}
-	Y &= Z^{-1}[Z(\mathcal{H}(\theta, X)) + \eta], \\
-	\eta_t &= \phi \eta_{t-1} + W, \\
-	W &\sim N(0, \sigma^2_W). 
-\end{align}
-
-Once again we test all three distances. 
+We apply the MMD, Registered-MMD and elastic distances as shown previously. Once again we test all three distances. 
 
 ## Results and Discussion
 
 In this example we find that registered distances perform more poorly than their unregistered counterparts. 
 
-```{r}
+```{r, hydro_post, warning = FALSE}
 load("../runs/hydrology/2/ABC_hydro_syn.RData")
 
 true_params <- c(257, 1, 88, 2.2, 0.05)
 param_names <- names(ABC_hydro_syn)[1:5]
 
 hydro_syn_tidy <- ABC_hydro_syn %>%
-  tidyr::gather("parameter", ,-data, -registration, -distance) 
+  tidyr::gather("parameter", ,-data, -registration, -distance) %>%
+  mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
+  mutate(registration = factor(registration, levels(registration)[c(2,1)]))
 
 # %>%
 #   mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
@@ -325,21 +336,22 @@ vline_df = data.frame(parameter = param_names, input = true_params, value = rep(
 
 vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
 
-ggplot(hydro_syn_tidy) +
-  aes(x = value, col = distance, linetype = registration) +
+ggplot(hydro_syn_tidy %>% filter(distance == "MMD")) +
+  aes(x = value, col = registration) +
   stat_density(position = "identity", geom = "line") +
   scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
   facet_wrap(~parameter, scales = "free", labeller = label_parsed)  + 
-  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", linetype = 1) + 
+  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = true_color, linetype = 1) + 
   ggthemes::theme_few() + 
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom") + 
+  color_scale
 
 
 ```
 
 
-```{r, eval = FALSE}
+```{r, eval = FALSE, warning=FALSE}
 load("../runs/hydrology/test2/ABC_hydro_obs_RF_MD.RData")
 load("../runs/hydrology/test2/ABC_hydro_obs_RT_MD.RData")
 

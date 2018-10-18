@@ -186,8 +186,8 @@ Example of a draw from the Gaussian peak shift model with <span class="math inli
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
-<p>The posterior distributions are shown in Figure . As expected the Registered MMD performs better than MMD and this is more obvious when <span class="math inline">\(\sigma_a\)</span> is large. What is surprising is that the Registered MMD performs better than the Elastic distance. <span class="citation">Joshi et al. (2007)</span></p>
-<p><img src="main_YSACO7075J_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>The posterior distributions are shown in Figure. The registered distances performs better than the unregistered ones. Interestingly the distance used for registration, FR, performs less well than MMD. What is surprising is that the Registered MMD performs better than the Elastic distance.</p>
+<p><img src="main_YSACO7075J_files/figure-html/sGaussian_post-1.png" width="672" /></p>
 <p>We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal.</p>
 </div>
 </div>
@@ -214,7 +214,7 @@ Example of a draw from the Gaussian peak shift model with <span class="math inli
 \end{align}\]</span>
 <div id="results-1" class="section level2">
 <h2>Results</h2>
-<p><img src="main_YSACO7075J_files/figure-html/unnamed-chunk-2-1.png" width="672" /><img src="main_YSACO7075J_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<p><img src="main_YSACO7075J_files/figure-html/airport_post-1.png" width="672" /></p>
 </div>
 </div>
 <div id="counter-example-hydrological-modelling" class="section level1">
@@ -242,20 +242,14 @@ Hydrograph with associated rain and evaporation data from airGR package
 <h1>References</h1>
 <p>Run-off predictions are positively valued, and it is well known that heteroscedasticity exists in the errors <span class="citation">(Kavetski 2018)</span>. A common strategy is to perform a Box-Cox transformation <span class="math inline">\(Z(Y, \lambda) = (Y^{\lambda} - 1) / \lambda\)</span> to transformed predictions with normalised errors <span class="math inline">\(\eta\)</span>:</p>
 <span class="math display">\[\begin{align}
-    Y_Z = Z(\mathcal{H}(\theta, X)) + \eta.
+    Y_Z &amp;= Z(\mathcal{H}(\theta, X)) + \eta,
+    \eta \sim N(0, \sigma^2)
 \end{align}\]</span>
-<p>It has been found that accurate predictions must account of auto-correlation amongst <span class="math inline">\(\eta\)</span>, so we use an AR(1) model with parameter <span class="math inline">\(\phi\)</span> and white-noise variance <span class="math inline">\(\sigma^2_W\)</span>. We apply the MMD, Registered-MMD and elastic distances as shown previously. The final model is therefore:</p>
-<span class="math display">\[\begin{align}
-    Y &amp;= Z^{-1}[Z(\mathcal{H}(\theta, X)) + \eta], \\
-    \eta_t &amp;= \phi \eta_{t-1} + W, \\
-    W &amp;\sim N(0, \sigma^2_W). 
-\end{align}\]</span>
-<p>Once again we test all three distances.</p>
+<p>We apply the MMD, Registered-MMD and elastic distances as shown previously. Once again we test all three distances.</p>
 <div id="results-and-discussion" class="section level2">
 <h2>Results and Discussion</h2>
 <p>In this example we find that registered distances perform more poorly than their unregistered counterparts.</p>
-<pre><code>## Warning: Removed 2358 rows containing non-finite values (stat_density).</code></pre>
-<p><img src="main_YSACO7075J_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="main_YSACO7075J_files/figure-html/hydro_post-1.png" width="672" /></p>
 </div>
 </div>
 <div id="discussion" class="section level1">
@@ -320,9 +314,6 @@ Hydrograph with associated rain and evaporation data from airGR package
 </div>
 <div id="ref-hsing2015theoretical">
 <p>Hsing, Tailen, and Randall Eubank. 2015. <em>Theoretical Foundations of Functional Data Analysis, with an Introduction to Linear Operators</em>. John Wiley &amp; Sons.</p>
-</div>
-<div id="ref-joshi2007novel">
-<p>Joshi, Shantanu H, Eric Klassen, Anuj Srivastava, and Ian Jermyn. 2007. “A Novel Representation for Riemannian Analysis of Elastic Curves in <span class="math inline">\(\mathbb{R}^n\)</span>.” In <em>Proceedings/Cvpr, Ieee Computer Society Conference on Computer Vision and Pattern Recognition. Ieee Computer Society Conference on Computer Vision and Pattern Recognition</em>, 2007:1. 17-22 June 2007. NIH Public Access.</p>
 </div>
 <div id="ref-jousselme2012distances">
 <p>Jousselme, Anne-Laure, and Patrick Maupin. 2012. “Distances in Evidence Theory: Comprehensive Survey and Generalizations.” <em>International Journal of Approximate Reasoning</em> 53 (2). Elsevier: 118–45.</p>
