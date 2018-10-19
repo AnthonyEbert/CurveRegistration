@@ -15,7 +15,8 @@ library(dplyr)
 library(ggplot2)
 
 true_color <- "black"
-color_scale <- scale_color_manual(values = c("red", "blue", "purple"))
+#color_scale <- scale_color_manual(values = c("red", "blue", "grey"))
+color_scale <- ggthemes::scale_color_wsj()
 ```
 
 \newcommand{\fsf}{\mathsf{f}}
@@ -129,11 +130,15 @@ vline_df = data.frame(parameter = c("sigma_phi", "sigma_e"), input = true_params
 
 vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma[epsilon]", "sigma[phi]"))
 
+
+
 output_tidy <- output_tidy %>%
   mutate(distance = factor(distance)) %>%
   mutate(distance = factor(distance, levels(distance)[c(2,1)])) %>%
   mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
   mutate(registration = factor(registration, levels(registration)[c(2,1)]))
+
+blank_df <- data.frame(parameter = rep(levels(output_tidy$parameter), each = 2), value = c(0, 0.02, 0, 3), registration = rep(output_tidy$registration[1], 4), distance = rep(output_tidy$distance[1], 4))
 
 ggplot(output_tidy) +
   aes(x = value, col = registration, linetype = distance) +
@@ -150,6 +155,7 @@ ggplot(output_tidy) +
     color = guide_legend(order = 0),
     lty = guide_legend(order = 1)
   ) + 
+  geom_blank(data = blank_df) +
   color_scale
 ```
 
@@ -159,7 +165,13 @@ We demonstrate now a more complex example with a dynamic queueing network model 
 
 Increasing demand for air travel and enhanced security screening places increasing pressure. It is imperative that resources within fixed infrastructure is allocated as efficiently as possible. With this in mind operational planners at airport use simulation models to conduct resource planning, however it is often impossible to perform parameter inference with these models in a principled manner. 
 
-We consider the same model and dataset as @ebert2018likelihood. The data contains functions which record passenger numbers passing through certain check-points in the passenger facilitation process for each minute of the day. We discuss the methodology used to model this dataset. 
+We consider the same model and dataset as @ebert2018likelihood. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and effect the response variable (passenger flows) to some degree which we wish to infer. 
+
+The approach to parameter inference taken by @ebert2018likelihood is approximate Bayesian computation with maximum mean discrepancy as distance between observed and simulated passenger flows. Towards the end of this paper issues with alignment of curves was discussed. 
+
+After passengers are deplaned from an arriving flight they walk to the immigration system and so a wave of customers crashes down on the shoreline of immigration. 
+
+## Method
 
 To model passenger flows we simulate the movements of each passenger $j$ from each flight $i$. Flight $i$, begin passenger disembarkation at $a_i$, passenger $j$ from this flight disembarks from the aircraft at time $d_{ij}^{\text{dis}} = a_i + t_i^{\text{dis}}$, leaves the arrivals concourse at time $d_{ij}^{\text{ac}} = d_{ij}^{\text{dis}} + t_{ij}^{\text{imm}}$, chooses a route $r_{ij}$ through immigration and finishes immigration at time $d_{ij}^{\text{imm}} = d_{ij}^{\text{ac}} + w_{ij}^{\text{imm}} + s_{ij}^{\text{imm}}$. Distributions for disembarkation times $t_i^{\text{dis}}$ are fitted prior to analysis, however the other random variables are distributed according to unknown parameters $\alpha, \beta, \lambda_{\text{SG}}, \lambda_{\text{MG}}$ in the following manner:
 
@@ -188,7 +200,7 @@ We compare three distances:
 ## Results
 
 ```{r, airport_post, message=FALSE}
-load(file = "../runs/airport/1/ABC_airport.RData")
+load(file = "../runs/airport/2/ABC_airport.RData")
 
 # data file ABC_airport
 
@@ -206,6 +218,8 @@ airport_tidy <- ABC_airport %>% tidyr::gather("parameter", , -registration, -dis
 
 airport_tidy$parameter <- factor(airport_tidy$parameter, labels = c("lambda[f]", "lambda[l]", "mu", "nu[2]"))
 
+blank_df <- data.frame(parameter = rep(levels(airport_tidy$parameter), each = 2), value = c(0, 1, 0, 1, 0, 0.05, 0, 1), out = rep(airport_tidy$out[1], 4))
+
 ggplot(airport_tidy %>% filter(distance == "MMD")) +
   aes(x = value, col = out) +
   stat_density(position = "identity", geom = "line") +
@@ -216,6 +230,7 @@ ggplot(airport_tidy %>% filter(distance == "MMD")) +
   ggthemes::theme_few() +
   ylab(latex2exp::TeX('$\\pi_{ABC} (\\theta | y)$')) +
   theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
+  geom_blank(data = blank_df) +
   color_scale
 
 # ggplot(airport_tidy %>% filter(correction == TRUE)) +
@@ -306,8 +321,8 @@ Predictions from the GR4J given parameters $\theta = (\theta_1, \theta_2, \theta
 Run-off predictions are positively valued, and it is well known that heteroscedasticity exists in the errors [@kavetski2018parameter]. A common strategy is to perform a Box-Cox transformation $Z(Y, \lambda) = (Y^{\lambda} - 1) / \lambda$ to transformed predictions with normalised errors $\eta$:
 
 \begin{align}
-	Y_Z &= Z(\mathcal{H}(\theta, X)) + \eta,
-	\eta \sim N(0, \sigma^2)
+	Y_Z &= Z(\mathcal{H}(\theta, X)) + \eta, \\
+	\eta &\sim N(0, \sigma^2)
 \end{align}
 
 We apply the MMD, Registered-MMD and elastic distances as shown previously. Once again we test all three distances. 
@@ -336,15 +351,18 @@ vline_df = data.frame(parameter = param_names, input = true_params, value = rep(
 
 vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
 
+blank_df <- data.frame(parameter = rep(levels(hydro_syn_tidy$parameter), each = 2), value = c(0.01, 0.08, 100, 1200, -5, 3, 20, 3, 1.1, 2.9), registration = rep(hydro_syn_tidy$registration[1], 10))
+
 ggplot(hydro_syn_tidy %>% filter(distance == "MMD")) +
   aes(x = value, col = registration) +
   stat_density(position = "identity", geom = "line") +
   scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  scale_x_continuous(expand = c(0, 0), limits = c(NA, NA)) +
   facet_wrap(~parameter, scales = "free", labeller = label_parsed)  + 
   geom_vline(data = vline_df , mapping = aes(xintercept = input), col = true_color, linetype = 1) + 
   ggthemes::theme_few() + 
   theme(legend.position = "bottom") + 
+  geom_blank(data = blank_df) +
   color_scale
 
 
