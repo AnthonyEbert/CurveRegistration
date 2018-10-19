@@ -1,0 +1,599 @@
+
+R version 3.4.2 (2017-09-28) -- "Short Summer"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> library(AirportSim)
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> library(CurveRegistration)
+> library(protoABC)
+> 
+> cov_func <- function(x){
++   robust::covRob(x)$cov
++ }
+> 
+> set.seed(3)
+> 
+> flight_level <- AirportSim::generate_flightlevel(5, 1000)
+> 
+> true_params <- c(0.02, 0.64, 0.4, 0.5)
+> 
+> distance_args <- list(
++   flight_effect = TRUE,
++   registration = FALSE,
++   registration_imm = FALSE,
++   flight_effect = FALSE,
++   var = diag(c(2, 2)),
++   method = "DP",
++   threshold = 6,
++   breaks = seq(0, 1000, by = 5),
++   flight_level = flight_level,
++   correction = FALSE,
++   distance = "FR"
++ )
+> 
+> output <- sim_airport(true_params, distance_args)
+> 
+> distance_args$obs <- output
+> 
+> loss_airport(true_params, distance_args)
+[1] 66.44808
+> 
+> # ABC -----------
+> 
+> param_names <- c("mu", "vm2", "lambda_f", "lambda_l")
+> 
+> prior_airport <- protoABC::prior_unif(c(0, 0, 0, 0), c(0.05, 1, 1, 1), var_names = param_names, eval = FALSE)
+> 
+> prior_eval_airport <- protoABC::prior_unif(c(0, 0, 0, 0), c(0.05, 1, 1, 1), var_names = param_names, eval = TRUE)
+> 
+> cov_func <- function(x){
++   robust::covRob(x)$cov
++ }
+> 
+> abc_control <- list(
++   n          = 4000,
++   pacc_final = 0.02,
++   prior_eval = prior_eval_airport,
++   cov_func   = cov_func
++ )
+> 
+> #cl <- parallel::makeCluster(parallel::detectCores() - 1)
+> #parallel::clusterEvalQ(cl = cl, expr = library(dplyr))
+> 
+> cl <- "mclapply"
+> 
+> ## Registration <- FALSE
+> 
+> distance_args$registration <- FALSE
+> distance_args$registration_imm <- FALSE
+> 
+> #### Distance <- "FR" -------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ##### correction <- FALSE
+> 
+> distance_args$correction <- FALSE
+> 
+> ABC_airport_RF_FR_CF <- abc_start(prior_airport, loss_airport, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     correction   = distance_args$correction
++   )
+********************************
+Acceptance prob of MCMC was 0.1806
+Number of MCMC moves for next iteration is 24
+Number of unique particles is 3675
+dist_max is 78.2249526619485
+dist_next is 72.2357843058456
+********************************
+Acceptance prob of MCMC was 0.0967291666666667
+Number of MCMC moves for next iteration is 46
+Number of unique particles is 3577
+dist_max is 72.2357843058456
+dist_next is 67.6898266264804
+********************************
+Acceptance prob of MCMC was 0.0496739130434783
+Number of MCMC moves for next iteration is 91
+Number of unique particles is 3541
+dist_max is 67.6898266264804
+dist_next is 63.9108803835129
+********************************
+Acceptance prob of MCMC was 0.0269835164835165
+Number of MCMC moves for next iteration is 169
+Number of unique particles is 3571
+dist_max is 63.9108803835129
+dist_next is 60.4200661944827
+> 
+> save(ABC_airport_RF_FR_CF, file = "ABC_airport_RF_FR_CF.RData")
+> 
+> ##### correction <- TRUE
+> 
+> distance_args$correction <- TRUE
+> 
+> ABC_airport_RF_FR_CT <- abc_start(prior_airport, loss_airport, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     correction   = distance_args$correction
++   )
+********************************
+Acceptance prob of MCMC was 0.18495
+Number of MCMC moves for next iteration is 23
+Number of unique particles is 3668
+dist_max is 71.4561936512806
+dist_next is 66.5443254382703
+********************************
+Acceptance prob of MCMC was 0.0996304347826087
+Number of MCMC moves for next iteration is 44
+Number of unique particles is 3589
+dist_max is 66.5443254382703
+dist_next is 62.960029007829
+********************************
+Acceptance prob of MCMC was 0.0544886363636364
+Number of MCMC moves for next iteration is 83
+Number of unique particles is 3568
+dist_max is 62.960029007829
+dist_next is 59.8584409727367
+********************************
+Acceptance prob of MCMC was 0.0278373493975904
+Number of MCMC moves for next iteration is 164
+Number of unique particles is 3508
+dist_max is 59.8584409727367
+dist_next is 57.0855119226543
+> 
+> save(ABC_airport_RF_FR_CT, file = "ABC_airport_RF_FR_CT.RData")
+> 
+> #### Distance <- "FR" -------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ##### correction <- FALSE
+> 
+> distance_args$correction <- FALSE
+> 
+> ABC_airport_RF_MD_CF <- abc_start(prior_airport, loss_airport, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     correction   = distance_args$correction
++   )
+********************************
+Acceptance prob of MCMC was 0.29525
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 3860
+dist_max is 0.00747022138025652
+dist_next is 0.00696409629311781
+********************************
+Acceptance prob of MCMC was 0.183214285714286
+Number of MCMC moves for next iteration is 23
+Number of unique particles is 3754
+dist_max is 0.00696409629311781
+dist_next is 0.00674824524732983
+********************************
+Acceptance prob of MCMC was 0.115891304347826
+Number of MCMC moves for next iteration is 38
+Number of unique particles is 3655
+dist_max is 0.00674824524732983
+dist_next is 0.00658761174002883
+********************************
+Acceptance prob of MCMC was 0.0868947368421053
+Number of MCMC moves for next iteration is 51
+Number of unique particles is 3683
+dist_max is 0.00658761174002883
+dist_next is 0.00645362099835387
+********************************
+Acceptance prob of MCMC was 0.0645294117647059
+Number of MCMC moves for next iteration is 70
+Number of unique particles is 3684
+dist_max is 0.00645362099835387
+dist_next is 0.00633547983643722
+********************************
+Acceptance prob of MCMC was 0.0421285714285714
+Number of MCMC moves for next iteration is 107
+Number of unique particles is 3640
+dist_max is 0.00633547983643722
+dist_next is 0.00622706149726017
+********************************
+Acceptance prob of MCMC was 0.0273551401869159
+Number of MCMC moves for next iteration is 167
+Number of unique particles is 3622
+dist_max is 0.00622706149726017
+dist_next is 0.00613042262203924
+> 
+> save(ABC_airport_RF_MD_CF, file = "ABC_airport_RF_MD_CF.RData")
+> 
+> ##### correction <- TRUE
+> 
+> distance_args$correction <- TRUE
+> 
+> ABC_airport_RF_MD_CT <- abc_start(prior_airport, loss_airport, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     correction   = distance_args$correction
++   )
+********************************
+Acceptance prob of MCMC was 0.299
+Number of MCMC moves for next iteration is 13
+Number of unique particles is 3874
+dist_max is 0.00722478320828712
+dist_next is 0.00675698735442787
+********************************
+Acceptance prob of MCMC was 0.207115384615385
+Number of MCMC moves for next iteration is 20
+Number of unique particles is 3784
+dist_max is 0.00675698735442787
+dist_next is 0.00655195518018663
+********************************
+Acceptance prob of MCMC was 0.173475
+Number of MCMC moves for next iteration is 25
+Number of unique particles is 3748
+dist_max is 0.00655195518018663
+dist_next is 0.00639175968077464
+********************************
+Acceptance prob of MCMC was 0.155
+Number of MCMC moves for next iteration is 28
+Number of unique particles is 3768
+dist_max is 0.00639175968077464
+dist_next is 0.0062428299433243
+********************************
+Acceptance prob of MCMC was 0.1145
+Number of MCMC moves for next iteration is 38
+Number of unique particles is 3733
+dist_max is 0.0062428299433243
+dist_next is 0.00612714601596495
+********************************
+Acceptance prob of MCMC was 0.0767631578947368
+Number of MCMC moves for next iteration is 58
+Number of unique particles is 3708
+dist_max is 0.00612714601596495
+dist_next is 0.0060267838991738
+********************************
+Acceptance prob of MCMC was 0.0444224137931034
+Number of MCMC moves for next iteration is 102
+Number of unique particles is 3611
+dist_max is 0.0060267838991738
+dist_next is 0.00594146777622414
+********************************
+Acceptance prob of MCMC was 0.0263480392156863
+Number of MCMC moves for next iteration is 173
+Number of unique particles is 3590
+dist_max is 0.00594146777622414
+dist_next is 0.005867477130095
+> 
+> save(ABC_airport_RF_MD_CT, file = "ABC_airport_RF_MD_CT.RData")
+> 
+> ## Registration <- TRUE
+> 
+> distance_args$registration <- TRUE
+> distance_args$registration_imm <- TRUE
+> 
+> #### Distance <- "FR" -------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ##### correction <- FALSE
+> 
+> distance_args$correction <- FALSE
+> 
+> ABC_airport_RT_FR_CF <- abc_start(prior_airport, loss_airport, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     correction   = distance_args$correction
++   )
+********************************
+Acceptance prob of MCMC was 0.2813
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 3855
+dist_max is 21.2215956315353
+dist_next is 19.3479536277982
+********************************
+Acceptance prob of MCMC was 0.246678571428571
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 3824
+dist_max is 19.3479536277982
+dist_next is 18.0677189415713
+********************************
+Acceptance prob of MCMC was 0.224794117647059
+Number of MCMC moves for next iteration is 19
+Number of unique particles is 3840
+dist_max is 18.0677189415713
+dist_next is 17.0356340189784
+********************************
+Acceptance prob of MCMC was 0.180473684210526
+Number of MCMC moves for next iteration is 24
+Number of unique particles is 3816
+dist_max is 17.0356340189784
+dist_next is 16.2053500891662
+********************************
+Acceptance prob of MCMC was 0.124770833333333
+Number of MCMC moves for next iteration is 35
+Number of unique particles is 3757
+dist_max is 16.2053500891662
+dist_next is 15.5869642688048
+********************************
+Acceptance prob of MCMC was 0.0802428571428571
+Number of MCMC moves for next iteration is 56
+Number of unique particles is 3720
+dist_max is 15.5869642688048
+dist_next is 15.0670714405665
+********************************
+Acceptance prob of MCMC was 0.0482589285714286
+Number of MCMC moves for next iteration is 94
+Number of unique particles is 3649
+dist_max is 15.0670714405665
+dist_next is 14.6231236926266
+********************************
+Acceptance prob of MCMC was 0.0319574468085106
+Number of MCMC moves for next iteration is 142
+Number of unique particles is 3676
+dist_max is 14.6231236926266
+dist_next is 14.2271877583944
+> 
+> save(ABC_airport_RT_FR_CF, file = "ABC_airport_RT_FR_CF.RData")
+> 
+> ##### correction <- TRUE
+> 
+> distance_args$correction <- TRUE
+> 
+> ABC_airport_RT_FR_CT <- abc_start(prior_airport, loss_airport, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     correction   = distance_args$correction
++   )
+********************************
+Acceptance prob of MCMC was 0.28785
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 3879
+dist_max is 21.1281177834636
+dist_next is 19.2550976659105
+********************************
+Acceptance prob of MCMC was 0.244821428571429
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 3858
+dist_max is 19.2550976659105
+dist_next is 17.9643687556497
+********************************
+Acceptance prob of MCMC was 0.226823529411765
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 3835
+dist_max is 17.9643687556497
+dist_next is 16.9252637421968
+********************************
+Acceptance prob of MCMC was 0.18025
+Number of MCMC moves for next iteration is 24
+Number of unique particles is 3818
+dist_max is 16.9252637421968
+dist_next is 16.1362226087439
+********************************
+Acceptance prob of MCMC was 0.128645833333333
+Number of MCMC moves for next iteration is 34
+Number of unique particles is 3781
+dist_max is 16.1362226087439
+dist_next is 15.5070043470451
+********************************
+Acceptance prob of MCMC was 0.0807058823529412
+Number of MCMC moves for next iteration is 55
+Number of unique particles is 3717
+dist_max is 15.5070043470451
+dist_next is 15.0010727763887
+********************************
+Acceptance prob of MCMC was 0.0516272727272727
+Number of MCMC moves for next iteration is 87
+Number of unique particles is 3657
+dist_max is 15.0010727763887
+dist_next is 14.5598521679924
+********************************
+Acceptance prob of MCMC was 0.0310862068965517
+Number of MCMC moves for next iteration is 146
+Number of unique particles is 3599
+dist_max is 14.5598521679924
+dist_next is 14.173091255179
+> 
+> save(ABC_airport_RT_FR_CT, file = "ABC_airport_RT_FR_CT.RData")
+> 
+> #### Distance <- "MMD" -------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ##### correction <- FALSE
+> 
+> distance_args$correction <- FALSE
+> 
+> ABC_airport_RT_MD_CF <- abc_start(prior_airport, loss_airport, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     correction   = distance_args$correction
++   )
+********************************
+Acceptance prob of MCMC was 0.2629
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 3815
+dist_max is 0.00629311728052839
+dist_next is 0.00595176898889163
+********************************
+Acceptance prob of MCMC was 0.292625
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 3855
+dist_max is 0.00595176898889163
+dist_next is 0.00553083702557032
+********************************
+Acceptance prob of MCMC was 0.273464285714286
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 3864
+dist_max is 0.00553083702557032
+dist_next is 0.0053054938714619
+********************************
+Acceptance prob of MCMC was 0.197833333333333
+Number of MCMC moves for next iteration is 21
+Number of unique particles is 3793
+dist_max is 0.0053054938714619
+dist_next is 0.00516768134526415
+********************************
+Acceptance prob of MCMC was 0.128714285714286
+Number of MCMC moves for next iteration is 34
+Number of unique particles is 3722
+dist_max is 0.00516768134526415
+dist_next is 0.00505846642432157
+********************************
+Acceptance prob of MCMC was 0.0779411764705882
+Number of MCMC moves for next iteration is 57
+Number of unique particles is 3656
+dist_max is 0.00505846642432157
+dist_next is 0.0049707190758384
+********************************
+Acceptance prob of MCMC was 0.0443070175438596
+Number of MCMC moves for next iteration is 102
+Number of unique particles is 3556
+dist_max is 0.0049707190758384
+dist_next is 0.00489514194571353
+********************************
+Acceptance prob of MCMC was 0.0256372549019608
+Number of MCMC moves for next iteration is 178
+Number of unique particles is 3520
+dist_max is 0.00489514194571353
+dist_next is 0.00482729499823599
+> 
+> save(ABC_airport_RT_MD_CF, file = "ABC_airport_RT_MD_CF.RData")
+> 
+> ##### correction <- TRUE
+> 
+> distance_args$correction <- TRUE
+> 
+> ABC_airport_RT_MD_CT <- abc_start(prior_airport, loss_airport, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     correction   = distance_args$correction
++   )
+********************************
+Acceptance prob of MCMC was 0.27545
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 3852
+dist_max is 0.00626213818441144
+dist_next is 0.00590159970545293
+********************************
+Acceptance prob of MCMC was 0.300066666666667
+Number of MCMC moves for next iteration is 13
+Number of unique particles is 3870
+dist_max is 0.00590159970545293
+dist_next is 0.00547902050286823
+********************************
+Acceptance prob of MCMC was 0.264192307692308
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 3839
+dist_max is 0.00547902050286823
+dist_next is 0.00527009972524739
+********************************
+Acceptance prob of MCMC was 0.19378125
+Number of MCMC moves for next iteration is 22
+Number of unique particles is 3797
+dist_max is 0.00527009972524739
+dist_next is 0.00512701218975959
+********************************
+Acceptance prob of MCMC was 0.123409090909091
+Number of MCMC moves for next iteration is 35
+Number of unique particles is 3736
+dist_max is 0.00512701218975959
+dist_next is 0.00502033512513671
+********************************
+Acceptance prob of MCMC was 0.0730428571428571
+Number of MCMC moves for next iteration is 61
+Number of unique particles is 3644
+dist_max is 0.00502033512513671
+dist_next is 0.00493183414028328
+********************************
+Acceptance prob of MCMC was 0.0427049180327869
+Number of MCMC moves for next iteration is 106
+Number of unique particles is 3636
+dist_max is 0.00493183414028328
+dist_next is 0.00485594854876216
+********************************
+Acceptance prob of MCMC was 0.0239150943396226
+Number of MCMC moves for next iteration is 191
+Number of unique particles is 3580
+dist_max is 0.00485594854876216
+dist_next is 0.00479107447170606
+> 
+> save(ABC_airport_RT_MD_CT, file = "ABC_airport_RT_MD_CT.RData")
+> 
+> sessionInfo()
+R version 3.4.2 (2017-09-28)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: SUSE Linux Enterprise Server 12 SP2
+
+Matrix products: default
+BLAS/LAPACK: /pkg/suse12/software/openblas/0.2.19-gcc-6.3.0-2.27-lapack-3.7.0/lib/libopenblas_sandybridgep-r0.2.19.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] bindrcpp_0.2.2          protoABC_0.4.8          CurveRegistration_0.0.1
+[4] dplyr_0.7.6             AirportSim_0.1.1       
+
+loaded via a namespace (and not attached):
+ [1] pcaPP_1.9-72        Rcpp_0.12.19        pracma_2.1.5       
+ [4] DEoptimR_1.0-8      pillar_1.2.3        compiler_3.4.2     
+ [7] queuecomputer_0.8.2 bindr_0.1.1         iterators_1.0.8    
+[10] dotCall64_0.9-04    tibble_1.4.2        lattice_0.20-35    
+[13] viridisLite_0.3.0   pkgconfig_2.0.1     rlang_0.2.2        
+[16] foreach_1.4.3       parallel_3.4.2      mvtnorm_1.0-6      
+[19] spam_2.1-1          coda_0.19-1         cluster_2.0.6      
+[22] fields_9.0          maps_3.2.0          stats4_3.4.2       
+[25] robust_0.4-18       grid_3.4.2          tidyselect_0.2.3   
+[28] robustbase_0.92-7   glue_1.3.0          rrcov_1.4-4        
+[31] R6_2.2.2            tidyr_0.8.1         purrr_0.2.4        
+[34] magrittr_1.5        fit.models_0.5-14   MASS_7.3-47        
+[37] codetools_0.2-15    matrixcalc_1.0-3    splines_3.4.2      
+[40] assertthat_0.2.0    fdasrvf_1.8.3       doParallel_1.0.10  
+> 
+> ABC_airport <- dplyr::bind_rows(ABC_airport_RF_FR_CF, ABC_airport_RF_FR_CT, ABC_airport_RF_MD_CF, ABC_airport_RF_MD_CT, ABC_airport_RT_FR_CF, ABC_airport_RT_FR_CT, ABC_airport_RT_MD_CF, ABC_airport_RT_MD_CT)
+> 
+> save(ABC_airport, file = "ABC_airport.RData")
+> save.image("ABC_airport_everything.RData")
+> 
+> 
+> proc.time()
+      user     system    elapsed 
+854900.531   1214.199  66535.415 
