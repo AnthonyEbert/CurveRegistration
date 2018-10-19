@@ -1,0 +1,21 @@
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	../../../git_log
+	../../../git_status
+	../../airport/2/ABC_airport_RF_FR_CF.RData
+	../../airport/2/ABC_airport_RF_FR_CT.RData
+	../../airport/2/ABC_airport_RF_MD_CF.RData
+	../../airport/2/ABC_airport_RF_MD_CT.RData
+	../../airport/2/ABC_airport_RT_FR_CF.RData
+	../../airport/2/ABC_airport_RT_FR_CT.RData
+	../../airport/2/ABC_airport_RT_MD_CF.RData
+	../../airport/2/airport_script.Rout
+	../../airport/2/git_log
+	../../airport/2/git_status
+	git_log
+	git_status
+
+nothing added to commit but untracked files present (use "git add" to track)
