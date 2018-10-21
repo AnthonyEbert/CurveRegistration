@@ -1,10 +1,12 @@
 ---
-title: "Registration of functional datasets for likelihood-free inference"
+title: "Registration of functional data for likelihood-free inference"
 author: "Anthony Ebert, Paul Wu, Kerrie Mengersen, Fabrizio Ruggeri"
 date: "16 October 2018"
 output: 
-  html_document:
+  bookdown::html_document2:
     self_contained: false
+    fig_caption: yes
+    number_sections: yes
 bibliography: ../Zotero_link.bib
 ---
 
@@ -25,7 +27,7 @@ color_scale <- ggthemes::scale_color_wsj()
 
 # Abstract
 
-Likelihood-free inference on functional data requires the specification of sensible distance measures on these functions. We consider the problem of functional datasets which display not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.  
+Likelihood-free inference on functional data requires the specification of sensible distance measures on these functions. We consider the problem of functional data displaying not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.  
 
 # Introduction
 
@@ -62,7 +64,7 @@ Maximum mean discrepancy (MMD), as introduced by @gretton_optimal_2012, is a met
 \rho_{\text{MMD}}(p, q, \mathcal{H}) = \sup_{h \in \mathcal{H}} \left( \int h(x) [p(x) - q(x)] \text{d} x \right),
 \end{align}
 
-where $\mathcal{H}$ is a function space defined on the same domain as the probability space $\mathcal{Q}$. The function space is taken by @gretton_kernel_2012 to be set of functions which integrate to 1 on the probability space of interest. @gretton_kernel_2012 also developed an estimator for this metric based on observed datasets $\mathbf{x} \sim p$, $\mathbf{y} \sim q$. The estimator is:
+where $\mathcal{H}$ is a function space defined on the same domain as the probability space $\mathcal{Q}$. The function space is taken by @gretton_kernel_2012 to be set of functions which integrate to 1 on the probability space of interest. @gretton_kernel_2012 also developed an estimator for this metric based on observed data $\mathbf{x} \sim p$, $\mathbf{y} \sim q$. The estimator is:
 
 \begin{align}
 \hat{\rho}_{\text{MMD}}(\mathbf{x},\mathbf{y}) &=  \frac{1}{m^2} \sum_{i=1}^m \sum_{j = 1}^m k(x_i, x_j) +
@@ -92,9 +94,9 @@ We first construct an artificial problem to demonstrate the method we suggest. T
 	y_j | \vec{a}, \sigma_a, \sigma_{\epsilon} ; \vec{\alpha}, t_j &\sim N \left\{ \sum_{i=1}^n \phi \left[ \frac{t_j - (a_i + \alpha_i)}{\sigma_{\phi}} \right], \sigma_{\epsilon} \right\}
 \end{align}
 
-The prior distributions for the parameters of interest are $\sigma_{\phi} \sim U(0, 10)$, and $\sigma_{\epsilon} \sim U(0, 0.1)$. An example of a model realisation from this distribution is shown in Figure \ref{fig:sGexample}.
+The prior distributions for the parameters of interest are $\sigma_{\phi} \sim U(0, 10)$, and $\sigma_{\epsilon} \sim U(0, 0.1)$. An example of a model realisation from this distribution is shown in Figure \@ref(fig:sGExample).
 
-```{r sGexample, fig.cap="\\label{fig:sGexample}Example of a draw from the Gaussian peak shift model with $\\sigma_a = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\alpha$ values. The distribution of peak shifts is controlled by $\\sigma_a$, the peak widths are controlled by $\\sigma_{\\phi }$ and the noise is controlled by $\\sigma_{\\epsilon}$."}
+```{r sGExample, fig.cap="Example of a draw from the Gaussian peak shift model with $\\sigma_a = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\alpha$ values. The distribution of peak shifts is controlled by $\\sigma_a$, the peak widths are controlled by $\\sigma_{\\phi }$ and the noise is controlled by $\\sigma_{\\epsilon}$."}
 set.seed(1)
 
 t <- seq(0, 300, by = 0.5)
@@ -112,9 +114,11 @@ To test the effectiveness of the registered MMD method we compare it with the un
 
 ## Results
 
-The posterior distributions are shown in Figure. The registered distances performs better than the unregistered ones. Interestingly the distance used for registration, FR, performs less well than MMD. What is surprising is that the Registered MMD performs better than the Elastic distance.
+Density plots of posterior samples arising from the ABC sampler for MMD and FR, showing samples each distance that was registered and unregistered (Figure \@ref(fig:sGaussianPost)) show that the registered distances outperform their unregistered counterparts. 
 
-```{r, sGaussian_post}
+ABC posteriors are shown in Figure \@ref(fig:sGaussianPost). Registered distances outperform their unregistered counterparts. Interestingly the distance we use for registration, FR, when used as the distance for ABC is outperformed by MMD. 
+
+```{r, sGaussianPost, fig.cap="Empirical ABC posterior for Gaussian peak shift example"}
 load("../runs/sGaussian/1/ABC_sG_5.RData")
 
 output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
@@ -165,7 +169,7 @@ We demonstrate now a more complex example with a dynamic queueing network model 
 
 Increasing demand for air travel and enhanced security screening places increasing pressure. It is imperative that resources within fixed infrastructure is allocated as efficiently as possible. With this in mind operational planners at airport use simulation models to conduct resource planning, however it is often impossible to perform parameter inference with these models in a principled manner. 
 
-We consider the same model and dataset as @ebert2018likelihood. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and effect the response variable (passenger flows) to some degree which we wish to infer. 
+We consider the same model and data as @ebert2018likelihood. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and effect the response variable (passenger flows) to some degree which we wish to infer. 
 
 The approach to parameter inference taken by @ebert2018likelihood is approximate Bayesian computation with maximum mean discrepancy as distance between observed and simulated passenger flows. Towards the end of this paper issues with alignment of curves was discussed. 
 
@@ -186,7 +190,7 @@ To model passenger flows we simulate the movements of each passenger $j$ from ea
 
 where $A_i$ is the scheduled time for the flight to begin passenger disembarkation. This is a hierarchical model which consists of flight effects, such as $a_i$ and passenger effects, such as $s_i$. 
 
-The last step to recreate the dataset is to bin the departure vectors $\vec{d}^{\text{ac}}, \vec{d}^{\text{imm}}$, and $\vec{d}^{\text{imm}}_{\text{SG}}$ by minute. We refer to these model realisations as  $\vec{x}^{\text{ac}}, \vec{x}^{\text{imm}}$, and $\vec{x}^{\text{imm}}_{\text{SG}}$ which resemble the observed datasets $\vec{y}^{\text{ac}}, \vec{y}^{\text{imm}}$, and $\vec{y}^{\text{imm}}_{\text{SG}}$. A realisation from this model is shown below. 
+The last step to recreate the data is to bin the departure vectors $\vec{d}^{\text{ac}}, \vec{d}^{\text{imm}}$, and $\vec{d}^{\text{imm}}_{\text{SG}}$ by minute. We refer to these model realisations as  $\vec{x}^{\text{ac}}, \vec{x}^{\text{imm}}$, and $\vec{x}^{\text{imm}}_{\text{SG}}$ which resemble the observed data $\vec{y}^{\text{ac}}, \vec{y}^{\text{imm}}$, and $\vec{y}^{\text{imm}}_{\text{SG}}$. A realisation from this model is shown below. 
 
 We compare three distances: 
 
@@ -199,7 +203,7 @@ We compare three distances:
 
 ## Results
 
-```{r, airport_post, message=FALSE}
+```{r, AirportPost, message=FALSE}
 load(file = "../runs/airport/2/ABC_airport.RData")
 
 # data file ABC_airport
@@ -286,9 +290,9 @@ Hydrodata <- BasinObs[Ind_Run,]
 
 Water flows within catchment areas in response to rainfall and other weather-events are forecasted with run-off models. Runoff models have been used successfully by .... in particular the GR4J (Génie Rural à 4 paramètres Journalier) model of @perrin2003improvement is widely used. 
 
-Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure \ref{fig:Hydroexample}).
+Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure \@ref(fig:HydroExample)).
 
-```{r Hydroexample, fig.cap="\\label{fig:Hydroexample}Hydrograph with associated rain and evaporation data from airGR package"}
+```{r HydroExample, fig.cap="Hydrograph with associated rain and evaporation data from airGR package"}
 
 ggplot(Hydrodata) +
   geom_line(aes(y = P/4, group = "Rainfall", col = E), size = 0.5) +
@@ -331,7 +335,7 @@ We apply the MMD, Registered-MMD and elastic distances as shown previously. Once
 
 In this example we find that registered distances perform more poorly than their unregistered counterparts. 
 
-```{r, hydro_post, warning = FALSE}
+```{r, HydroPost, warning = FALSE}
 load("../runs/hydrology/2/ABC_hydro_syn.RData")
 
 true_params <- c(257, 1, 88, 2.2, 0.05)
@@ -403,7 +407,7 @@ We have compared likelihood-free inference for three problems using three distan
 
 The first two problems were amenable to this new distance and the last problem was not. Although all three problems incorporate some aspect of peak position uncertainty, the degrees of freedom for the first two problems was much larger than the last. 
 
-# Information for Anthony
+# System Information
 
 ```{r}
 writeLines(capture.output(sessionInfo()))

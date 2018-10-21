@@ -13,7 +13,7 @@
 
 <meta name="date" content="2018-10-16" />
 
-<title>Registration of functional datasets for likelihood-free inference</title>
+<title>Registration of functional data for likelihood-free inference</title>
 
 <script src="main_YSACO7075J_files/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -122,7 +122,7 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Registration of functional datasets for likelihood-free inference</h1>
+<h1 class="title toc-ignore">Registration of functional data for likelihood-free inference</h1>
 <h4 class="author"><em>Anthony Ebert, Paul Wu, Kerrie Mengersen, Fabrizio Ruggeri</em></h4>
 <h4 class="date"><em>16 October 2018</em></h4>
 
@@ -130,11 +130,11 @@ $(document).ready(function () {
 
 
 <div id="abstract" class="section level1">
-<h1>Abstract</h1>
-<p>Likelihood-free inference on functional data requires the specification of sensible distance measures on these functions. We consider the problem of functional datasets which display not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.</p>
+<h1><span class="header-section-number">1</span> Abstract</h1>
+<p>Likelihood-free inference on functional data requires the specification of sensible distance measures on these functions. We consider the problem of functional data displaying not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.</p>
 </div>
 <div id="introduction" class="section level1">
-<h1>Introduction</h1>
+<h1><span class="header-section-number">2</span> Introduction</h1>
 <p>Functional data analysis (FDA) address statistical problems involving a functional dataset, where the data comprise a set of functions <span class="citation">(Hsing and Eubank 2015)</span>. A functional random variable <span class="math inline">\(\mathsf{y}\)</span> is a random variable which takes values in a function space <span class="math inline">\(\mathsf{f} \in \mathcal{F}\)</span> with associated probability measure <span class="math inline">\(p\)</span>. We consider function spaces of the form <span class="math inline">\(\mathbb{R}^{[0, 1]}\)</span>, that is <span class="math inline">\(\mathsf{f}: [0, 1] \mapsto \mathbb{R}\)</span>, transformations from different domain intervals is straight-forward. A functional dataset is a collection of observed functional random variables <span class="math inline">\(\mathsf{f}_1, \cdots, \mathsf{f}_n\)</span>. In practice the functional random variables are observed with error on a countable subset of the domain of the function and this is what is referred to as a functional dataset, which contains empirical functional random variables. An empirical functional random variable (EFRV) <span class="math inline">\(f_i\)</span> is of the form <span class="math inline">\(\{ (t_{i,1},y_{i,1}), \cdots , (t_{i,j}, y_{i,j}), \cdots, (t_{i,n_i}, y_{i,n_i}) \}\)</span>, for fixed sampling points <span class="math inline">\(t_i = \{t_{i,1}, \cdots, t_{i,n_i} \}\)</span> and corresponding observed functional outputs <span class="math inline">\(y_i = y_{i,1}, \cdots, y_{i,n_i}\)</span>.</p>
 <p>Common special-cases of functional datasets include longitudinal data and time series, however the field of FDA is much broader than this <span class="citation">(Wang, Chiou, and Müller 2016)</span>. In analysis of functional data, a statistic of interest is an estimate of the mean function <span class="math inline">\(\mu(t) = \underset{{\mathsf{f}}\sim p}{{\mathsf{E}}}[\mathsf{f}](t)\)</span>. In the case of EFRVs with fixed sampling locations (<span class="math inline">\(t_1 = \cdots = t_i = \cdots = t_{n_i}\)</span>) this is usually estimated with <span class="math inline">\(\hat{\mu}(t_{,j}) = 1/n_i \sum_{i = 1}^{n_i} y_j\)</span>. In either case it is possible that the resulting function is not an element of <span class="math inline">\(\mathcal{F}\)</span> due to phase variation. For instance suppose <span class="math inline">\(\mathcal{F}\)</span> is the set of Gaussian functions <span class="math inline">\(\phi(\mu,\sigma)\)</span> with <span class="math inline">\(\mu \sim U(0, 5)\)</span>, <span class="math inline">\(\sigma = 1\)</span>. The mean function, in this case, is not Gaussian. In the next section we learn how problems of this sort are addressed in literature.</p>
 <p>There are a variety of approaches in the literature which seek to address the provide statistical tools in the presence of phase variation, these include: dynamic time warping <span class="citation">(Padoy et al. 2012,<span class="citation">Wang, Gasser, and others (1997)</span>)</span>; the Frechet distance <span class="citation">(Rote 2007)</span>; curve registration and elastic functions <span class="citation">(Srivastava et al. 2011)</span>. Applications of curve registration include: growth curves <span class="citation">(Cheng et al. 2016)</span>; surgical workflow <span class="citation">(Padoy et al. 2012)</span>.</p>
@@ -142,7 +142,7 @@ $(document).ready(function () {
 <p>For simplicity and without loss of generality we consider problems where the functional dataset consists of a single observed EFRV <span class="math inline">\(f\)</span>. We extend curve registration to the likelihood-free domain with approximate Bayesian computation (ABC). We proceed now with a brief background of ABC, for a detailed exposition on the subject see <span class="citation">Sisson, Fan, and Beaumont (2018)</span>.</p>
 </div>
 <div id="approximate-bayesian-computation" class="section level1">
-<h1>Approximate Bayesian Computation</h1>
+<h1><span class="header-section-number">3</span> Approximate Bayesian Computation</h1>
 <p>ABC samplers sample <span class="math inline">\(\theta\)</span> from the posterior distribution <span class="math inline">\(\pi(\theta|\mathbf{x})\)</span> by sampling from, but not evaluating, the model <span class="math inline">\(p(\mathbf{x}|\theta)\)</span>. This is useful where <span class="math inline">\(p(\mathbf{x}|\theta)\)</span> represents a complicated simulator for generating realisations <span class="math inline">\(\mathbf{x}_{\theta} \sim p(\cdot|\theta)\)</span>.</p>
 <p>The theoretical foundation of ABC rests on the fact that if we draw samples <span class="math inline">\(\theta\)</span> independently from the prior <span class="math inline">\(\pi(\theta)\)</span> and use each <span class="math inline">\(\theta\)</span> to generate a corresponding <span class="math inline">\(\mathbf{x}_{\theta}\)</span> then the set <span class="math inline">\(\{\theta | \mathbf{x}_{\theta} = \mathbf{x}\}\)</span> are sampled from <span class="math inline">\(\pi(\theta|\mathbf{x})\)</span>. Such an approach would never work in practice as the proportion of <span class="math inline">\(\mathbf{x}_{\theta}\)</span> samples equal to <span class="math inline">\(\mathbf{x}\)</span> for models with continuous support is zero. For this reason a dissimilarity <span class="math inline">\(\rho\)</span> defined on the sample space is used to accept or weight realisations <span class="math inline">\(\mathbf{x}_{\theta}\)</span> in relation to <span class="math inline">\(\mathbf{x}\)</span> according to some threshold <span class="math inline">\(\epsilon&gt;0\)</span>.</p>
 <p>Dissimilarity, as defined by <span class="citation">Jousselme and Maupin (2012)</span>, is a weaker notion than distance without the triangle inequality and where <span class="math inline">\(\mathbf{x}{=}\mathbf{y} \implies \rho(\mathbf{x}, \mathbf{y}){=}0\)</span> is true but the converse <span class="math inline">\(\rho(\mathbf{x}, \mathbf{y}){=}0 \implies \mathbf{x}{=}\mathbf{y}\)</span> is not necessarily true. For instance a common approach is to define <span class="math inline">\(\rho\)</span> as a distance on lower dimensional summary statistics, this is equivalent to a dissimilarity on the sample space.</p>
@@ -152,7 +152,7 @@ $(document).ready(function () {
 <span class="math display">\[\begin{align}
 \rho_{\text{MMD}}(p, q, \mathcal{H}) = \sup_{h \in \mathcal{H}} \left( \int h(x) [p(x) - q(x)] \text{d} x \right),
 \end{align}\]</span>
-<p>where <span class="math inline">\(\mathcal{H}\)</span> is a function space defined on the same domain as the probability space <span class="math inline">\(\mathcal{Q}\)</span>. The function space is taken by <span class="citation">Gretton, Borgwardt, et al. (2012)</span> to be set of functions which integrate to 1 on the probability space of interest. <span class="citation">Gretton, Borgwardt, et al. (2012)</span> also developed an estimator for this metric based on observed datasets <span class="math inline">\(\mathbf{x} \sim p\)</span>, <span class="math inline">\(\mathbf{y} \sim q\)</span>. The estimator is:</p>
+<p>where <span class="math inline">\(\mathcal{H}\)</span> is a function space defined on the same domain as the probability space <span class="math inline">\(\mathcal{Q}\)</span>. The function space is taken by <span class="citation">Gretton, Borgwardt, et al. (2012)</span> to be set of functions which integrate to 1 on the probability space of interest. <span class="citation">Gretton, Borgwardt, et al. (2012)</span> also developed an estimator for this metric based on observed data <span class="math inline">\(\mathbf{x} \sim p\)</span>, <span class="math inline">\(\mathbf{y} \sim q\)</span>. The estimator is:</p>
 <span class="math display">\[\begin{align}
 \hat{\rho}_{\text{MMD}}(\mathbf{x},\mathbf{y}) &amp;=  \frac{1}{m^2} \sum_{i=1}^m \sum_{j = 1}^m k(x_i, x_j) +
 \frac{1}{n^2} \sum_{i=1}^n \sum_{j = 1}^n k(y_i, y_j) \label{eq:MMD} 
@@ -167,38 +167,44 @@ $(document).ready(function () {
 <p>In other words we first align <span class="math inline">\(f_{\theta}\)</span> to <span class="math inline">\(f\)</span> and then use <span class="math inline">\(\hat{\rho}_{\text{MMD}}\)</span> as the dissimilarity between aligned functions. Note that Elastic distance uses the same distance as is used to find the optimal warping function under the Registered MMD distance.</p>
 </div>
 <div id="explanatory-example" class="section level1">
-<h1>Explanatory example</h1>
+<h1><span class="header-section-number">4</span> Explanatory example</h1>
 <div id="method" class="section level2">
-<h2>Method</h2>
+<h2><span class="header-section-number">4.1</span> Method</h2>
 <p>We first construct an artificial problem to demonstrate the method we suggest. The model is a series of Gaussian functions <span class="math inline">\(i = 1, \cdots, 14\)</span> added together with fixed/known sampling locations <span class="math inline">\(t = (0, 0.5, \cdots, 300)\)</span>. The mean parameter for each <span class="math inline">\(i\)</span> is <span class="math inline">\(\mu_i = \alpha_i + a_i\)</span> where each <span class="math inline">\(\alpha_i\)</span> is a known, fixed effect and <span class="math inline">\(a_i\)</span> are iid unknown random effects. Each Gaussian function has the same unknown standard deviation <span class="math inline">\(\sigma_{\phi}\)</span>. The known, fixed effects <span class="math inline">\(\alpha\)</span> are equal to <span class="math inline">\(( 20, 40, \cdots, 280 )\)</span>. In addition there is Gaussian noise with standard deviation <span class="math inline">\(\sigma_{\epsilon}\)</span>. The unknown parameters of interest are <span class="math inline">\(\sigma_{\phi}\)</span> and <span class="math inline">\(\sigma_{\epsilon}\)</span>.</p>
 <span class="math display">\[\begin{align}
     a_i &amp;\sim N(0, \sigma_a) \\
     y_j | \vec{a}, \sigma_a, \sigma_{\epsilon} ; \vec{\alpha}, t_j &amp;\sim N \left\{ \sum_{i=1}^n \phi \left[ \frac{t_j - (a_i + \alpha_i)}{\sigma_{\phi}} \right], \sigma_{\epsilon} \right\}
 \end{align}\]</span>
-<p>The prior distributions for the parameters of interest are <span class="math inline">\(\sigma_{\phi} \sim U(0, 10)\)</span>, and <span class="math inline">\(\sigma_{\epsilon} \sim U(0, 0.1)\)</span>. An example of a model realisation from this distribution is shown in Figure .</p>
-<div class="figure">
-<img src="main_YSACO7075J_files/figure-html/sGexample-1.png" alt="\label{fig:sGexample}Example of a draw from the Gaussian peak shift model with $\sigma_a = 5, \sigma_{\phi} = 1$, and $\sigma_{\epsilon} = 0.01$. The dotted lines are the $\alpha$ values. The distribution of peak shifts is controlled by $\sigma_a$, the peak widths are controlled by $\sigma_{\phi }$ and the noise is controlled by $\sigma_{\epsilon}$." width="672" />
+<p>The prior distributions for the parameters of interest are <span class="math inline">\(\sigma_{\phi} \sim U(0, 10)\)</span>, and <span class="math inline">\(\sigma_{\epsilon} \sim U(0, 0.1)\)</span>. An example of a model realisation from this distribution is shown in Figure <a href="#fig:sGExample">4.1</a>.</p>
+<div class="figure"><span id="fig:sGExample"></span>
+<img src="main_YSACO7075J_files/figure-html/sGExample-1.png" alt="Example of a draw from the Gaussian peak shift model with $\sigma_a = 5, \sigma_{\phi} = 1$, and $\sigma_{\epsilon} = 0.01$. The dotted lines are the $\alpha$ values. The distribution of peak shifts is controlled by $\sigma_a$, the peak widths are controlled by $\sigma_{\phi }$ and the noise is controlled by $\sigma_{\epsilon}$." width="672" />
 <p class="caption">
-Example of a draw from the Gaussian peak shift model with <span class="math inline">\(\sigma_a = 5, \sigma_{\phi} = 1\)</span>, and <span class="math inline">\(\sigma_{\epsilon} = 0.01\)</span>. The dotted lines are the <span class="math inline">\(\alpha\)</span> values. The distribution of peak shifts is controlled by <span class="math inline">\(\sigma_a\)</span>, the peak widths are controlled by <span class="math inline">\(\sigma_{\phi }\)</span> and the noise is controlled by <span class="math inline">\(\sigma_{\epsilon}\)</span>.
+Figure 4.1: Example of a draw from the Gaussian peak shift model with <span class="math inline">\(\sigma_a = 5, \sigma_{\phi} = 1\)</span>, and <span class="math inline">\(\sigma_{\epsilon} = 0.01\)</span>. The dotted lines are the <span class="math inline">\(\alpha\)</span> values. The distribution of peak shifts is controlled by <span class="math inline">\(\sigma_a\)</span>, the peak widths are controlled by <span class="math inline">\(\sigma_{\phi }\)</span> and the noise is controlled by <span class="math inline">\(\sigma_{\epsilon}\)</span>.
 </p>
 </div>
 <p>To test the effectiveness of the registered MMD method we compare it with the unregistered MMD. We set the covariance matrix for MMD to be the <span class="math inline">\(2 \times 2\)</span> diagonal matrix with elements 9 and <span class="math inline">\(1 \times 10^{-4}\)</span>. We use the R package fdasrvf <span class="citation">(Tucker 2017)</span> to align the simulated and observed functional datsets. To compute the elastic distance between functions as defined by <span class="citation">Srivastava et al. (2011)</span> we use the implementation contained in the R package fdasrvf <span class="citation">(Tucker 2017)</span>. We try two settings for <span class="math inline">\(\sigma_a\)</span> which are 5 and 20.</p>
 </div>
 <div id="results" class="section level2">
-<h2>Results</h2>
-<p>The posterior distributions are shown in Figure. The registered distances performs better than the unregistered ones. Interestingly the distance used for registration, FR, performs less well than MMD. What is surprising is that the Registered MMD performs better than the Elastic distance.</p>
-<p><img src="main_YSACO7075J_files/figure-html/sGaussian_post-1.png" width="672" /></p>
+<h2><span class="header-section-number">4.2</span> Results</h2>
+<p>Density plots of posterior samples arising from the ABC sampler for MMD and FR, showing samples each distance that was registered and unregistered (Figure <a href="#fig:sGaussianPost">4.2</a>) show that the registered distances outperform their unregistered counterparts.</p>
+<p>ABC posteriors are shown in Figure <a href="#fig:sGaussianPost">4.2</a>. Registered distances outperform their unregistered counterparts. Interestingly the distance we use for registration, FR, when used as the distance for ABC is outperformed by MMD.</p>
+<div class="figure"><span id="fig:sGaussianPost"></span>
+<img src="main_YSACO7075J_files/figure-html/sGaussianPost-1.png" alt="Empirical ABC posterior for Gaussian peak shift example" width="672" />
+<p class="caption">
+Figure 4.2: Empirical ABC posterior for Gaussian peak shift example
+</p>
+</div>
 <p>We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal.</p>
 </div>
 </div>
 <div id="motivating-example-passenger-processing-at-an-international-airport" class="section level1">
-<h1>Motivating example: Passenger processing at an international airport</h1>
+<h1><span class="header-section-number">5</span> Motivating example: Passenger processing at an international airport</h1>
 <p>Increasing demand for air travel and enhanced security screening places increasing pressure. It is imperative that resources within fixed infrastructure is allocated as efficiently as possible. With this in mind operational planners at airport use simulation models to conduct resource planning, however it is often impossible to perform parameter inference with these models in a principled manner.</p>
-<p>We consider the same model and dataset as <span class="citation">Ebert et al. (2018)</span>. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and effect the response variable (passenger flows) to some degree which we wish to infer.</p>
+<p>We consider the same model and data as <span class="citation">Ebert et al. (2018)</span>. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and effect the response variable (passenger flows) to some degree which we wish to infer.</p>
 <p>The approach to parameter inference taken by <span class="citation">Ebert et al. (2018)</span> is approximate Bayesian computation with maximum mean discrepancy as distance between observed and simulated passenger flows. Towards the end of this paper issues with alignment of curves was discussed.</p>
 <p>After passengers are deplaned from an arriving flight they walk to the immigration system and so a wave of customers crashes down on the shoreline of immigration.</p>
 <div id="method-1" class="section level2">
-<h2>Method</h2>
+<h2><span class="header-section-number">5.1</span> Method</h2>
 <p>To model passenger flows we simulate the movements of each passenger <span class="math inline">\(j\)</span> from each flight <span class="math inline">\(i\)</span>. Flight <span class="math inline">\(i\)</span>, begin passenger disembarkation at <span class="math inline">\(a_i\)</span>, passenger <span class="math inline">\(j\)</span> from this flight disembarks from the aircraft at time <span class="math inline">\(d_{ij}^{\text{dis}} = a_i + t_i^{\text{dis}}\)</span>, leaves the arrivals concourse at time <span class="math inline">\(d_{ij}^{\text{ac}} = d_{ij}^{\text{dis}} + t_{ij}^{\text{imm}}\)</span>, chooses a route <span class="math inline">\(r_{ij}\)</span> through immigration and finishes immigration at time <span class="math inline">\(d_{ij}^{\text{imm}} = d_{ij}^{\text{ac}} + w_{ij}^{\text{imm}} + s_{ij}^{\text{imm}}\)</span>. Distributions for disembarkation times <span class="math inline">\(t_i^{\text{dis}}\)</span> are fitted prior to analysis, however the other random variables are distributed according to unknown parameters <span class="math inline">\(\alpha, \beta, \lambda_{\text{SG}}, \lambda_{\text{MG}}\)</span> in the following manner:</p>
 <span class="math display">\[\begin{align}
     &amp;\text{Flight disembarkation start} &amp; a_i &amp;\sim \text{U}(A_i - 20, A_i + 20) \\
@@ -209,7 +215,7 @@ Example of a draw from the Gaussian peak shift model with <span class="math inli
     &amp;\text{Service times} &amp; s_{ij} | r_{ij} &amp;\sim \text{Exp} \left( \lambda_{r_{ij}} \right),   \\
 \end{align}\]</span>
 <p>where <span class="math inline">\(A_i\)</span> is the scheduled time for the flight to begin passenger disembarkation. This is a hierarchical model which consists of flight effects, such as <span class="math inline">\(a_i\)</span> and passenger effects, such as <span class="math inline">\(s_i\)</span>.</p>
-<p>The last step to recreate the dataset is to bin the departure vectors <span class="math inline">\(\vec{d}^{\text{ac}}, \vec{d}^{\text{imm}}\)</span>, and <span class="math inline">\(\vec{d}^{\text{imm}}_{\text{SG}}\)</span> by minute. We refer to these model realisations as <span class="math inline">\(\vec{x}^{\text{ac}}, \vec{x}^{\text{imm}}\)</span>, and <span class="math inline">\(\vec{x}^{\text{imm}}_{\text{SG}}\)</span> which resemble the observed datasets <span class="math inline">\(\vec{y}^{\text{ac}}, \vec{y}^{\text{imm}}\)</span>, and <span class="math inline">\(\vec{y}^{\text{imm}}_{\text{SG}}\)</span>. A realisation from this model is shown below.</p>
+<p>The last step to recreate the data is to bin the departure vectors <span class="math inline">\(\vec{d}^{\text{ac}}, \vec{d}^{\text{imm}}\)</span>, and <span class="math inline">\(\vec{d}^{\text{imm}}_{\text{SG}}\)</span> by minute. We refer to these model realisations as <span class="math inline">\(\vec{x}^{\text{ac}}, \vec{x}^{\text{imm}}\)</span>, and <span class="math inline">\(\vec{x}^{\text{imm}}_{\text{SG}}\)</span> which resemble the observed data <span class="math inline">\(\vec{y}^{\text{ac}}, \vec{y}^{\text{imm}}\)</span>, and <span class="math inline">\(\vec{y}^{\text{imm}}_{\text{SG}}\)</span>. A realisation from this model is shown below.</p>
 <p>We compare three distances:</p>
 <span class="math display">\[\begin{align}
     \textbf{D}_0 &amp;=  \hat{\rho}_{\text{MMD}}(\vec{x}^{\text{ac}},\vec{y}^{\text{ac}}) + \hat{\rho}_{\text{MMD}}(\vec{x}^{\text{imm}},\vec{y}^{\text{imm}}) + \hat{\rho}_{\text{MMD}}(\vec{x}^{\text{imm}}_{\text{SG}},\vec{y}^{\text{imm}}_{\text{SG}}), \\
@@ -218,24 +224,24 @@ Example of a draw from the Gaussian peak shift model with <span class="math inli
 \end{align}\]</span>
 </div>
 <div id="results-1" class="section level2">
-<h2>Results</h2>
-<p><img src="main_YSACO7075J_files/figure-html/airport_post-1.png" width="672" /></p>
+<h2><span class="header-section-number">5.2</span> Results</h2>
+<p><img src="main_YSACO7075J_files/figure-html/AirportPost-1.png" width="672" /></p>
 </div>
 </div>
 <div id="counter-example-hydrological-modelling" class="section level1">
-<h1>Counter example: Hydrological modelling</h1>
+<h1><span class="header-section-number">6</span> Counter example: Hydrological modelling</h1>
 <p>Water flows within catchment areas in response to rainfall and other weather-events are forecasted with run-off models. Runoff models have been used successfully by …. in particular the GR4J (Génie Rural à 4 paramètres Journalier) model of <span class="citation">Perrin, Michel, and Andréassian (2003)</span> is widely used.</p>
-<p>Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure ).</p>
-<div class="figure">
-<img src="main_YSACO7075J_files/figure-html/Hydroexample-1.png" alt="\label{fig:Hydroexample}Hydrograph with associated rain and evaporation data from airGR package" width="672" />
+<p>Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure <a href="#fig:HydroExample">6.1</a>).</p>
+<div class="figure"><span id="fig:HydroExample"></span>
+<img src="main_YSACO7075J_files/figure-html/HydroExample-1.png" alt="Hydrograph with associated rain and evaporation data from airGR package" width="672" />
 <p class="caption">
-Hydrograph with associated rain and evaporation data from airGR package
+Figure 6.1: Hydrograph with associated rain and evaporation data from airGR package
 </p>
 </div>
 <p>Parameter estimation proceeds with either expert opinion or automatic calibration. Automatic calibration is typically performed with a goodness-of-fit function such as sum of squared errors rather than a likelihood function. The NSE function is a goodness-of-fit function specifically developed for hydrology. Parameter estimation for hydrological methods is an active area of research <span class="citation">Kavetski (2018)</span>. It is argued in the literature that once parameters are estimated the parameter uncertainty itself contributes little to overall uncertainty <span class="citation">McInerney et al. (2018)</span> compared to the residual error structure.</p>
 <p>We apply approximate Bayesian computation for this application for the first time and apply the methodology of curve-registration.</p>
 <div id="methods" class="section level2">
-<h2>Methods</h2>
+<h2><span class="header-section-number">6.1</span> Methods</h2>
 <p>The simulation model we use is the GR4J model of <span class="citation">Perrin, Michel, and Andréassian (2003)</span>. This model contains four parameters labelled: the first three <span class="math inline">\((\theta_1, \theta_2, \theta_3)\)</span> are capacities in units of length (mm); and the fourth parameter (<span class="math inline">\(\theta_4\)</span>) represents a lagged effect in units of time (days).</p>
 <p>Predictions from the GR4J given parameters <span class="math inline">\(\theta = (\theta_1, \theta_2, \theta_3, \theta_4)\)</span> and explanatory variables (X) are denoted as <span class="math inline">\(\mathcal{H}(\theta, X)\)</span>. Like many run-off models the GR4J model is deterministic, the practice is to add an error structure on top of this deterministic model, the model in its entirity is then:</p>
 <span class="math display">\[\begin{align}
@@ -244,7 +250,7 @@ Hydrograph with associated rain and evaporation data from airGR package
 </div>
 </div>
 <div id="references" class="section level1">
-<h1>References</h1>
+<h1><span class="header-section-number">7</span> References</h1>
 <p>Run-off predictions are positively valued, and it is well known that heteroscedasticity exists in the errors <span class="citation">(Kavetski 2018)</span>. A common strategy is to perform a Box-Cox transformation <span class="math inline">\(Z(Y, \lambda) = (Y^{\lambda} - 1) / \lambda\)</span> to transformed predictions with normalised errors <span class="math inline">\(\eta\)</span>:</p>
 <span class="math display">\[\begin{align}
     Y_Z &amp;= Z(\mathcal{H}(\theta, X)) + \eta, \\
@@ -252,18 +258,18 @@ Hydrograph with associated rain and evaporation data from airGR package
 \end{align}\]</span>
 <p>We apply the MMD, Registered-MMD and elastic distances as shown previously. Once again we test all three distances.</p>
 <div id="results-and-discussion" class="section level2">
-<h2>Results and Discussion</h2>
+<h2><span class="header-section-number">7.1</span> Results and Discussion</h2>
 <p>In this example we find that registered distances perform more poorly than their unregistered counterparts.</p>
-<p><img src="main_YSACO7075J_files/figure-html/hydro_post-1.png" width="672" /></p>
+<p><img src="main_YSACO7075J_files/figure-html/HydroPost-1.png" width="672" /></p>
 </div>
 </div>
 <div id="discussion" class="section level1">
-<h1>Discussion</h1>
+<h1><span class="header-section-number">8</span> Discussion</h1>
 <p>We have compared likelihood-free inference for three problems using three distances. The distances were the elastic distance (as proposed by …), maximum mean discrepancy (Gretton et al…) and a distance incorporating techniques from both registered maximum mean discrepancy.</p>
 <p>The first two problems were amenable to this new distance and the last problem was not. Although all three problems incorporate some aspect of peak position uncertainty, the degrees of freedom for the first two problems was much larger than the last.</p>
 </div>
-<div id="information-for-anthony" class="section level1">
-<h1>Information for Anthony</h1>
+<div id="system-information" class="section level1">
+<h1><span class="header-section-number">9</span> System Information</h1>
 <pre><code>## R version 3.5.1 (2018-07-02)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
 ## Running under: Debian GNU/Linux 9 (stretch)
