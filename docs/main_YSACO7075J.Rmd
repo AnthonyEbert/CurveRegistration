@@ -9,7 +9,7 @@ bibliography: ../Zotero_link.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE)
 library(CurveRegistration)
 library(dplyr)
 library(ggplot2)
