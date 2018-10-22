@@ -182,16 +182,15 @@ $(document).ready(function () {
 Figure 4.1: Example of a draw from the Gaussian peak shift model with <span class="math inline">\(\sigma_a = 5, \sigma_{\phi} = 1\)</span>, and <span class="math inline">\(\sigma_{\epsilon} = 0.01\)</span>. The dotted lines are the <span class="math inline">\(\alpha\)</span> values. The distribution of peak shifts is controlled by <span class="math inline">\(\sigma_a\)</span>, the peak widths are controlled by <span class="math inline">\(\sigma_{\phi }\)</span> and the noise is controlled by <span class="math inline">\(\sigma_{\epsilon}\)</span>.
 </p>
 </div>
-<p>To test the effectiveness of the registered MMD method we compare it with the unregistered MMD. We set the covariance matrix for MMD to be the <span class="math inline">\(2 \times 2\)</span> diagonal matrix with elements 9 and <span class="math inline">\(1 \times 10^{-4}\)</span>. We use the R package fdasrvf <span class="citation">(Tucker 2017)</span> to align the simulated and observed functional datsets. To compute the elastic distance between functions as defined by <span class="citation">Srivastava et al. (2011)</span> we use the implementation contained in the R package fdasrvf <span class="citation">(Tucker 2017)</span>. We try two settings for <span class="math inline">\(\sigma_a\)</span> which are 5 and 20.</p>
+<p>To test the effectiveness of the registered MMD method we compare it with the unregistered MMD. We set the covariance matrix for MMD to be the <span class="math inline">\(2 \times 2\)</span> diagonal matrix with elements 9 and <span class="math inline">\(1 \times 10^{-4}\)</span>. We use the R package fdasrvf <span class="citation">(Tucker 2017)</span> to align the simulated and observed functional datsets. To compute the elastic distance between functions as defined by <span class="citation">Srivastava et al. (2011)</span> we use the implementation contained in the R package fdasrvf <span class="citation">(Tucker 2017)</span>.</p>
 </div>
 <div id="results" class="section level2">
 <h2><span class="header-section-number">4.2</span> Results</h2>
-<p>Density plots of posterior samples arising from the ABC sampler for MMD and FR, showing samples each distance that was registered and unregistered (Figure <a href="#fig:sGaussianPost">4.2</a>) show that the registered distances outperform their unregistered counterparts.</p>
-<p>ABC posteriors are shown in Figure <a href="#fig:sGaussianPost">4.2</a>. Registered distances outperform their unregistered counterparts. Interestingly the distance we use for registration, FR, when used as the distance for ABC is outperformed by MMD.</p>
+<p>Density plots of posterior samples arising from the ABC sampler using MMD and FR, both registered and unregisted (Figure <a href="#fig:sGaussianPost">4.2</a>) show that the registered distances outperform their unregistered counterparts. Interestingly the distance we use for registration, FR, when used as the distance for ABC is outperformed by MMD.</p>
 <div class="figure"><span id="fig:sGaussianPost"></span>
-<img src="main_YSACO7075J_files/figure-html/sGaussianPost-1.png" alt="Empirical ABC posterior for Gaussian peak shift example" width="672" />
+<img src="main_YSACO7075J_files/figure-html/sGaussianPost-1.png" alt="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. The true values are shown in the vertical black solid lines." width="672" />
 <p class="caption">
-Figure 4.2: Empirical ABC posterior for Gaussian peak shift example
+Figure 4.2: Density plots of posterior samples arising from the replenishment ABC sampler <span class="citation">(Drovandi and Pettitt 2011)</span> for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. The true values are shown in the vertical black solid lines.
 </p>
 </div>
 <p>We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal.</p>
@@ -272,11 +271,11 @@ Figure 6.1: Hydrograph with associated rain and evaporation data from airGR pack
 <h1><span class="header-section-number">9</span> System Information</h1>
 <pre><code>## R version 3.5.1 (2018-07-02)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Debian GNU/Linux 9 (stretch)
+## Running under: Ubuntu 18.04.1 LTS
 ## 
 ## Matrix products: default
-## BLAS: /usr/lib/libblas/libblas.so.3.7.0
-## LAPACK: /usr/lib/lapack/liblapack.so.3.7.0
+## BLAS: /usr/lib/x86_64-linux-gnu/openblas/libblas.so.3
+## LAPACK: /usr/lib/x86_64-linux-gnu/libopenblasp-r0.2.20.so
 ## 
 ## locale:
 ##  [1] LC_CTYPE=en_AU.UTF-8       LC_NUMERIC=C              
@@ -290,20 +289,21 @@ Figure 6.1: Hydrograph with associated rain and evaporation data from airGR pack
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] airGR_1.0.14.1          bindrcpp_0.2.2          ggplot2_3.0.0          
-## [4] dplyr_0.7.6             CurveRegistration_0.0.2
+## [1] airGR_1.0.15.2          bindrcpp_0.2.2          ggplot2_3.0.0          
+## [4] dplyr_0.7.7             CurveRegistration_0.0.2
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] latex2exp_0.4.0  Rcpp_0.12.19     pillar_1.3.0     compiler_3.5.1  
-##  [5] plyr_1.8.4       highr_0.7        bindr_0.1.1      tools_3.5.1     
-##  [9] digest_0.6.16    evaluate_0.11    tibble_1.4.2     gtable_0.2.0    
-## [13] pkgconfig_2.0.2  rlang_0.2.2      yaml_2.2.0       withr_2.1.2     
-## [17] stringr_1.3.1    knitr_1.20       rprojroot_1.3-2  grid_3.5.1      
-## [21] tidyselect_0.2.4 glue_1.3.0       R6_2.2.2         rmarkdown_1.10  
-## [25] purrr_0.2.5      tidyr_0.8.1      magrittr_1.5     backports_1.1.2 
-## [29] scales_1.0.0     codetools_0.2-15 htmltools_0.3.6  ggthemes_4.0.1  
-## [33] assertthat_0.2.0 colorspace_1.3-2 labeling_0.3     stringi_1.2.4   
-## [37] lazyeval_0.2.1   munsell_0.5.0    crayon_1.3.4</code></pre>
+##  [1] latex2exp_0.4.0  Rcpp_0.12.19     highr_0.6        pillar_1.3.0    
+##  [5] compiler_3.5.1   plyr_1.8.4       bindr_0.1.1      tools_3.5.1     
+##  [9] digest_0.6.18    evaluate_0.10.1  tibble_1.4.2     gtable_0.2.0    
+## [13] pkgconfig_2.0.2  rlang_0.2.2      yaml_2.2.0       xfun_0.3        
+## [17] withr_2.1.2      stringr_1.3.1    knitr_1.20       rprojroot_1.3-2 
+## [21] grid_3.5.1       tidyselect_0.2.4 glue_1.3.0       R6_2.3.0        
+## [25] rmarkdown_1.10   bookdown_0.7     purrr_0.2.5      tidyr_0.8.1     
+## [29] magrittr_1.5     codetools_0.2-15 backports_1.1.2  scales_1.0.0    
+## [33] htmltools_0.3.6  ggthemes_3.4.0   assertthat_0.2.0 colorspace_1.3-2
+## [37] labeling_0.3     stringi_1.2.4    lazyeval_0.2.1   munsell_0.5.0   
+## [41] crayon_1.3.4</code></pre>
 </div>
 <div id="references-1" class="section level1 unnumbered">
 <h1>References</h1>

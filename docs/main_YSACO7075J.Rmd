@@ -110,15 +110,13 @@ plot(y, type = "l", lwd = 1, xaxs = "i", yaxs = "i", ylim = c(-0.1, 0.5))
 abline(v = alpha, lty = 2)
 ```
 
-To test the effectiveness of the registered MMD method we compare it with the unregistered MMD. We set the covariance matrix for MMD to be the $2 \times 2$ diagonal matrix with elements 9 and $1 \times 10^{-4}$. We use the R package fdasrvf [@tuckerCRAN] to align the simulated and observed functional datsets. To compute the elastic distance between functions as defined by @srivastava2011registration we use the implementation contained in the R package fdasrvf [@tuckerCRAN]. We try two settings for $\sigma_a$ which are 5 and 20.
+To test the effectiveness of the registered MMD method we compare it with the unregistered MMD. We set the covariance matrix for MMD to be the $2 \times 2$ diagonal matrix with elements 9 and $1 \times 10^{-4}$. We use the R package fdasrvf [@tuckerCRAN] to align the simulated and observed functional datsets. To compute the elastic distance between functions as defined by @srivastava2011registration we use the implementation contained in the R package fdasrvf [@tuckerCRAN]. 
 
 ## Results
 
-Density plots of posterior samples arising from the ABC sampler for MMD and FR, showing samples each distance that was registered and unregistered (Figure \@ref(fig:sGaussianPost)) show that the registered distances outperform their unregistered counterparts. 
+Density plots of posterior samples arising from the ABC sampler using MMD and FR, both registered and unregisted (Figure \@ref(fig:sGaussianPost)) show that the registered distances outperform their unregistered counterparts. Interestingly the distance we use for registration, FR, when used as the distance for ABC is outperformed by MMD. 
 
-ABC posteriors are shown in Figure \@ref(fig:sGaussianPost). Registered distances outperform their unregistered counterparts. Interestingly the distance we use for registration, FR, when used as the distance for ABC is outperformed by MMD. 
-
-```{r, sGaussianPost, fig.cap="Empirical ABC posterior for Gaussian peak shift example"}
+```{r, sGaussianPost, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. The true values are shown in the vertical black solid lines."}
 load("../runs/sGaussian/1/ABC_sG_5.RData")
 
 output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
