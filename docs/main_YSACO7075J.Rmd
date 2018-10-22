@@ -84,7 +84,7 @@ In summary ABC samplers return samples of $\theta$ depending on the value of $d(
 \label{alg:loss}
 \begin{algorithmic}[1]
 \Function{loss}{$\theta, f | p, d$}
-\State $f_{\theta} \sim p(f|\theta)$
+\State $f_{\theta} \sim p(\cdot|\theta)$
 \State $d_{\theta} = d(f, f_{\theta}) $
 \State \Return $d_{\theta}$
 \EndFunction
@@ -100,7 +100,7 @@ To develop an ABC sampler for functional data we develop a loss function on $\th
 \label{alg:regloss}
 \begin{algorithmic}[1]
 \Function{loss}{$\theta, f | p, d$}
-\State $f_{\theta} \sim p(f|\theta)$
+\State $f_{\theta} \sim p(\cdot|\theta)$
 \State $\gamma = \arg \inf_{\gamma \in \Gamma} d_{\text{FR}}(f, f_{\theta} \circ \gamma)$
 \State $d_{\theta} = d(f, f_{\theta} \circ \gamma)$
 \State \Return $d_{\theta}$
@@ -108,15 +108,15 @@ To develop an ABC sampler for functional data we develop a loss function on $\th
 \end{algorithmic}
 \end{algorithm}
 
-# Explanatory example
+# Peak shift example
 
 ## Method
 
-We first construct an artificial problem to demonstrate the method we suggest. The mean function $\mu(t)$ is a sum over 14 Gaussian functions i.e. $\mu(t) = \sum_{k=1}^{14} \phi(t | \mu_k, \sigma_{\phi})$. The observed functional output corresponding to fixed sampling locations $t = (0, 0.5, \cdots, 300)$, are independent and normally distributed $y_j \sim N(\mu(t_j), \sigma_{\epsilon})$. What makes this problem of interest here is that the mean parameters $\mu_k$ are latent random variables $\mu_k \sim N(a_i, \sigma_a)$ making inelastic dissimilarities inappropriate. 
+We first construct an artificial problem to demonstrate the method we suggest. The mean function $\mu(t)$ is a sum over 14 Gaussian functions i.e. $\mu(t) = \sum_{p=1}^{14} \phi(t | \mu_p, \sigma_{\phi})$. The observed functional output corresponding to fixed sampling locations $t = (0, 0.5, \cdots, 300)$, are independent and normally distributed $y_j \sim N(\mu(t_j), \sigma_{\epsilon})$. What makes this problem of interest here is that the mean parameters $\mu_p$ are latent random variables $\mu_p \sim N(b_p, \sigma_b)$ making inelastic dissimilarities inappropriate. 
 
 The prior distributions for the parameters of interest are $\sigma_{\phi} \sim U(0, 10)$, and $\sigma_{\epsilon} \sim U(0, 0.1)$. An example of a model realisation from this distribution is shown in Figure \@ref(fig:sGExample).
 
-```{r sGExample, fig.cap="Example of a draw from the Gaussian peak shift model with $\\sigma_a = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\alpha$ values. The distribution of peak shifts is controlled by $\\sigma_a$, the peak widths are controlled by $\\sigma_{\\phi }$ and the noise is controlled by $\\sigma_{\\epsilon}$."}
+```{r sGExample, fig.cap="Example of a draw from the Gaussian peak shift model with $\\sigma_b = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\mu_k$ values. The distribution of peak shifts is controlled by $\\sigma_b$, the peak widths are controlled by $\\sigma_{\\phi }$ and the noise is controlled by $\\sigma_{\\epsilon}$."}
 set.seed(1)
 
 t <- seq(0, 300, by = 0.5)
@@ -184,37 +184,45 @@ Rising demand for air travel and enhanced security screening places pressure on 
 
 However a new simulation algorithm for queueing based algorithms called QDC [@ebert_computationally_2017] was used by @ebert2018likelihood to construct an ABC sampler for this problem for the first time, however there were problems with missalignment as noted in the discussion of this paper. We consider a similar model and data as @ebert2018likelihood. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and effect the response variable (passenger flows) to some degree which we wish to infer. 
 
-After passengers are deplaned from an arriving flight they walk to the immigration system and so a wave of customers crashes down on the shoreline of immigration. 
-
 ## Method
 
-To model passenger flows we simulate the movements of each passenger $j$ from each flight $i$. Flight $i$, begin passenger disembarkation at $a_i$, passenger $j$ from this flight disembarks from the aircraft at time $d_{ij}^{\text{dis}} = a_i + t_i^{\text{dis}}$, leaves the arrivals concourse at time $d_{ij}^{\text{ac}} = d_{ij}^{\text{dis}} + t_{ij}^{\text{imm}}$, chooses a route $r_{ij}$ through immigration and finishes immigration at time $d_{ij}^{\text{imm}} = d_{ij}^{\text{ac}} + w_{ij}^{\text{imm}} + s_{ij}^{\text{imm}}$. Distributions for disembarkation times $t_i^{\text{dis}}$ are fitted prior to analysis, however the other random variables are distributed according to unknown parameters $\alpha, \beta, \lambda_{\text{SG}}, \lambda_{\text{MG}}$ in the following manner:
-$$
-\begin{aligned}
-	&\text{Flight disembarkation start} & a_i &\sim \text{U}(A_i - 20, A_i + 20) \\
-	&\text{Passenger disembarkation time} & t_{ij} &\sim \text{G}(\alpha^{\text{dis}}_i, \beta^{\text{dis}}_i) \\
-	&\text{Walking times} & t^{\text{ac}}_{ij} &\sim \text{Gamma} \left\{ \alpha,  \frac{\beta}{m_i} \right\},    \\
-	&\text{Nationality (local or foreign)} & \text{nat}_{ij} &\sim \text{Bern}(p^{\text{nat}}_{i}),  \\
-	&\text{Passenger route (SG or MG)} & r_{ij} | \text{nat}_{ij} &\sim \text{Bern}(p^{\text{imm}}_{\text{nat}_{ij}}), \\
-	&\text{Service times} &	s_{ij} | r_{ij} &\sim \text{Exp} \left( \lambda_{r_{ij}} \right),   \\
-\end{aligned}
-$$
-where $A_i$ is the scheduled time for the flight to begin passenger disembarkation. This is a hierarchical model which consists of flight effects, such as $a_i$ and passenger effects, such as $s_i$. 
+We model the arrivals terminal of an international airport. For one day we have a list of flights $p$ along with their arrival gate $g_p$ and arrival time $a_p$. The walking distance $m_p$ from gate $g_p$ to immigration is also known. To model passenger flows we simulate every passenger from every flight. The time at each passenger $q$ from flight $q$ deplanes is $a_{p,q}^{\text{dpl}} = a_{p} + t_{p,q}^{\text{dpl}} + b_p$ where $t_{p,q}^{\text{dpl}}$ is time taken for the passenger to leave the aircraft and $b_p$ is the unobserved time (0 - 20min) is the time taken by the crew after the recorded arrival time to open the doors, letting passengers out. Note that in this example $b_p$ plays the same role as the peak shift example, that of a high dimensional latent variable.  
 
-The last step to recreate the data is to bin the departure vectors $\vec{d}^{\text{ac}}, \vec{d}^{\text{imm}}$, and $\vec{d}^{\text{imm}}_{\text{SG}}$ by minute. We refer to these model realisations as  $\vec{x}^{\text{ac}}, \vec{x}^{\text{imm}}$, and $\vec{x}^{\text{imm}}_{\text{SG}}$ which resemble the observed data $\vec{y}^{\text{ac}}, \vec{y}^{\text{imm}}$, and $\vec{y}^{\text{imm}}_{\text{SG}}$. A realisation from this model is shown below. 
+Once passengers have deplaned they walk to the immigration system and queue for processing. The times at which customers arrive to the queueing system are $a_{p,q}^{\text{imm}} = a_{p,q}^{\text{dpl}} + t_{p,q}^{\text{imm}}$ where $t_{p,q}^{\text{imm}}$ is the walking time to immigration from the arrival gate. The distribution of $t_{p,q}^{\text{imm}} | m_p$ is $\text{Gamma} ( \alpha,  \beta/m_p )$. There are two parallel queueing systems, one for local and one for foreign passengers. The proportion of local passengers on each flight is known $l_p$, and encoded in the boolean variable $\text{nat}_{p,q} \sim \text{Bern}(l_p)$. Each queueing system proceeds at a different rate $\lambda_{\text{nat}}$ and have different numbers of servers which are non-interchangeable, which is an accurate depiction of real systems including staff and automated systems working in parallel. 
 
-We compare three distances: 
-$$
-\begin{aligned}
-	\textbf{D}_0 &=  \hat{\rho}_{\text{MMD}}(\vec{x}^{\text{ac}},\vec{y}^{\text{ac}}) + \hat{\rho}_{\text{MMD}}(\vec{x}^{\text{imm}},\vec{y}^{\text{imm}}) + \hat{\rho}_{\text{MMD}}(\vec{x}^{\text{imm}}_{\text{SG}},\vec{y}^{\text{imm}}_{\text{SG}}), \\
-	\textbf{D}_1 &= \hat{\rho}_{\text{EMM}}(\vec{x}^{\text{ac}},\vec{y}^{\text{ac}}) + \hat{\rho}_{\text{MMD}}(\vec{x}^{\text{imm}},\vec{y}^{\text{imm}}) + \hat{\rho}_{\text{MMD}}(\vec{x}^{\text{imm}}_{\text{SG}},\vec{y}^{\text{imm}}_{\text{SG}}), \\
-	\textbf{D}_2 &= \hat{\rho}_{\text{EMM}}(\vec{x}^{\text{ac}},\vec{y}^{\text{ac}}) + \hat{\rho}_{\text{MMD}}(\vec{z}^{\text{imm}},\vec{y}^{\text{imm}}) + \hat{\rho}_{\text{MMD}}(\vec{z}^{\text{imm}}_{\text{SG}},\vec{y}^{\text{imm}}_{\text{SG}}),
-\end{aligned}
-$$
+We require a queueing simulator to compute the times at which passengers leave their queueing system. The queueing simulator (QueueSim) is a function which (conditional on arrival times, service times and number of servers) deterministically compute times at which passengers leave their queueing system (departure times). First we partition the arrival times $a_{p,q}^{\text{imm}}$ by $\text{nat}_{p,q}$, then we sample service times $s_{p,q} \sim \text{Exp}(\lambda_{\text{nat}_{p,q}})$, the number of servers $K_{\text{nat}}$ are known. The departure times from the queueing systems are therefore $\mathbf{z}_{\text{imm}} = \text{QueueSim}(\mathbf{a}^{\text{imm}}_{\text{nat}}, \mathbf{s}_{\text{nat}},   K_{\text{nat}})$, the variables are written in bold face to denote the full vectors partitioned by nationality since the movements of each passenger are no longer independent. 
+
+We bin $a_{p,q}^{\text{imm}}$ and $z_{p,q}^{\text{imm}}$ by minute to construct $f^{a}_{\theta}$ and $f^{z}_{\theta}$ respectively. The synthetic data were also constructed in this manner so that we could know the true parameter values. 
+
+\begin{algorithm}
+\caption{Airport loss function}
+\label{alg:AirportLoss}
+\begin{algorithmic}[1]
+\Function{AirportLoss}{$\theta, f^a, f^z, \text{type}$}
+\State $a^{\text{imm}}_{\theta} \sim p_a(\cdot | \mu, \nu)$
+\State $f^a_{\theta} = \text{hist}(a^{\text{imm}}_{\theta})$
+\If{type = registered or corrected}
+  \State $\gamma = \arg \inf_{\gamma \in \Gamma} d_{\text{FR}}(f^a, f^a_{\theta} \circ \gamma)$ 
+  \State $d^a_{\theta} = d(f^a, f^a_{\theta} \circ \gamma)$
+\Else
+  \State $d^a_{\theta} = d(f^a, f^a_{\theta})$
+\EndIf
+\If{type = corrected}
+  \State $\breve{a}^{\text{imm}}_{\theta} = \text{warp}(a^{\text{imm}}_{\theta}, \gamma)$
+\Else
+  \State $\breve{a}^{\text{imm}}_{\theta} = a^{\text{imm}}_{\theta}$
+\EndIf
+\State $z^{\text{imm}}_{\theta} \sim p_a(\cdot |\breve{a}^{\text{imm}}_{\theta}, \lambda, K)$
+\State $f^z_{\theta} = \text{hist}(z^{\text{imm}}_{\theta})$
+\State $d_{\theta} = d^a_{\theta} + d(f^z, f^z_{\theta})$
+\State \Return $d_{\theta}$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
 
 ## Results
 
-```{r, AirportPost, message=FALSE}
+```{r, AirportPost, message=FALSE, fig.cap = "Density plots of posterior samples using the airport loss function (Algorithm 3) for unregistered, registered and corrected types. True value is vertical black line."}
 load(file = "../runs/airport/2/ABC_airport.RData")
 
 # data file ABC_airport
@@ -247,15 +255,6 @@ ggplot(airport_tidy %>% filter(distance == "MMD")) +
   theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
   geom_blank(data = blank_df) +
   color_scale
-
-# ggplot(airport_tidy %>% filter(correction == TRUE)) +
-#   aes(x = value, y = stat(count), col = distance, linetype = registration) +
-#   stat_density(position = "identity", geom = "line") +
-#   facet_wrap(~parameter, scales = "free", labeller = label_parsed) + 
-#   scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
-#   scale_x_continuous(expand = c(0, 0), limits = c(0, NA)) +
-#   geom_vline(data = vline_df , mapping = aes(xintercept = input), col = "black", linetype = 1) +
-#   ggthemes::theme_few()
 ```
 
 # Counter example: Hydrological modelling
@@ -331,7 +330,7 @@ Predictions from the GR4J given parameters $\theta = (\theta_1, \theta_2, \theta
 \end{align}
 
 
-# References
+# More stuff
 
 Run-off predictions are positively valued, and it is well known that heteroscedasticity exists in the errors [@kavetski2018parameter]. A common strategy is to perform a Box-Cox transformation $Z(Y, \lambda) = (Y^{\lambda} - 1) / \lambda$ to transformed predictions with normalised errors $\eta$:
 
