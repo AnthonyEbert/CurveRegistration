@@ -18,7 +18,7 @@ bibliography: ../Zotero_link.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE, cache.rebuild = FALSE)
+knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE, cache.rebuild = TRUE)
 library(CurveRegistration)
 library(dplyr)
 library(ggplot2)
@@ -100,7 +100,7 @@ To develop an ABC sampler for functional data we develop a loss function on $\th
 \caption{Registered loss function}
 \label{alg:regloss}
 \begin{algorithmic}[1]
-\Function{loss}{$\theta, f | p, d$}
+\Function{reg\_loss}{$\theta, f | p, d$}
 \State $f_{\theta} \sim p(\cdot|\theta)$
 \State $\gamma = \arg \inf_{\gamma \in \Gamma} d_{\text{FR}}(f, f_{\theta} \circ \gamma)$
 \State $d_{\theta} = d(f, f_{\theta} \circ \gamma)$
@@ -142,7 +142,7 @@ Density plots of posterior samples arising from the ABC sampler with all four lo
 We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
 
 ```{r, sGaussianPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. The true values are shown in the vertical black solid lines."}
-load("../runs/sGaussian/1/ABC_sG_5.RData")
+load("../runs/sGaussian/3/ABC_sG_5.RData")
 
 output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
 
@@ -281,7 +281,7 @@ InputsModel <-
 
 Ind_Run <-
   seq(which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/03/1997"),
-      which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/07/1998"))
+      which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/01/1998"))
 
 RunOptions <- CreateRunOptions(
   FUN_MOD = RunModel_GR4J,
@@ -329,17 +329,15 @@ Run-off predictions are positively valued, and it is well known that heterosceda
 $$
 \begin{aligned}
 	Y_Z &= Z(\mathcal{H}(\theta, X)) + \eta, \\
-	\eta &\sim N(0, \sigma^2)
+	\eta &\sim N(0, \sigma^2).
 \end{aligned}
 $$
 
+This is an input/output model like the airport example however in this case the input is known and so we do not include a corrected loss. We use the same loss functions as were used in the peak shifted example (Algorithm \@ref(alg:loss) and \@ref(alg:regloss)). 
+
 ## Results and Discussion
 
-In this example we can see from density plots of posterior samples (Figure \@ref(fig:HydroPost)) that unregistered loss outperforms the unregistered loss. 
-
-Explanations: 
-* In the previous examples there was a high dimensional latent variable controlling peak shift location, in this example the lag is controlled by one variable. 
-* 
+In this example we can see from density plots of posterior samples (Figure \@ref(fig:HydroPost)) that unregistered loss outperforms the unregistered loss.  
 
 ```{r, HydroPost, warning = FALSE, fig.cap = "Density plots of posterior samples from hydrological model using unregistered and registered loss function."}
 load("../runs/hydrology/2/ABC_hydro_syn.RData")
@@ -352,11 +350,11 @@ hydro_syn_tidy <- ABC_hydro_syn %>%
   mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
   mutate(registration = factor(registration, levels(registration)[c(2,1)]))
 
-hydro_syn_tidy$parameter <- factor(hydro_syn_tidy$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
+hydro_syn_tidy$parameter <- factor(hydro_syn_tidy$parameter, labels = c("sigma", "theta[1]", "theta[2]", "theta[3]", "theta[4]"))
 
 vline_df = data.frame(parameter = param_names, input = true_params, value = rep(1, 5))
 
-vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
+vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma", "theta[1]", "theta[2]", "theta[3]", "theta[4]"))
 
 blank_df <- data.frame(parameter = rep(levels(hydro_syn_tidy$parameter), each = 2), value = c(0.01, 0.08, 100, 1200, -5, 3, 20, 3, 1.1, 2.9), registration = rep(hydro_syn_tidy$registration[1], 10))
 
@@ -373,6 +371,10 @@ ggplot(hydro_syn_tidy %>% filter(distance == "MMD")) +
   geom_blank(data = blank_df) +
   color_scale
 ```
+
+Although this example includes peak shifting as is found in the previous two examples, in those cases there was a high dimensional latent variable controlling peak shift location, in this example lag is controlled by a single variable. 
+
+The ABC sampler is able to correctly 
 
 # Discussion
 
