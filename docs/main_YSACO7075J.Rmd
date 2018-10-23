@@ -2,6 +2,7 @@
 title: "Registration of functional data for likelihood-free inference"
 author: "Anthony Ebert, Paul Wu, Kerrie Mengersen, Fabrizio Ruggeri"
 date: "16 October 2018"
+geometry: margin=2cm
 output: 
   bookdown::pdf_document2:
     fig_caption: yes
@@ -17,7 +18,7 @@ bibliography: ../Zotero_link.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE)
+knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE, cache.rebuild = FALSE)
 library(CurveRegistration)
 library(dplyr)
 library(ggplot2)
@@ -33,7 +34,7 @@ color_scale <- ggthemes::scale_color_wsj()
 
 # Abstract
 
-Likelihood-free inference on functional data requires specification of sensible distance measures on these functions. We consider the problem of functional data displaying not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.  
+Likelihood-free inference on functional data requires sensible distance measures for these functions. We consider the problem of functional data displaying not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.  
 
 # Introduction
 
@@ -125,8 +126,10 @@ theta = c(1, 0.01, 0, 5)
 
 
 y <- simulator_sGaussian(t, param = theta, alpha = alpha)
+z <- simulator_sGaussian(t, param = theta, alpha = alpha)
 
-plot(y, type = "l", lwd = 1, xaxs = "i", yaxs = "i", ylim = c(-0.1, 0.5))
+plot(y, type = "l", lwd = 1, xaxs = "i", yaxs = "i", ylim = c(-0.1, 0.5), col = "blue")
+lines(z, col = "red")
 abline(v = alpha, lty = 2)
 ```
 
@@ -190,9 +193,9 @@ We model the arrivals terminal of an international airport. For one day we have 
 
 Once passengers have deplaned they walk to the immigration system and queue for processing. The times at which customers arrive to the queueing system are $a_{p,q}^{\text{imm}} = a_{p,q}^{\text{dpl}} + t_{p,q}^{\text{imm}}$ where $t_{p,q}^{\text{imm}}$ is the walking time to immigration from the arrival gate. The distribution of $t_{p,q}^{\text{imm}} | m_p$ is $\text{Gamma} ( \alpha,  \beta/m_p )$. There are two parallel queueing systems, one for local and one for foreign passengers. The proportion of local passengers on each flight is known $l_p$, and encoded in the boolean variable $\text{nat}_{p,q} \sim \text{Bern}(l_p)$. Each queueing system proceeds at a different rate $\lambda_{\text{nat}}$ and have different numbers of servers which are non-interchangeable, which is an accurate depiction of real systems including staff and automated systems working in parallel. 
 
-We require a queueing simulator to compute the times at which passengers leave their queueing system. The queueing simulator (QueueSim) is a function which (conditional on arrival times, service times and number of servers) deterministically compute times at which passengers leave their queueing system (departure times). First we partition the arrival times $a_{p,q}^{\text{imm}}$ by $\text{nat}_{p,q}$, then we sample service times $s_{p,q} \sim \text{Exp}(\lambda_{\text{nat}_{p,q}})$, the number of servers $K_{\text{nat}}$ are known. The departure times from the queueing systems are therefore $\mathbf{z}_{\text{imm}} = \text{QueueSim}(\mathbf{a}^{\text{imm}}_{\text{nat}}, \mathbf{s}_{\text{nat}},   K_{\text{nat}})$, the variables are written in bold face to denote the full vectors partitioned by nationality since the movements of each passenger are no longer independent. 
+We require a queueing simulator to compute the times at which passengers leave their queueing system. The queueing simulator (QueueSim) is a function which (conditional on arrival times, service times and number of servers) deterministically compute times at which passengers leave their queueing system (departure times). First we partition the arrival times $a_{p,q}^{\text{imm}}$ by $\text{nat}_{p,q}$, then we sample service times $s_{p,q} \sim \text{Exp}(\lambda_{\text{nat}_{p,q}})$, the number of servers $K_{\text{nat}}$ are known. The departure times from the queueing systems are therefore $\mathbf{z}_{\text{imm}} = \text{QueueSim}(\mathbf{a}^{\text{imm}}_{\text{nat}}, \mathbf{s}_{\text{nat}},   K_{\text{nat}})$, the variables are written in bold face to denote the full vectors partitioned by nationality since the movements of each passenger are no longer independent. We bin $a_{p,q}^{\text{imm}}$ and $z_{p,q}^{\text{imm}}$ by minute to construct $f^{a}_{\theta}$ and $f^{z}_{\theta}$ respectively. The synthetic data were also constructed in this manner so that we could know the true parameter values. 
 
-We bin $a_{p,q}^{\text{imm}}$ and $z_{p,q}^{\text{imm}}$ by minute to construct $f^{a}_{\theta}$ and $f^{z}_{\theta}$ respectively. The synthetic data were also constructed in this manner so that we could know the true parameter values. 
+These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ can be thought of as representing the input and output of the immigration system respectively. We cannot use input data $f^{a}$ directly within the model to produce realisations $f^{z}_{\theta} | f^{a}, \theta$ since the transformation from $a_{p,q}^{\text{imm}}$ is non-invertible and we do not know the flight number for observed passengers. We can use curve registration to find the warping function $\gamma$ from $f^{a}_{\theta}$ to $f^{a}$ and apply this warping (warp) to the latent variable $a_{p,q}^{\text{imm}}$ so as to produce "corrected" $z_{p,q}^{\text{imm}}$ and ultimately corrected $f^{z}_{\theta}$ (Algorithm \@ref(alg:AirportLoss)). The type argument encodes whether the loss is unregistered, registered or corrected. For the registered loss only the dissimilarity on $f^{a}_{\theta}$ is registered, the corrected loss uses a registered dissimilarity on $f^{a}_{\theta}$ and uses the $\gamma$ to correct the input for a more accurate output sample $z_{p,q}^{\text{imm}}$. 
 
 \begin{algorithm}
 \caption{Airport loss function}
@@ -222,24 +225,26 @@ We bin $a_{p,q}^{\text{imm}}$ and $z_{p,q}^{\text{imm}}$ by minute to construct 
 
 ## Results
 
+Densities plots of posterior samples for all parameters of interest for each loss type are shown in Figure \@ref(fig:AirportPost). We see that the registered loss outperforms the unregistered loss for $\mu$ and $\nu$ which concern walking speed. Furthermore we see that applying the correction to the input to the immigration system improves the accuracy of the output since the posterior density for the corrected loss outperforms all others for all parameters. The accuracy of output predictions from an input / output process from observations involving a lossy transformation from an unobserved latent variable may benefit from this technique. 
+
 ```{r, AirportPost, message=FALSE, fig.cap = "Density plots of posterior samples using the airport loss function (Algorithm 3) for unregistered, registered and corrected types. True value is vertical black line."}
 load(file = "../runs/airport/2/ABC_airport.RData")
 
 # data file ABC_airport
 
-param_names <- c("mu", "nu[2]", "lambda[f]", "lambda[l]")
+param_names <- c("mu", "nu", "lambda[f]", "lambda[l]")
 true_params <- c(0.02, 0.64, 0.4, 0.5)
 
 vline_df = data.frame(parameter = param_names, input = true_params, value = rep(1, 4))
 
 airport_tidy <- ABC_airport %>% tidyr::gather("parameter", , -registration, -distance, -correction) %>%
   filter(!(!registration & correction)) %>%
-  mutate(out = factor(paste0(ifelse(registration, "Registered", "Unregistered"), ifelse(correction, " (corrected)", "")))) %>%
-  mutate(out = factor(out, levels(out)[c(3,1,2)]))
+  mutate(out = factor(ifelse(!registration, "Unregistered", ifelse(!correction, "Registered", "Corrected")))) %>%
+  mutate(out = factor(out, levels(out)[c(3,2,1)]))
 
 # %>% mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
 
-airport_tidy$parameter <- factor(airport_tidy$parameter, labels = c("lambda[f]", "lambda[l]", "mu", "nu[2]"))
+airport_tidy$parameter <- factor(airport_tidy$parameter, labels = c("lambda[f]", "lambda[l]", "mu", "nu"))
 
 blank_df <- data.frame(parameter = rep(levels(airport_tidy$parameter), each = 2), value = c(0, 1, 0, 1, 0, 0.05, 0, 1), out = rep(airport_tidy$out[1], 4))
 
@@ -257,9 +262,11 @@ ggplot(airport_tidy %>% filter(distance == "MMD")) +
   color_scale
 ```
 
-# Counter example: Hydrological modelling
+# Hydrological modelling
 
-```{r Hydrosetup,include=FALSE}
+Water flows within catchment areas in response to rainfall and other weather-events are forecasted with run-off models. Runoff models have been used successfully by .... in particular the GR4J (Génie Rural à 4 paramètres Journalier) model of @perrin2003improvement is widely used. Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure \@ref(fig:HydroExample)).
+
+```{r HydroExample, fig.cap="Hydrograph with associated rain and evaporation data from airGR package", message = FALSE, warning=FALSE}
 library(airGR)
 library(ggplot2)
 data(L0123001)
@@ -292,17 +299,9 @@ OutputsModel <-
                 RunOptions = RunOptions,
                 Param = Param[1:4])
 
-plot(OutputsModel, Qobs = BasinObs$Qmm[Ind_Run], which = c("Precip", "Flows"))
+#plot(OutputsModel, Qobs = BasinObs$Qmm[Ind_Run], which = c("Precip", "Flows"))
 
 Hydrodata <- BasinObs[Ind_Run,]
-```
-
-
-Water flows within catchment areas in response to rainfall and other weather-events are forecasted with run-off models. Runoff models have been used successfully by .... in particular the GR4J (Génie Rural à 4 paramètres Journalier) model of @perrin2003improvement is widely used. 
-
-Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure \@ref(fig:HydroExample)).
-
-```{r HydroExample, fig.cap="Hydrograph with associated rain and evaporation data from airGR package"}
 
 ggplot(Hydrodata) +
   geom_line(aes(y = P/4, group = "Rainfall", col = E), size = 0.5) +
@@ -315,37 +314,34 @@ ggplot(Hydrodata) +
   theme(legend.position = "top", axis.title.x = element_blank()) + scale_color_gradient2(midpoint = 2, low = "blue", high = "red", mid = "grey") + guides(col = guide_colourbar(title = "Evaporation"), linetype = guide_legend(title = element_blank()))
 ```
 
-Parameter estimation proceeds with either expert opinion or automatic calibration. Automatic calibration is typically performed with a goodness-of-fit function such as sum of squared errors rather than a likelihood function. The NSE function is a goodness-of-fit function specifically developed for hydrology. Parameter estimation for hydrological methods is an active area of research @kavetski2018parameter. It is argued in the literature that once parameters are estimated the parameter uncertainty itself contributes little to overall uncertainty @mcinerney2018simplified compared to the residual error structure.  
-
-We apply approximate Bayesian computation for this application for the first time and apply the methodology of curve-registration. 
+Parameter estimation proceeds with either expert opinion or automatic calibration. Automatic calibration is typically performed with a goodness-of-fit function such as sum of squared errors rather than a likelihood function. The NSE function is a goodness-of-fit function specifically developed for hydrology. Parameter estimation for hydrological methods is an active area of research [@kavetski2018parameter]. It is argued [@mcinerney2018simplified] that once parameters are estimated the parameter uncertainty itself contributes little to overall uncertainty compared to the residual error structure.  We apply approximate Bayesian computation for this application for the first time and apply the methodology of curve-registration. 
 
 ## Methods
 
-The simulation model we use is the GR4J model of @perrin2003improvement. This model contains four parameters labelled: the first three $(\theta_1, \theta_2, \theta_3)$ are capacities in units of length (mm); and the fourth parameter ($\theta_4$) represents a lagged effect in units of time (days).
-
-Predictions from the GR4J given parameters $\theta = (\theta_1, \theta_2, \theta_3, \theta_4)$ and explanatory variables (X) are denoted as $\mathcal{H}(\theta, X)$. Like many run-off models the GR4J model is deterministic, the practice is to add an error structure on top of this deterministic model, the model in its entirity is then: 
-
-\begin{align}
+The simulation model we use is the GR4J model of @perrin2003improvement. This model contains four parameters labelled: the first three $(\theta_1, \theta_2, \theta_3)$ are capacities in units of length (mm); and the fourth parameter ($\theta_4$) represents a lagged effect in units of time (days). Predictions from the GR4J given parameters $\theta = (\theta_1, \theta_2, \theta_3, \theta_4)$ and explanatory variables (X) are denoted as $\mathcal{H}(\theta, X)$. Like many run-off models the GR4J model is deterministic, the practice is to add an error structure on top of this deterministic model, the model in its entirity is then: 
+$$
+\begin{aligned}
 	Y = \mathcal{H}(\theta, X) + \epsilon.
-\end{align}
-
-
-# More stuff
+\end{aligned}
+$$
 
 Run-off predictions are positively valued, and it is well known that heteroscedasticity exists in the errors [@kavetski2018parameter]. A common strategy is to perform a Box-Cox transformation $Z(Y, \lambda) = (Y^{\lambda} - 1) / \lambda$ to transformed predictions with normalised errors $\eta$:
-
-\begin{align}
+$$
+\begin{aligned}
 	Y_Z &= Z(\mathcal{H}(\theta, X)) + \eta, \\
 	\eta &\sim N(0, \sigma^2)
-\end{align}
-
-We apply the MMD, Registered-MMD and elastic distances as shown previously. Once again we test all three distances. 
+\end{aligned}
+$$
 
 ## Results and Discussion
 
-In this example we find that registered distances perform more poorly than their unregistered counterparts. 
+In this example we can see from density plots of posterior samples (Figure \@ref(fig:HydroPost)) that unregistered loss outperforms the unregistered loss. 
 
-```{r, HydroPost, warning = FALSE}
+Explanations: 
+* In the previous examples there was a high dimensional latent variable controlling peak shift location, in this example the lag is controlled by one variable. 
+* 
+
+```{r, HydroPost, warning = FALSE, fig.cap = "Density plots of posterior samples from hydrological model using unregistered and registered loss function."}
 load("../runs/hydrology/2/ABC_hydro_syn.RData")
 
 true_params <- c(257, 1, 88, 2.2, 0.05)
@@ -355,9 +351,6 @@ hydro_syn_tidy <- ABC_hydro_syn %>%
   tidyr::gather("parameter", ,-data, -registration, -distance) %>%
   mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
   mutate(registration = factor(registration, levels(registration)[c(2,1)]))
-
-# %>%
-#   mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
 
 hydro_syn_tidy$parameter <- factor(hydro_syn_tidy$parameter, labels = c("sigma", "x[1]", "x[2]", "x[3]", "x[4]"))
 
@@ -370,45 +363,15 @@ blank_df <- data.frame(parameter = rep(levels(hydro_syn_tidy$parameter), each = 
 ggplot(hydro_syn_tidy %>% filter(distance == "MMD")) +
   aes(x = value, col = registration) +
   stat_density(position = "identity", geom = "line") +
+  facet_wrap(~parameter, scales = "free", labeller = label_parsed) + 
   scale_y_continuous(expand = c(0.02, 0), limits = c(0, NA)) +
   scale_x_continuous(expand = c(0, 0), limits = c(NA, NA)) +
-  facet_wrap(~parameter, scales = "free", labeller = label_parsed)  + 
-  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = true_color, linetype = 1) + 
-  ggthemes::theme_few() + 
-  theme(legend.position = "bottom") + 
+  geom_vline(data = vline_df , mapping = aes(xintercept = input), col = true_color, linetype = 1) +
+  ggthemes::theme_few() +
+  ylab(latex2exp::TeX('$\\pi_{ABC} (\\theta | y)$')) +
+  theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
   geom_blank(data = blank_df) +
   color_scale
-
-
-```
-
-
-```{r, eval = FALSE, warning=FALSE}
-load("../runs/hydrology/test2/ABC_hydro_obs_RF_MD.RData")
-load("../runs/hydrology/test2/ABC_hydro_obs_RT_MD.RData")
-
-sim_data <- simulator_hydro(true_params, InputsModel, RunOptions)
-
-predictions_noreg <- apply(ABC_hydro_obs_RF_MD[,1:5], 1, simulator_hydro, InputsModel = InputsModel, RunOptions = RunOptions, one_d = TRUE)
-
-predictions_reg <- apply(ABC_hydro_obs_RT_MD[,1:5], 1, simulator_hydro, InputsModel = InputsModel, RunOptions = RunOptions, one_d = TRUE)
-
-quantiles_noreg <- apply(predictions_noreg, 1, quantile, probs = c(0.1, 0.5, 0.9)) %>% t()
-
-quantiles_reg <- apply(predictions_reg, 1, quantile, probs = c(0.1, 0.5, 0.9)) %>% t()
-
-day_num <- sim_data[,1]
-obs_true <- as.matrix(data.frame(day_num = day_num, value = BasinObs$Qmm[Ind_Run]))
-
-tidy_noreg <- quantiles_noreg %>% as_data_frame() %>% mutate(day_num = day_num) %>% mutate(reg = FALSE)
-
-tidy_reg <- quantiles_reg %>% as_data_frame() %>% mutate(day_num = day_num) %>% mutate(reg = TRUE)
-
-
-tidy_df <- dplyr::bind_rows(tidy_noreg, tidy_reg)
-
-ggplot(tidy_df) + aes(x = day_num, ymin = `10%`, ymax = `90%`) + geom_ribbon(alpha = 0.5, fill = "red") + facet_wrap(~reg) + geom_line(data = as_data_frame(obs_true), mapping = aes(x = day_num, y = value), inherit.aes = FALSE)
-
 ```
 
 # Discussion
@@ -417,11 +380,9 @@ We have compared likelihood-free inference for three problems using three distan
 
 The first two problems were amenable to this new distance and the last problem was not. Although all three problems incorporate some aspect of peak position uncertainty, the degrees of freedom for the first two problems was much larger than the last. 
 
-# System Information
-
-```{r}
-writeLines(capture.output(sessionInfo()))
-```
+* We considered problems with high dimensional nuisance variables which we preferred to not to estimate directly
+* Registered dissimilarity is useful but registration can also be used to "correct" input data. 
+* 
 
 # References
 
