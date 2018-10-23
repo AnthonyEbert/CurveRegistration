@@ -34,7 +34,7 @@ distance_args <- list(
   threshold = 6,
   registration = TRUE,
   distance = "MMD",
-  method = "DP",
+  method = "DP2",
   mean_global = 0,
   sigma_a = 5
 )
@@ -56,8 +56,7 @@ cov_func <- function(x){
 abc_control <- list(
   prior_eval = prior_sGaussian_eval,
   n = n_runs,
-  pacc_final = pacc_final, 
-  cov_func = cov_func
+  pacc_final = pacc_final
 )
 
 #cl <- makeCluster(detectCores() - 1) #USER
