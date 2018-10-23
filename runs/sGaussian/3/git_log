@@ -1,0 +1,199 @@
+commit f0ad9fe8ad77cd96467a1252c809c274438ce1a3
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Sun Oct 21 16:14:58 2018 +1000
+
+    Output from airport HPC 4.
+
+commit bfed91abb6bf49f32cbd4e386271c3f4d79f313f
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Fri Oct 19 10:24:26 2018 +1000
+
+    HPC sG_3. Same as sG_2 with more time since sG_2 ran out of time.
+
+commit a99e6080792c74069f36a0f001a5051fc6c928d3
+Merge: 7b368f6 69a6498
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Fri Oct 19 10:18:51 2018 +1000
+
+    Merge branch 'master' of https://github.com/AnthonyEbert/CurveRegistration
+
+commit 7b368f659d01491467b54236249d19222816becb
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Fri Oct 19 10:18:13 2018 +1000
+
+    Add output from airport_3
+
+commit 52c2224378cdea4036af14e06497b2be5fc1c217
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Fri Oct 19 10:17:44 2018 +1000
+
+    Add output from sG_2
+
+commit 69a64980240b18365725acdddc41d62c9b3180bc
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 22:50:52 2018 +1000
+
+    I'm too tired for this!
+
+commit 73ac0e8597a5333a95b3ef106ea1d76ad05507c3
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 20:37:22 2018 +1000
+
+    Fix range of x-axis on plots.
+
+commit 5fd2f55dd887155120e336d80d1afceb60c15f25
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 19:12:41 2018 +1000
+
+    airport run HPC 4.
+
+commit 48daf0475e2a001a9c4aadb134b57c4c9d1ab07a
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 16:54:26 2018 +1000
+
+    Standardising figures in document.
+
+commit 84ae0f84e95d0719c2141161417917b31b993e2f
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 15:42:30 2018 +1000
+
+    small change to document for testing purposes.
+
+commit 737f0e32101375169e183e2f89c665c0cc137d34
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 15:36:14 2018 +1000
+
+    Fix problem in airport_script.R (I don't think it actually did anything bad since distance_args$flight_effect has the same value either way).
+
+commit f3fcf740b7998240a589467f301446a4b0434b6f
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 15:30:49 2018 +1000
+
+    Problems with Github pages
+
+commit 61c925a78fdfd784caaf0dc0c86bbdebfaeabcc0
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 15:26:47 2018 +1000
+
+    Testing git pages.
+
+commit 248219c4f322c9f0e35d109a87e8f52acf33d94b
+Merge: 8d96317 dc6cb70
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 14:17:29 2018 +1000
+
+    Merge branch 'master' of https://github.com/AnthonyEbert/CurveRegistration
+
+commit 8d963179e30237e959f02c32a9d2ab4af2aa861a
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 14:16:30 2018 +1000
+
+    Add correction function to make code easier to debug. Shouldn't change the output.
+
+commit dc6cb7078b8b45c753ceeb9e66061d84ca6039d1
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Thu Oct 18 12:07:03 2018 +1000
+
+    HPC run 3.
+
+commit 7617d3294369762446447750701f8cb5370a0990
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Thu Oct 18 12:05:38 2018 +1000
+
+    airport HPC run 3. Set registration_imm to TRUE for registered ABC runs.
+
+commit c9e63642fcc3d91b2aff311f456d6b69b0f0165e
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Thu Oct 18 11:34:26 2018 +1000
+
+    Finish airport HPC run 2.
+
+commit 07d37f7f4349e108742affb97924ac9885801d52
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Thu Oct 18 09:41:40 2018 +1000
+
+    sG HPC run 2. Increase number of samples and switch to robust covariance.
+
+commit 8face8d43d913a4500e9cd7dc4844979f7862d61
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 22:49:03 2018 +1000
+
+    Ready for airport/2
+
+commit 4c55e8029ce787d617491a41acc765fbf0433923
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Wed Oct 17 22:46:27 2018 +1000
+
+    Changes for airport HPC run 2.
+
+commit b555e68455a8d53cc2639e3029652c700f786dfe
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 20:40:46 2018 +1000
+
+    Add results from hydro_2.
+
+commit 6d582a99202b306e56dc60ee1e8c5b909c62d603
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 20:40:24 2018 +1000
+
+    sGaussian result from HPC 1.
+
+commit 7d0819f9c3f5abce171d2ff6e51dccd1a1fa22a8
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 11:14:57 2018 +1000
+
+    Try to run hydro_2 again.
+
+commit 61f98da403139e149b9fcab1397cd6dc07bc36df
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Wed Oct 17 11:12:15 2018 +1000
+
+    Standardise plots in main.Rmd
+
+commit be59398be48eee55d620abbc637de3886f7299a5
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 09:58:26 2018 +1000
+
+    Successful run 1 (Hydrology and airport)
+
+commit 4e71db9e62a4263d0998abf0880f9e716014d6cc
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Wed Oct 17 01:45:54 2018 +1000
+
+    Additional change for hydro_2 (HPC job)
+
+commit 79fdc72b225bbd54e40a3bc37f18711efe1177aa
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Tue Oct 16 23:57:54 2018 +1000
+
+    HPC runs 2.
+
+commit 7086b70868ca44fe9d222ac79a419125769c28e8
+Author: Anthony Ebert <anthonyebert@gmail.com>
+Date:   Tue Oct 16 23:20:46 2018 +1000
+
+    HPC run 1 for sG, airport and hydro
+
+commit 6915db4f58baa10f02d7065adc3467779209777d
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Tue Oct 16 23:16:13 2018 +1000
+
+    Changes for HPC
+
+commit 8d4a33e33d62dc55d77efa16cfd28bba53a25143
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Tue Oct 16 23:05:55 2018 +1000
+
+    Ready for HPC.
+
+commit dac89e80d8851cee9d53726a3b77d4f5e262bb35
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Tue Oct 16 13:47:29 2018 +1000
+
+    Initial commit from paper3depfromP and paper3_distance-ABC
+
+commit 1a3ecc2a1bf8abc93b02313eb80c6da772b14dea
+Author: Anthony <anthonyebert@gmail.com>
+Date:   Tue Oct 16 11:35:28 2018 +1000
+
+    first commit
