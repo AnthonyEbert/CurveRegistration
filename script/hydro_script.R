@@ -31,7 +31,7 @@ RunOptions <- CreateRunOptions(
   IndPeriod_WarmUp = NULL
 )
 
-Param <- c(257, 1, 88, 2.2, 0.05)
+Param <- c(257, 1, 88, 10, 0.05)
 
 #Param <- c(115, 1.07, 128, 2.8)
 
@@ -58,14 +58,14 @@ distance_args <- list(
 
 loss_hydro(Param, distance_args)
 
-n_runs <- 2000
+n_runs <- 10000
 pacc_final <- 0.02
 
 # ABC -----------------
 
-prior_hydro <- protoABC::prior_unif(lhs_lim = c(100, -5, 20, 1.1, 0.01), rhs_lim = c(1200, 3, 300, 2.9, 0.08), var_names = c("x1", "x2", "x3", "x4", "sigma"))
+prior_hydro <- protoABC::prior_unif(lhs_lim = c(100, -5, 20, 1.1, 0.01), rhs_lim = c(1200, 3, 300, 30, 0.08), var_names = c("x1", "x2", "x3", "x4", "sigma"))
 
-prior_eval_hydro <- protoABC::prior_unif(lhs_lim = c(100, -5, 20, 1.1, 0.01), rhs_lim = c(1200, 3, 300, 2.9, 0.08), var_names = c("x1", "x2", "x3", "x4", "sigma"), eval = TRUE)
+prior_eval_hydro <- protoABC::prior_unif(lhs_lim = c(100, -5, 20, 1.1, 0.01), rhs_lim = c(1200, 3, 300, 30, 0.08), var_names = c("x1", "x2", "x3", "x4", "sigma"), eval = TRUE)
 
 abc_control <- list(
   n = n_runs,
