@@ -142,7 +142,7 @@ Density plots of posterior samples arising from the ABC sampler with all four lo
 We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
 
 ```{r, sGaussianPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. The true values are shown in the vertical black solid lines."}
-load("../runs/sGaussian/1/ABC_sG_5.RData")
+load("../runs/sGaussian/4/ABC_sG_5.RData")
 
 output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
 
@@ -340,9 +340,9 @@ This is an input/output model like the airport example however in this case the 
 In this example we can see from density plots of posterior samples (Figure \@ref(fig:HydroPost)) that unregistered loss outperforms the unregistered loss.  
 
 ```{r, HydroPost, warning = FALSE, fig.cap = "Density plots of posterior samples from hydrological model using unregistered and registered loss function."}
-load("../runs/hydrology/2/ABC_hydro_syn.RData")
+load("../runs/hydrology/3/ABC_hydro_syn.RData")
 
-true_params <- c(257, 1, 88, 2.2, 0.05)
+true_params <- c(257, 1, 88, 10, 0.05)
 param_names <- names(ABC_hydro_syn)[1:5]
 
 hydro_syn_tidy <- ABC_hydro_syn %>%
@@ -356,7 +356,7 @@ vline_df = data.frame(parameter = param_names, input = true_params, value = rep(
 
 vline_df$parameter <- factor(vline_df$parameter, labels = c("sigma", "theta[1]", "theta[2]", "theta[3]", "theta[4]"))
 
-blank_df <- data.frame(parameter = rep(levels(hydro_syn_tidy$parameter), each = 2), value = c(0.01, 0.08, 100, 1200, -5, 3, 20, 3, 1.1, 2.9), registration = rep(hydro_syn_tidy$registration[1], 10))
+blank_df <- data.frame(parameter = rep(levels(hydro_syn_tidy$parameter), each = 2), value = c(0.01, 0.08, 100, 1200, -5, 3, 20, 3, 1.1, 30), registration = rep(hydro_syn_tidy$registration[1], 10))
 
 ggplot(hydro_syn_tidy %>% filter(distance == "MMD")) +
   aes(x = value, col = registration) +
