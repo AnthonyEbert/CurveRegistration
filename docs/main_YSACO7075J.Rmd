@@ -109,7 +109,7 @@ To develop an ABC sampler for functional data we develop a loss function on $\th
 \end{algorithmic}
 \end{algorithm}
 
-# Peak shift example
+# Peak shift example \label{sec:sG}
 
 ## Method
 
@@ -142,7 +142,7 @@ Density plots of posterior samples arising from the ABC sampler with all four lo
 We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
 
 ```{r, sGaussianPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. The true values are shown in the vertical black solid lines."}
-load("../runs/sGaussian/3/ABC_sG_5.RData")
+load("../runs/sGaussian/1/ABC_sG_5.RData")
 
 output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
 
@@ -181,7 +181,7 @@ ggplot(output_tidy) +
   color_scale
 ```
 
-# Motivating example: Passenger processing at an international airport
+# Passenger processing at an international airport \label{sec:Airport}
 
 Rising demand for air travel and enhanced security screening places pressure on existing airport infrastructure. Airport terminal infrastructure for financial and geographical reasons is difficult to upgrade at such a rate as to match this demand. With this in mind operational planners at airport seek to optimise day-to-day operations. However any optimisation framework requires a model with many parameters, to be a realistic and useful model is will necessarily become complicated and this combined with the data collection scheme leads inevitably to intractable likelihoods. On the other hand simulators are straight-forward to construct although computationally demanding ruling out simulation-based approaches such as ABC. This means that parameter inference is often conducted in an ad-hoc and unprincipled manner.
 
@@ -262,7 +262,7 @@ ggplot(airport_tidy %>% filter(distance == "MMD")) +
   color_scale
 ```
 
-# Hydrological modelling
+# Hydrological modelling \label{sec:Hydro}
 
 Water flows within catchment areas in response to rainfall and other weather-events are forecasted with run-off models. Runoff models have been used successfully by .... in particular the GR4J (Génie Rural à 4 paramètres Journalier) model of @perrin2003improvement is widely used. Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure \@ref(fig:HydroExample)).
 
@@ -378,13 +378,7 @@ The ABC sampler is able to correctly
 
 # Discussion
 
-We have compared likelihood-free inference for three problems using three distances. The distances were the elastic distance (as proposed by ...), maximum mean discrepancy (Gretton et al...) and a distance incorporating techniques from both registered maximum mean discrepancy. 
-
-The first two problems were amenable to this new distance and the last problem was not. Although all three problems incorporate some aspect of peak position uncertainty, the degrees of freedom for the first two problems was much larger than the last. 
-
-* We considered problems with high dimensional nuisance variables which we preferred to not to estimate directly
-* Registered dissimilarity is useful but registration can also be used to "correct" input data. 
-* 
+We have demonstrated two ways through which curve registration can be used in aid of likelihood-free inference for functional data. In the peak shifts example of Section \@ref(sec:sG) we saw how registered loss based on both FR and MMD dissimilarities outperform their unregistered types. Another use of the curve registration is shown in the airport example of Section \@ref(sec:Airport). 
 
 # References
 
