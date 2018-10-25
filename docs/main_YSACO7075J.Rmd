@@ -320,12 +320,12 @@ Parameter estimation proceeds with either expert opinion or automatic calibratio
 
 ## Methods
 
-The simulation model we use is the GR4J model of @perrin2003improvement. This model contains four parameters labelled: the first three $(\theta_1, \theta_2, \theta_3)$ are capacities in units of length (mm); and the fourth parameter ($\theta_4$) represents a lagged effect in units of time (days). Predictions from the GR4J, given parameters $\theta = (\theta_1, \theta_2, \theta_3, \theta_4)$ and input observations $f^a$, are denoted as $\mathcal{H}(\theta, f^a)$. Like many run-off models, the GR4J model is deterministic. To provide useful prediction intervals, hydrologists typically add an error structure on top of the deterministic model. Run-off predictions are positively valued, and it is well known that errors are heteroscedastic [@kavetski2018parameter]. A common strategy is to perform a Box-Cox transformation $B(x, \lambda) = (x^{\lambda} - 1) / \lambda$ to transformed predictions with errors $\epsilon$:
+The simulation model we use is the GR4J model of @perrin2003improvement. This model contains four parameters labelled: the first three $(\theta_1, \theta_2, \theta_3)$ are capacities in units of length (mm); and the fourth parameter ($\theta_4$) represents a lagged effect in units of time (days). Predictions from the GR4J, given parameters $\theta = (\theta_1, \theta_2, \theta_3, \theta_4)$ and input observations $f^a$, are denoted as $\mathcal{H}(\theta, f^a)$. Like many run-off models, the GR4J model is deterministic. To provide useful prediction intervals, hydrologists typically add an error structure on top of the deterministic model. Run-off predictions are positively valued, and it is well known that errors are heteroscedastic [@kavetski2018parameter]. A common strategy is to perform a Box-Cox transformation $B(x, \lambda) = (x^{\lambda} - 1) / \lambda$ to deterministic output, add noise $\epsilon$ and then invert the Box-Cox transformation: 
 \begin{align}
-	f^z &= B(\mathcal{H}(\theta, f^a)) + \epsilon, \\
+	f^z &= B^{-1}[B[\mathcal{H}(\theta, f^a)] + \epsilon], \\
 	\epsilon &\sim N(0, \sigma^2).
 \end{align}
-The model is an input/output model like the airport example, however, in this case, the input observation $f^a$ and the latent input variable are one and the same, so we do not include a corrected loss. We use the same loss functions as were used in the peak shifted example (Algorithm \@ref(alg:loss) and \@ref(alg:regloss)). 
+The model is an input/output model like the airport example, however, in this case, the input observation $f^a$ and the latent input variable are one and the same, so we do not include a corrected loss. We use the same loss functions as were used in the peak shifted example (Algorithms \@ref(alg:loss) and \@ref(alg:regloss)). 
 
 ## Results
 
