@@ -18,7 +18,7 @@ bibliography: ../Zotero_link.bib
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE, cache.rebuild = TRUE)
+knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE, cache.rebuild = FALSE)
 library(CurveRegistration)
 library(dplyr)
 library(ggplot2)
@@ -27,6 +27,11 @@ true_color <- "black"
 #color_scale <- scale_color_manual(values = c("red", "blue", "grey"))
 color_scale <- ggthemes::scale_color_wsj()
 ```
+
+\setlength{\abovedisplayskip}{-15pt}
+\setlength{\belowdisplayskip}{0pt}
+\setlength{\abovedisplayshortskip}{0pt}
+\setlength{\belowdisplayshortskip}{0pt}
 
 \newcommand{\fsf}{\mathsf{f}}
 \newcommand{\gsf}{\mathsf{g}}
@@ -38,45 +43,43 @@ Likelihood-free inference on functional data requires sensible distance measures
 
 # Introduction
 
-Functional data analysis (FDA) address statistical problems involving a functional dataset, where the data comprise a set of functions [@hsing2015theoretical]. A functional random variable $\mathsf{y}$ is a random variable taking values in a function space $\mathsf{f} \in \mathcal{F}$ with associated probability measure $p$. We consider function spaces of the form $\mathbb{R}^{[0, 1]}$, that is $\mathsf{f}: [0, 1] \mapsto \mathbb{R}$, transformations from different domain intervals is straight-forward. A functional dataset is a collection of observed functional random variables $\mathsf{f}^1, \mathsf{f}^2, \cdots$. In practice, the functional random variables are observed with error on a countable subset of the domain of the function. This is what is referred to as a functional dataset, which contains empirical functional random variables. An empirical functional random variable (EFRV) $f$ is itself a set of pairs $f_1, f_2, \cdots$ of the form $f_i = (t^f_{i},y^f_{i})$ representing sampling location $t^f_i$ and corresponding function output $y^f_{i}$. Therefore $f$ is of the form $\{ (t^f_{1},y^f_{1}), \cdots , (t^f_{j}, y^f_{j}), \cdots, (t^f_{n}, y^f_{n}) \}$, for fixed sampling points $t^f = \{t^f_{1}, \cdots, t^f_{n} \}$ and corresponding observed functional outputs $y^f = y^f_{1}, \cdots, y^f_{n}$. We append the superscript $f$ to keep track of which sampling points and functional outputs refer to which EFRV. 
+Functional data analysis (FDA) address statistical problems involving functional data, where the data comprise a set of functions [@hsing2015theoretical]. Special-cases of functional datasets include longitudinal data and time series. However, the field of FDA is much broader than this [@wang2016functional]. A functional random variable $\mathsf{y}$ is a random variable taking values in a function space $\mathsf{f} \in \mathcal{F}$. We consider function spaces of the form $\mathbb{R}^{[0, 1]}$, that is $\mathsf{f}: [0, 1] \mapsto \mathbb{R}$, transforming from a different domain interval is straight-forward. Functional data are a collection of observed functional random variables $\mathsf{f}^1, \mathsf{f}^2, \cdots$. In practice, the functional random variables are observed with error on a countable subset of the domain of the function. This is what we refer to as an empirical functional random variable (EFRV). An EFRV $f$ is itself a set of pairs $f_1, f_2, \cdots$ of the form $f_i = (t^f_{i},y^f_{i})$ representing sampling location $t^f_i$ and corresponding function output $y^f_{i}$. Therefore $f$ is of the form $\{ (t^f_{1},y^f_{1}), \cdots , (t^f_{j}, y^f_{j}), \cdots, (t^f_{n}, y^f_{n}) \}$. We append the superscript $f$ to keep track of which sampling points and functional outputs refer to which EFRV. 
 
-Special-cases of functional datasets include longitudinal data and time series. However, the field of FDA is much broader than this [@wang2016functional]. When analysing functional data, a statistic of interest is an estimate of the mean function $\mu(t) = \underset{\fsf \sim p}{\E}[\mathsf{f}](t)$. In the case of EFRVs with a shared set of sampling locations ($t^{f_1} = \cdots = t^{f_i} = \cdots$) this is usually estimated with $\hat{\mu}(t_j) = 1/n_i \sum_{i = 1}^{n_i} y^{f_i}_j$. In either case, it is possible that the resulting function is not an element of $\mathcal{F}$ due to phase variation. For instance, suppose $\mathcal{F}$ is the set of Gaussian functions $\phi(\mu,\sigma)$ with $\mu \sim U(0, 5)$, $\sigma = 1$. The mean function, in this case, is not Gaussian.  
+When analysing functional data, a statistic of interest is an estimate of the mean function $\mu(t) = \underset{\fsf \sim p}{\E}[\mathsf{f}](t)$. In the case of EFRVs with a shared set of sampling locations ($t^{f_1} = \cdots = t^{f_i} = \cdots$), this is usually estimated with $\hat{\mu}(t_j) = 1/n_i \sum_{i = 1}^{n_i} y^{f_i}_j$. In such cases, it is possible that the resulting function is not an element of $\mathcal{F}$ due to phase variation. For instance, suppose $\mathcal{F}$ is the set of Gaussian functions $\phi(\mu,\sigma)$ with $\mu \sim U(0, 5)$, $\sigma = 1$ then the mean function is not Gaussian.  
 
-There are a variety of approaches in the literature which seek to address the provide statistical tools in the presence of phase variation, these include: dynamic time warping [@Padoy2012632,@wang1997alignment]; the Frechet distance [@rote2007computing]; curve registration and elastic functions [@srivastava2011registration]. Applications of curve registration include: growth curves [@cheng2016bayesian]; surgical workflow [@Padoy2012632]. 
+There are a variety of approaches in the literature which seek to provide statistical tools for functional data in the presence of phase variation, these include: dynamic time warping [@Padoy2012632; @wang1997alignment]; the Frechet distance [@rote2007computing]; curve registration and elastic functions [@srivastava2011registration]. Applications of curve registration include: growth curves [@cheng2016bayesian]; surgical workflow [@Padoy2012632]. 
 
-We standardise the domain of $\mathsf{f^*} \in \mathbb{R}^{[0, T]}$ from $[0,T]$ to $[0,1]$ by setting $\mathsf{f}(t) = \mathsf{f^*}(t \times T)$. The idea of curve registration is to align elements of $\mathcal{F}$ with warping functions $\gamma^{\mathsf{f}_i}: [0,1] \mapsto [0,1]$, such that elements of the set $\mathcal{G} := \{\mathsf{f}^i \circ \gamma^{\mathsf{f}_i} | \mathsf{f}^i \in \mathcal{F} \}$ have features which are aligned. We adopt the elastic functions approach of @srivastava2011registration, their approach is to find $\gamma$ which minimises the Fisher-Rao metric. The distance used for this approach is the Fisher-Rao metric: 
-$$d_{\text{FR}}(\fsf,\gsf) = \int [ q^{\fsf}(t) - q^{\gsf}(t) ]^2 \text{d} t , $$
-where $q^f(t) = \text{sign}(f^{\prime}(t)) \times \sqrt{|f^{\prime}(t)|}$. We align a curve $\fsf$ to $\gsf$ by defining a warping function $\gamma \in \Gamma$ where $\Gamma = \{\gamma \in [0,1]^{[0, 1]} | \gamma \text{ is invertible and } \gamma(0) = 0 \}$ to minimise $\rho_{\text{FR}}(\fsf \circ \gamma, \tilde{\gsf})$. The advantage of using $\rho_{\text{FR}}$ for curve registration is that:
-$$d_{\text{FR}}(\fsf, \gsf) = d_{\text{FR}}(\fsf \circ \gamma, \gsf \circ \gamma), $$
-in other words, the Fisher-Rao metric is invariant to a shared warping. This implies that the discrepancy of amplitudes (amplitude distance) between $\fsf$ and $\gsf$, defined as
-$$d_{\text{amp}}(\fsf,\gsf) := \inf_{\gamma \in \Gamma} d_{\text{FR}}(\fsf \circ \gamma, \gsf),$$ 
-is symmetric [@srivastava2011registration]. In practice, EFRVs $f$ are used in place of true unobserved functions $\fsf$ and the same approach proceeds with straight-forward approximations.
+We standardise the domain of $\mathsf{f^*} \in \mathbb{R}^{[0, T]}$ from $[0,T]$ to $[0,1]$ by setting $\mathsf{f}(t) = \mathsf{f^*}(t \times T)$. The idea of curve registration is to align elements of $\mathcal{F}$ with warping functions $\gamma^{\mathsf{f}}: [0,1] \mapsto [0,1]$, such that elements of the set $\mathcal{G} := \{\mathsf{f} \circ \gamma^{\mathsf{f}} | \mathsf{f} \in \mathcal{F} \}$ have aligned features according to some criteria. We adopt the elastic functions approach of @srivastava2011registration, their approach is to find $\gamma$ which minimises the Fisher-Rao metric: 
+\begin{align}
+d_{\text{FR}}(\fsf,\gsf) = \int [ q^{\fsf}(t) - q^{\gsf}(t) ]^2 \text{d} t, (\#eq:FR)
+\end{align} 
+where $q^f(t) = \text{sign}(f^{\prime}(t)) \times \sqrt{|f^{\prime}(t)|}$. Curve $\fsf$ is aligned to $\gsf$ by defining a warping function $\gamma \in \Gamma$ where $\Gamma = \{\gamma \in [0,1]^{[0, 1]} | \gamma \text{ is invertible and } \gamma(0) = 0 \}$ to minimise $\rho_{\text{FR}}(\fsf \circ \gamma, \tilde{\gsf})$. One advantage of using $\rho_{\text{FR}}$ for curve registration is that:
+\begin{align*} 
+d_{\text{FR}}(\fsf, \gsf) = d_{\text{FR}}(\fsf \circ \gamma, \gsf \circ \gamma), 
+\end{align*}
+in other words, the Fisher-Rao metric is invariant to shared warpings. This implies that the discrepancy of amplitudes (amplitude distance) between $\fsf$ and $\gsf$, defined as
+\begin{align*}
+d_{\text{amp}}(\fsf,\gsf) := \inf_{\gamma \in \Gamma} d_{\text{FR}}(\fsf \circ \gamma, \gsf),
+\end{align*}
+is symmetric [@srivastava2011registration]. In practice, $f$ is used in place of true unobserved functions $\fsf$ and the same approach proceeds with straight-forward approximations.
 
-For simplicity and without loss of generality we consider problems where the functional dataset consists of a single observed EFRV $f$. We extend curve registration to the likelihood-free domain with approximate Bayesian computation (ABC). We proceed now with a brief background of ABC, for a detailed exposition on the subject see @sisson2018handbook.
+For simplicity and without loss of generality we consider problems where the functional data comprise a single observed EFRV. We extend curve registration to the likelihood-free domain with approximate Bayesian computation (ABC). We proceed now with a brief background of ABC, for a detailed exposition on the subject see @sisson2018handbook.
 
 # Approximate Bayesian Computation
 
-Suppose we can to draw samples from, but not evaluate a probability distribution $p(x|\theta)$, and furthermore, we wish to draw samples $\pi(\theta|x)$ such that we can conduct inference on $\theta | x$. We must proceed via simulation-based approaches. This is useful where $p(x|\theta)$ represents a complicated simulator for generating realisations $x_{\theta} \sim p(\cdot|\theta)$. 
+Suppose we can draw samples from, but not evaluate a probability distribution $p(\cdot|\theta)$. Furthermore, we wish to draw samples $\pi(\theta|x)$ with observed data $x$ to perform inference on $\theta$. In such cases simulation-based approaches might be necessary, these are useful whenever $p(\cdot|\theta)$ represents a complicated simulator for generating realisations $x_{\theta} \sim p(\cdot|\theta)$. 
 
-The theoretical foundation of ABC rests on the fact that if we draw samples $\theta$ independently from the prior $\pi(\theta)$ and use each $\theta$ to generate a corresponding $x_{\theta}$, then the set $\{\theta | x_{\theta} = x\}$ are sampled from $\pi(\theta|x)$. Such an approach would never work in practice as the proportion of $x_{\theta}$ samples equal to $x$ for models with continuous support is zero. For this reason, a dissimilarity $d$ between $x$ and $x_{\theta}$ is used within a decision rule to accept or reject $\theta$. Furthermore, the dissimilarity is often defined in terms of lower dimensional summary statistics of $x$ to avoid the curse of dimensionality. 
+The theoretical foundation of ABC rests on the fact that if we draw samples $\theta$ independently from the prior $\pi(\theta)$ and use each $\theta$ to generate a corresponding $x_{\theta}$ from $p(\cdot|\theta)$, then the set $\{\theta | x_{\theta} = x\}$ are sampled from $\pi(\theta|x)$. Such an approach would never work in practice as the proportion of $x_{\theta}$ samples equal to $x$ for models with continuous support is zero. For this reason, a dissimilarity $d$ between $x$ and $x_{\theta}$ is used within a decision rule to accept or reject $\theta$. Furthermore, the dissimilarity is often defined in terms of lower dimensional summary statistics of $x$ to avoid the curse of dimensionality. In other words, we sample the set $\{\theta|d(x, x_{\theta}) \leq \epsilon \}$ for some fixed threshold $\epsilon > 0$. 
 
-Dissimilarity, as defined by @jousselme2012distances, is a weaker notion than distance without the triangle inequality and where $x{=}y \implies d(x, y){=}0$ is true but the converse $d(x, y){=}0 \implies x{=}y$ is not true in general. For instance, a common approach is to define $d$ as a distance on lower dimensional summary statistics; this is equivalent to a dissimilarity on the sample space. 
+Dissimilarity, as defined by @jousselme2012distances, is a weaker notion than distance---without the triangle inequality and where $x{=}y \implies d(x, y){=}0$ is true but the converse $d(x, y){=}0 \implies x{=}y$ is not true in general. For instance, a common approach is to define $d$ as a distance on lower dimensional summary statistics; this is equivalent to a dissimilarity on the sample space since $d[S(x), S(x_{\theta})]{=}0 \nRightarrow x{=}x_{\theta}$.
 
-A dissimilarity used within this paper is maximum mean discrepancy (MMD), as introduced by @gretton_optimal_2012, is a metric between probability measures $p, q$ on a common probability space $\mathcal{Q}$:
-$$
-\begin{aligned}
-d_{\text{MMD}}(p, q, \mathcal{H}) = \sup_{h \in \mathcal{H}} \left( \int h(x) [p(x) - q(x)] \text{d} x \right),
-\end{aligned}
-$$
-where $\mathcal{H}$ is a function space defined on the same domain as the probability space $\mathcal{Q}$. The function space is taken by @gretton_kernel_2012 to be the set of functions which integrate to 1 on the probability space of interest. @gretton_kernel_2012 also developed an estimator for this metric based on observed data $\mathbf{x} \sim p$, $\mathbf{y} \sim q$. In our case, $\mathbf{x}$ and $\mathbf{y} \sim q$ represent functional datasets which we label as $f$ and $g$ respectively. The MMD estimator is:
-$$
-\begin{aligned}
-\hat{d}_{\text{MMD}}(f,g) &=  \frac{1}{m^2} \sum_{j=1}^m \sum_{j^{\prime} = 1}^{m} k(f_j, f_{j^{\prime}}) + \\
-&\quad \quad \frac{1}{n^2} \sum_{j=1}^n \sum_{j^{\prime}  = 1 }^n k(g_j, g_{j^{\prime}}) \nonumber \\
-&\quad \quad - \frac{2}{mn} \sum_{j=1}^m \sum_{j^{\prime}  = 1 }^n  k(f_j, g_{j^{\prime}}), \label{eq:MMD} 
-\end{aligned}
-$$
-where $m$ is the cardinality of $f$, $n$ is the cardinality of $g$ and $k$ is a kernel function. A common choice of kernel function is the Gaussian kernel, $k(f_j,g_{j^{\prime}}) = \exp \left[ -0.5 \sqrt{(t^f_j-t^g_{j^{\prime}})^T S^{-1} (y^f_j-y^g_{j^{\prime}})} \right]$, where $S$ is a fixed tuning covariance matrix. It has been shown that $\hat{\rho}_{\text{MMD}}$ is equivalent to a kernel-smoothed L2 norm between EFRVs [@gretton_kernel_2012]. We can, therefore, use $\hat{\rho}_{\text{MMD}}$ as a dissimilarity on EFRVs rather than probability measures.
+The FR metric (Equation \@ref(eq:FR)) is a dissimilarity, another dissimilarity which we use is an estimator for maximum mean discrepancy (MMD). We refer to the estimator for MMD simply as MMD for the sake of brevity. MMD was developed by @gretton_kernel_2007 as a non-parameteric two-sample statistic for testing whether samples come from the same distribution. @park2016k2 use MMD as a dissimilarity within an ABC algorithm. In our case, $\mathbf{x}$ and $\mathbf{y} \sim q$ represent functional datasets which we label as $f$ and $g$ respectively. The MMD estimator is:
+\begin{align}
+d_{\text{MMD}}(f,g) &=  \frac{1}{m^2} \sum_{j=1}^m \sum_{j^{\prime} = 1}^{m} k(f_j, f_{j^{\prime}}) + \nonumber \\
+&\quad \quad \frac{1}{n^2} \sum_{j=1}^n \sum_{j^{\prime}  = 1 }^n k(g_j, g_{j^{\prime}}) \nonumber \nonumber \\
+&\quad \quad - \frac{2}{mn} \sum_{j=1}^m \sum_{j^{\prime}  = 1 }^n  k(f_j, g_{j^{\prime}}), (\#eq:MMD)
+\end{align}
+where $m$ is the cardinality of $f$, $n$ is the cardinality of $g$ and $k$ is a kernel function. A common choice of kernel function is the Gaussian kernel, $k(f_j,g_{j^{\prime}}) = \exp \left[ -0.5 \sqrt{(t^f_j-t^g_{j^{\prime}})^T S^{-1} (y^f_j-y^g_{j^{\prime}})} \right]$, where $S$ is a fixed tuning covariance matrix. gretton_kernel_2012 showed that $\hat{\rho}_{\text{MMD}}$ is equivalent to a kernel-smoothed L2 norm between EFRVs. We can, therefore, use $\hat{\rho}_{\text{MMD}}$ as a dissimilarity on EFRVs rather than probability measures.
 
 In summary, ABC samplers return samples of $\theta$ depending on the value of $d(f, f_{\theta})$. There exist many varieties of ABC samplers in the literature including: accept-reject, replenishment [@drovandi_estimation_2011]; simulated annealing [@albert_simulated_2015], ... We find it useful in this paper to introduce an additional abstraction called a loss function (Algorithm \@ref(alg:loss)), which helps to simplify the clarify the language used later. 
 
@@ -84,7 +87,7 @@ In summary, ABC samplers return samples of $\theta$ depending on the value of $d
 \caption{Loss function}
 \label{alg:loss}
 \begin{algorithmic}[1]
-\Function{loss}{$\theta, f | p, d$}
+\Function{}{$\theta, f | p, d$}
 \State $f_{\theta} \sim p(\cdot|\theta)$
 \State $d_{\theta} = d(f, f_{\theta}) $
 \State \Return $d_{\theta}$
@@ -92,15 +95,15 @@ In summary, ABC samplers return samples of $\theta$ depending on the value of $d
 \end{algorithmic}
 \end{algorithm}
 
-This notion makes ABC samplers easier to describe, for instance, the rejection sampler can be written as a for loop over $i$ with $\left( \theta_i \sim \pi(\cdot), d_i = \text{loss}(\theta_i, x) \right)$ keeping only pairs with $d_i$ lower than $\epsilon$. We adopt the ABC sampler as defined by Drovandi and Pettitt termed the replenishment ABC sampler (Appendix). 
+This notion makes ABC samplers easier to describe, for instance, the rejection sampler can be written as a for loop over $i$ with $\left( \theta_i \sim \pi(\cdot), d_i = \text{loss}(\theta_i, f) \right)$ keeping only pairs with $d_i$ lower than $\epsilon$. We adopt the ABC sampler as defined by Drovandi and Pettitt termed the replenishment ABC sampler (Appendix). 
 
-To develop an ABC sampler for functional data, we develop a loss function on $\theta$ and functional datasets $\fsf{f} \sim \mathcal{F}$ based on the elastic dissimilarity of @srivastava2011registration combined with a discrepancy. In the next section, we compare four loss functions; the first two are inelastic loss functions based on MMD and FR discrepancies. The last two are registered loss functions (Algorithm \@ref(alg:regloss)), where we sample $f_{\theta}$ from $p(f|\theta)$, register $f_{\theta}$ to $f$ to minimise the FR dissimilarity and then compute the dissimilarity between $f$ and the registered version of $f_{\theta}$.
+To develop an ABC sampler for functional data, we develop loss functions on $\theta$ and $f$ based on the warping $\gamma$ of @srivastava2011registration, combined with a discrepancy (either FR \@ref(eq:FR) or MMD \@ref(eq:MMD)) as is shown in Algorithm \@ref(alg:regloss). In the next section these loss functions against their unregistered versions (Algorithm \@ref(alg:loss)). 
 
 \begin{algorithm}
 \caption{Registered loss function}
 \label{alg:regloss}
 \begin{algorithmic}[1]
-\Function{reg\_loss}{$\theta, f | p, d$}
+\Function{}{$\theta, f | p, d$}
 \State $f_{\theta} \sim p(\cdot|\theta)$
 \State $\gamma = \arg \inf_{\gamma \in \Gamma} d_{\text{FR}}(f, f_{\theta} \circ \gamma)$
 \State $d_{\theta} = d(f, f_{\theta} \circ \gamma)$
@@ -109,15 +112,15 @@ To develop an ABC sampler for functional data, we develop a loss function on $\t
 \end{algorithmic}
 \end{algorithm}
 
-# Peak shift example \label{sec:sG}
+# Gaussian peak shift \label{sec:sG}
 
 ## Method
 
-We first construct an artificial problem to demonstrate the method we suggest. The mean function $\mu(t)$ is a sum over 14 Gaussian functions, i.e. $\mu(t) = \sum_{p=1}^{14} \phi(t | \mu_p, \sigma_{\phi})$. The observed functional output corresponding to fixed sampling locations $t = (0, 0.5, \cdots, 300)$, are independent and normally distributed $y_j \sim N(\mu(t_j), \sigma_{\epsilon})$. What makes this problem of interest here is that the mean parameters $\mu_p$ are latent random variables $\mu_p \sim N(b_p, \sigma_b)$ making inelastic dissimilarities inappropriate. 
+We first construct an artificial problem to demonstrate the method we suggest. The mean function $\mu(t)$ is a sum over 14 Gaussian functions, i.e. $\mu(t) = \sum_{u=1}^{14} \phi(t | \mu_u, \sigma_{\phi})$. The observed functional output corresponding to fixed sampling locations $t = (0, 0.5, \cdots, 300)$, are independent and normally distributed $y_j \sim N(\mu(t_j), \sigma_{\epsilon})$. What makes the problem of interest here is that the mean parameters $\mu_u$ are latent random variables $\mu_u = \alpha_u + b_u$, where $b_u \sim N(0, \sigma_b)$ with known values for $\sigma_b$ and each $\alpha_u$. The fact that $b_u$ is high dimensional and leads to peak shifting, making inelastic dissimilarities inappropriate. 
 
 The prior distributions for the parameters of interest are $\sigma_{\phi} \sim U(0, 10)$, and $\sigma_{\epsilon} \sim U(0, 0.1)$. An example of a model realisation from this distribution is shown in Figure \@ref(fig:sGExample).
 
-```{r sGExample, fig.cap="Example of a draw from the Gaussian peak shift model with $\\sigma_b = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\mu_k$ values. The distribution of peak shifts is controlled by $\\sigma_b$, the peak widths are controlled by $\\sigma_{\\phi }$, and the noise is controlled by $\\sigma_{\\epsilon}$."}
+```{r sGExample, fig.cap="Example of model realisations from the Gaussian peak shift model with $\\sigma_b = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\mu_u$ values. The distribution of peak shifts is controlled by $\\sigma_b$, the peak widths are controlled by $\\sigma_{\\phi }$, and the noise is controlled by $\\sigma_{\\epsilon}$."}
 set.seed(1)
 
 t <- seq(0, 300, by = 0.5)
@@ -135,9 +138,9 @@ abline(v = alpha, lty = 2)
 
 To test the effectiveness of registered loss functions in this situation, we compare all four combinations, i.e. MMD and FR with and without registration.  We set the covariance matrix for MMD to be the $2 \times 2$ diagonal matrix with elements 9 and $1 \times 10^{-4}$. We use the R package fdasrvf [@tuckerCRAN] to align the simulated and observed functional datasets. To compute the elastic distance between functions as defined by @srivastava2011registration we use the implementation contained in the R package fdasrvf [@tuckerCRAN]. 
 
-## Results and Discussion
+## Results
 
-Density plots of posterior samples arising from the ABC sampler with all four loss functions, registered and unregistered, (Figure \@ref(fig:sGaussianPost)) show that the registered loss functions outperform their unregistered counterparts. Interestingly the distance we use for registration, FR, when used as the distance for ABC is outperformed by MMD which leads us to believe that the best dissimilarity for registration and the best dissimilarity for ABC do not always coincide. The reason MMD outperforms FR for $\sigma_{\epsilon}$, in particular, is its penalty term. The first term in Equation penalises the concentration of $y^{f_{\theta}}$ such that the algorithm is lead to a higher value of $\theta_{\epsilon}$ to match the noise in $y^{f}$. We are interested in the effect of registration so in further examples we proceed only with MMD. 
+Density plots of posterior samples arising from the ABC sampler with all four loss functions, registered and unregistered, (Figure \@ref(fig:sGaussianPost)) show that registered loss functions outperform their unregistered counterparts. Interestingly the distance used for registration, FR, when used as the dissimilarity for ABC is outperformed by MMD which leads us to believe that the best dissimilarity for registration and the best dissimilarity for ABC do not always coincide. The reason MMD outperforms FR for $\sigma_{\epsilon}$, in particular, is its penalty term. The first term in Equation penalises the concentration of $y^{f_{\theta}}$ such that the algorithm is lead to a higher value of $\sigma_{\epsilon}$ to match the noise in $y^{f}$. We are interested in the effect of registration rather than the dissimilarity so in further examples we proceed only with MMD. 
 
 We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
 
@@ -183,37 +186,36 @@ ggplot(output_tidy) +
 
 # Passenger processing at an international airport \label{sec:Airport}
 
-Rising demand for air travel and enhanced security screening places pressure on existing airport infrastructure. Airport terminal infrastructure for financial and geographical reasons is difficult to upgrade at such a rate as to match this demand. With this in mind, operational planners at airport seek to optimise day-to-day operations. However, any optimisation framework requires a model with many parameters, to be a realistic and useful model is will necessarily become complicated and this combined with the data collection scheme leads inevitably to intractable likelihoods. On the other hand, simulators are straight-forward to construct although computationally demanding ruling out simulation-based approaches such as ABC. This means that parameter inference is often conducted in an ad-hoc and unprincipled manner.
+Rising demand for air travel and enhanced security screening places pressure on existing airport infrastructure. Airport terminal infrastructure, for financial and geographical reasons, is difficult to upgrade at such a rate as to match this demand. With this in mind, operational planners at airports seek to optimise day-to-day operations. However, any optimisation framework requires a somewhat realistic model. To be a realistic model is will necessarily become complicated and this combined with the data collection scheme leads inevitably to intractable likelihoods. On the other hand, simulators are straight-forward to construct, although computationally demanding has prevented simulation-based approaches in the past.
 
-A new simulation algorithm for queueing based algorithms called QDC [@ebert_computationally_2017] was used by @ebert2018likelihood to construct an ABC sampler for this problem for the first time. However, there were problems with misalignment as noted in the discussion of this paper. We consider a similar model and data as @ebert2018likelihood. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and affect the response variable (passenger flows) to some degree which we wish to infer. 
+A faster algorithm for queueing based algorithms called QDC [@ebert_computationally_2017] was used by @ebert2018likelihood to construct an ABC sampler for this problem. However, there were problems with misalignment as noted in the discussion of this paper. We consider a simplified (for the sake of exposition) version of the model and data as @ebert2018likelihood. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and affect the response variable (passenger flows) to some degree which we wish to infer. 
 
 ## Method
 
-We model the arrivals terminal of an international airport. For one day we have a list of flights $p$ along with their arrival gate $g_p$ and arrival time $a_p$. The walking distance $m_p$ from gate $g_p$ to immigration is also known. To model passenger flows, we simulate every passenger from every flight. The time at which passenger $q$ from flight $q$ deplanes is $a_{p,q}^{\text{dpl}} = a_{p} + t_{p,q}^{\text{dpl}} + b_p$ where $t_{p,q}^{\text{dpl}}$ is time taken for the passenger to leave the aircraft and $b_p$ is the unobserved time (0 - 20min) is the time taken by the crew after the recorded arrival time to open the doors, letting passengers out. Note that in this example $b_p$ plays the same role as the peak shift example, that of a high dimensional latent variable.  
+We model the arrivals terminal of an international airport. For one day we have a list of flights $u$ along with their arrival gate $g_u$ and arrival time $a_u$. The walking distance $m_u$ from gate $g_u$ to immigration is also known. To model passenger flows, we simulate every passenger from every flight. The time at which passenger $v$ from flight $u$ deplanes is $a_{u,v}^{\text{dpl}} = a_{u} + t_{u,v}^{\text{dpl}} + b_u$ where $t_{u,v}^{\text{dpl}}$ is the time taken for the passenger to leave the aircraft and $b_u$ is an unobserved amount of time (0 - 20min) taken by the crew after the recorded arrival time to open the doors, letting passengers out. Note that in this example $b_u$ plays the same role as the peak shift example, that of a high dimensional latent variable shifting peaks independently.  
 
 Once passengers have deplaned, they walk to the immigration system and queue for processing. The times at which customers arrive to the queueing system are $a_{p,q}^{\text{imm}} = a_{p,q}^{\text{dpl}} + t_{p,q}^{\text{imm}}$ where $t_{p,q}^{\text{imm}}$ is the walking time to immigration from the arrival gate. The distribution of $t_{p,q}^{\text{imm}} | m_p$ is $\text{Gamma} ( \alpha,  \beta/m_p )$. There are two parallel queueing systems, one for local and one for foreign passengers. The proportion of local passengers on each flight is known $l_p$, and encoded in the boolean variable $\text{nat}_{p,q} \sim \text{Bern}(l_p)$. Each queueing system proceeds at a different rate $\lambda_{\text{nat}}$ and has a different number of servers which are non-interchangeable, which is an accurate depiction of real systems including staff and automated systems working in parallel. 
 
-We require a queueing simulator to compute the times at which passengers leave their queueing system. The queueing simulator (QueueSim) is a function which (conditional on arrival times, service times and number of servers) deterministically compute times at which passengers leave their queueing system (departure times). First, we partition the arrival times $a_{p,q}^{\text{imm}}$ by $\text{nat}_{p,q}$, then we sample service times $s_{p,q} \sim \text{Exp}(\lambda_{\text{nat}_{p,q}})$, the number of servers $K_{\text{nat}}$ are known. The departure times from the queueing systems are therefore $\mathbf{z}_{\text{imm}} = \text{QueueSim}(\mathbf{a}^{\text{imm}}_{\text{nat}}, \mathbf{s}_{\text{nat}},   K_{\text{nat}})$, the variables are written in boldface to denote the full vectors partitioned by nationality since the movements of each passenger are no longer independent. We bin $a_{p,q}^{\text{imm}}$ and $z_{p,q}^{\text{imm}}$ by minute to construct $f^{a}_{\theta}$ and $f^{z}_{\theta}$ respectively. The synthetic data were also constructed in this manner so that we could know the true parameter values. 
+We require a queueing simulator to compute the times at which passengers leave their queueing system. A queueing simulator (QueueSim) is a function which (conditional on arrival times, service times and number of servers) deterministically computes times at which passengers leave their queueing system (departure times). First, we partition the arrival times $a_{p,q}^{\text{imm}}$ by $\text{nat}_{p,q}$, then we sample service times $s_{p,q} \sim \text{Exp}(\lambda_{\text{nat}_{p,q}})$. The number of servers $K_{\text{nat}}$ are known. The departure times from the queueing systems are $\mathbf{z}^{\text{imm}}_{\text{nat}} = \text{QueueSim}(\mathbf{a}^{\text{imm}}_{\text{nat}}, \mathbf{s}_{\text{nat}},   K_{\text{nat}})$, the variables are written in boldface to denote the full vectors partitioned by nationality since the movements of each passenger, once queueing begins, are no longer independent. We bin $a_{p,q}^{\text{imm}}$ and $z_{p,q}^{\text{imm}}$ by minute to construct $f^{a}_{\theta}$ and $f^{z}_{\theta}$ respectively. The synthetic data were also constructed in this manner so that we could know the true parameter values. 
 
-These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ can be thought of as representing the input and output of the immigration system respectively. We cannot use input data $f^{a}$ directly within the model to produce realisations $f^{z}_{\theta} | f^{a}, \theta$ since the transformation from $a_{p,q}^{\text{imm}}$ is non-invertible, and we do not know the flight number for observed passengers. We can use curve registration to find the warping function $\gamma$ from $f^{a}_{\theta}$ to $f^{a}$ and apply this warping (warp) to the latent variable $a_{p,q}^{\text{imm}}$ so as to produce "corrected" $z_{p,q}^{\text{imm}}$ and ultimately corrected $f^{z}_{\theta}$ (Algorithm \@ref(alg:AirportLoss)). The type argument encodes whether the loss is unregistered, registered or corrected. For the registered loss, only the dissimilarity on $f^{a}_{\theta}$ is registered, the corrected loss uses a registered dissimilarity on $f^{a}_{\theta}$ and uses the $\gamma$ to correct the input for a more accurate output sample $z_{p,q}^{\text{imm}}$. 
+These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ represent input and output of the immigration system respectively. We cannot use input data $f^{a}$ directly within the model to produce realisations $f^{z}_{\theta} | f^{a}, \theta$ since the transformation from $a_{p,q}^{\text{imm}}$ is non-invertible, and we do not know the flight number for observed passengers. We can use curve registration to find the warping function $\gamma$ from $f^{a}_{\theta}$ to $f^{a}$ and apply this warping (warp) to the latent variable $a_{p,q}^{\text{imm}}$ so as to produce "corrected" $z_{p,q}^{\text{imm}}$ and ultimately corrected $f^{z}_{\theta}$ (Algorithm \@ref(alg:AirportLoss)). The type argument encodes whether the loss is unregistered, registered or corrected. For the registered loss, only the dissimilarity on $f^{a}_{\theta}$ is registered, the corrected loss uses a registered dissimilarity on $f^{a}_{\theta}$ and uses the $\gamma$ to correct the input for a more accurate output sample $z_{p,q}^{\text{imm}}$. 
 
 \begin{algorithm}
 \caption{Airport loss function}
 \label{alg:AirportLoss}
 \begin{algorithmic}[1]
-\Function{AirportLoss}{$\theta, f^a, f^z, \text{type}$}
+\Function{}{$\theta, f^a, f^z, \text{type}$}
 \State $a^{\text{imm}}_{\theta} \sim p_a(\cdot | \mu, \nu)$
 \State $f^a_{\theta} = \text{hist}(a^{\text{imm}}_{\theta})$
+\State $\breve{a}^{\text{imm}}_{\theta} = a^{\text{imm}}_{\theta}$
 \If{type = registered or corrected}
   \State $\gamma = \arg \inf_{\gamma \in \Gamma} d_{\text{FR}}(f^a, f^a_{\theta} \circ \gamma)$ 
   \State $d^a_{\theta} = d(f^a, f^a_{\theta} \circ \gamma)$
+  \If{type = corrected}
+    \State $\breve{a}^{\text{imm}}_{\theta} = \text{warp}(a^{\text{imm}}_{\theta}, \gamma)$
+  \EndIf
 \Else
   \State $d^a_{\theta} = d(f^a, f^a_{\theta})$
-\EndIf
-\If{type = corrected}
-  \State $\breve{a}^{\text{imm}}_{\theta} = \text{warp}(a^{\text{imm}}_{\theta}, \gamma)$
-\Else
-  \State $\breve{a}^{\text{imm}}_{\theta} = a^{\text{imm}}_{\theta}$
 \EndIf
 \State $z^{\text{imm}}_{\theta} \sim p_a(\cdot |\breve{a}^{\text{imm}}_{\theta}, \lambda, K)$
 \State $f^z_{\theta} = \text{hist}(z^{\text{imm}}_{\theta})$
@@ -225,7 +227,7 @@ These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ can be thou
 
 ## Results
 
-Density plots of posterior samples for all parameters of interest for each loss type are shown in Figure \@ref(fig:AirportPost). We see that the registered loss outperforms the unregistered loss for $\mu$ and $\nu$ which concern walking speed. Furthermore, we see that applying the correction to the input to the immigration system improves the accuracy of the output since the posterior density for the corrected loss outperforms all others for all parameters. The accuracy of output predictions from an input/output process from observations involving a lossy transformation from an unobserved latent variable may benefit from this technique. 
+Density plots of posterior samples for all parameters of interest for each loss type are shown in Figure \@ref(fig:AirportPost). We see that the registered loss outperforms the unregistered loss for $\mu$ and $\nu$ which concern walking speed. Furthermore, we see that applying the correction to the input to the immigration system improves the accuracy of the output since the posterior density for the corrected loss outperforms all others for all parameters. The accuracy of output predictions from input observations involving a lossy transformation from unobserved latent variables may benefit from this technique. 
 
 ```{r, AirportPost, message=FALSE, fig.cap = "Density plots of posterior samples using the airport loss function (Algorithm 3) for unregistered, registered and corrected types. The solid vertical black line represents the true value."}
 load(file = "../runs/airport/2/ABC_airport.RData")
@@ -264,9 +266,9 @@ ggplot(airport_tidy %>% filter(distance == "MMD")) +
 
 # Hydrological modelling \label{sec:Hydro}
 
-Water flows within catchment areas in response to rainfall, and other weather-events are forecasted with run-off models. Runoff models have been used successfully by .... in particular, the GR4J (Génie Rural à 4 paramètres Journalier) model of @perrin2003improvement is widely used. Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure \@ref(fig:HydroExample)).
+Water flows within catchment areas, in response to rainfall and other weather-events, are forecasted with run-off models. Runoff models have been used successfully by .... in particular, the GR4J (Génie Rural à 4 paramètres Journalier) model of @perrin2003improvement is widely used. Water flows in hydrology are represented by hydrographs representing volumetric flow-rates at a particular point (see Figure \@ref(fig:HydroExample)).
 
-```{r HydroExample, fig.cap="Hydrograph with associated rain and evaporation data from the airGR package", message = FALSE, warning=FALSE}
+```{r HydroExample, fig.cap="Synthetic hydrograph with associated rain and evaporation data from the airGR package", message = FALSE, warning=FALSE}
 library(airGR)
 library(ggplot2)
 data(L0123001)
@@ -314,30 +316,21 @@ ggplot(Hydrodata) +
   theme(legend.position = "top", axis.title.x = element_blank()) + scale_color_gradient2(midpoint = 2, low = "blue", high = "red", mid = "grey") + guides(col = guide_colourbar(title = "Evaporation"), linetype = guide_legend(title = element_blank()))
 ```
 
-Parameter estimation proceeds with either expert opinion or automatic calibration. Automatic calibration is typically performed with a goodness-of-fit function such as sum of squared errors rather than a likelihood function. The NSE function is a goodness-of-fit function specifically developed for hydrology. Parameter estimation for hydrological methods is an active area of research [@kavetski2018parameter]. It is argued [@mcinerney2018simplified] that once parameters are estimated the parameter uncertainty itself contributes little to overall uncertainty compared to the residual error structure.  We apply approximate Bayesian computation for this application for the first time and apply the methodology of curve-registration. 
+Parameter estimation proceeds with either expert opinion or automatic calibration. Automatic calibration is typically performed with a goodness-of-fit function such as sum of squared errors rather than a likelihood function. Parameter estimation for hydrological methods is an active area of research [@kavetski2018parameter]. @mcinerney2018simplified argues that once parameters are estimated the parameter uncertainty itself contributes little to overall uncertainty compared to the residual error structure. We apply approximate Bayesian computation to this application for the first time and apply the methodology of curve-registration. 
 
 ## Methods
 
-The simulation model we use is the GR4J model of @perrin2003improvement. This model contains four parameters labelled: the first three $(\theta_1, \theta_2, \theta_3)$ are capacities in units of length (mm); and the fourth parameter ($\theta_4$) represents a lagged effect in units of time (days). Predictions from the GR4J given parameters $\theta = (\theta_1, \theta_2, \theta_3, \theta_4)$ and explanatory variables (X) are denoted as $\mathcal{H}(\theta, X)$. Like many run-off models, the GR4J model is deterministic; the practice is to add an error structure on top of this deterministic model, the model in its entirety is then: 
-$$
-\begin{aligned}
-	Y = \mathcal{H}(\theta, X) + \epsilon.
-\end{aligned}
-$$
+The simulation model we use is the GR4J model of @perrin2003improvement. This model contains four parameters labelled: the first three $(\theta_1, \theta_2, \theta_3)$ are capacities in units of length (mm); and the fourth parameter ($\theta_4$) represents a lagged effect in units of time (days). Predictions from the GR4J, given parameters $\theta = (\theta_1, \theta_2, \theta_3, \theta_4)$ and input observations $f^a$, are denoted as $\mathcal{H}(\theta, f^a)$. Like many run-off models, the GR4J model is deterministic. To provide useful prediction intervals, the practice is to add an error structure on top of the deterministic model. Run-off predictions are positively valued, and it is well known that errors are heteroscedastic [@kavetski2018parameter]. A common strategy is to perform a Box-Cox transformation $B(x, \lambda) = (x^{\lambda} - 1) / \lambda$ to transformed predictions with errors $\epsilon$:
+\begin{align}
+	f^z &= B(\mathcal{H}(\theta, f^a)) + \epsilon, \\
+	\epsilon &\sim N(0, \sigma^2).
+\end{align}
 
-Run-off predictions are positively valued, and it is well known that heteroscedasticity exists in the errors [@kavetski2018parameter]. A common strategy is to perform a Box-Cox transformation $Z(Y, \lambda) = (Y^{\lambda} - 1) / \lambda$ to transformed predictions with normalised errors $\eta$:
-$$
-\begin{aligned}
-	Y_Z &= Z(\mathcal{H}(\theta, X)) + \eta, \\
-	\eta &\sim N(0, \sigma^2).
-\end{aligned}
-$$
+This is an input/output model like the airport example, however, in this case, the input observation $f^a$ and the input latent variable are one and the same so we do not include a corrected loss. We use the same loss functions as were used in the peak shifted example (Algorithm \@ref(alg:loss) and \@ref(alg:regloss)). 
 
-This is an input/output model like the airport example, however, in this case the input is known, and so we do not include a corrected loss. We use the same loss functions as were used in the peak shifted example (Algorithm \@ref(alg:loss) and \@ref(alg:regloss)). 
+## Results
 
-## Results and Discussion
-
-In this example, we can see from density plots of posterior samples (Figure \@ref(fig:HydroPost)) that unregistered loss outperforms the unregistered loss.  
+We can see from density plots of posterior samples (Figure \@ref(fig:HydroPost)) that, in this case, the unregistered loss outperforms the unregistered loss.  
 
 ```{r, HydroPost, warning = FALSE, fig.cap = "Density plots of posterior samples from the hydrological model using unregistered and registered loss function."}
 load("../runs/hydrology/3/ABC_hydro_syn.RData")
@@ -372,13 +365,13 @@ ggplot(hydro_syn_tidy %>% filter(distance == "MMD")) +
   color_scale
 ```
 
-Although this example includes peak shifting as is found in the previous two examples, in those cases there was a high dimensional latent variable controlling peak shift location, in this example lag is controlled by a single variable. 
-
-The ABC sampler can correctly 
+Although this example includes peak shifting as is found in the previous two examples, in those cases there was a high dimensional latent variable $b_u$ affecting peak shift location, in this there is only one variable $\theta_4$. The process of registration is here unnecessary and adds noise to the loss function flattening the posterior densities.  
 
 # Discussion
 
-We have demonstrated two ways through which curve registration can be used in aid of likelihood-free inference for functional data. In the peak shifts example of Section \@ref(sec:sG) we saw how registered loss based on both FR and MMD dissimilarities outperform their unregistered types. Another use of the curve registration is shown in the airport example of Section \@ref(sec:Airport). 
+We have demonstrated two ways through which curve registration can be used in aid of likelihood-free inference for functional data. In the peak shifts example of Section \@ref(sec:sG) we saw how registered loss based on both FR and MMD dissimilarities outperform their unregistered types. Another use of the curve registration is shown in the airport example of Section \@ref(sec:Airport) where curve registration was used to convert input data to produce more realistic output data. Finally in the hydrological example the ABC sampler was able to correctly identify appropriate values for $\theta_4$ making unregistered loss functions unnecessary.
+
+* Mention alternative of estimating $b_u$ and how we avoid this problem with elastic distances. 
 
 # References
 
