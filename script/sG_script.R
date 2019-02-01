@@ -11,9 +11,9 @@ run_number = 1
 
 set.seed(1)
 
-Time <- seq(0, 300, by = 0.5)
-alpha = seq(25, 300, by = 20)
-theta = c(1, 0.01)
+Time <- seq(0, 300, by = 1)
+alpha = seq(25, 300, by = 40)
+theta = c(1, 0.01, 0.7)
 
 n_runs = 4000
 pacc_final = 0.02
@@ -45,9 +45,9 @@ loss_sG(theta, distance_args)
 
 # ABC -----------------
 
-prior_sGaussian <- prior_unif(c(0, 0), c(3, 0.02), var_names = c("sigma_phi", "sigma_e"), eval = FALSE)
+prior_sGaussian <- prior_unif(c(0, 0, 0), c(3, 0.02, 2), var_names = c("sigma_phi", "sigma_e", "scale_phi"), eval = FALSE)
 
-prior_sGaussian_eval <- prior_unif(c(0, 0), c(3, 0.02), var_names = c("sigma_phi", "sigma_e"), eval = TRUE)
+prior_sGaussian_eval <- prior_unif(c(0, 0, 0), c(3, 0.02, 2), var_names = c("sigma_phi", "sigma_e", "scale_phi"), eval = TRUE)
 
 cov_func <- function(x){
   robust::covRob(x)$cov
