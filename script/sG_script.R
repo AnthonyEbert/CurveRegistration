@@ -11,7 +11,7 @@ run_number = 1
 
 set.seed(1)
 
-Time <- seq(0, 300, by = 1)
+Time <- seq(0, 300, by = 0.5)
 alpha = seq(25, 300, by = 40)
 theta = c(1, 0.01, 0.7)
 
