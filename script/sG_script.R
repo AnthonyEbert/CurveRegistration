@@ -11,12 +11,12 @@ run_number = 1
 
 set.seed(1)
 
-Time <- seq(0, 300, by = 1.5)
+Time <- seq(0, 300, by = 0.5)
 alpha = seq(25, 300, by = 40)
 theta = c(1, 0.01, 0.7)
 
 n_runs = 4000
-pacc_final = 0.02
+pacc_final = 0.01
 
 var_mat <- diag(c(9, 0.01^2))
 
