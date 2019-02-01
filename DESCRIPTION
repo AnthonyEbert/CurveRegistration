@@ -1,6 +1,6 @@
 Package: CurveRegistration
 Title: What the Package Does (one line, title case)
-Version: 0.0.4
+Version: 0.0.5
 Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
 Depends: R (>= 3.4)
@@ -12,7 +12,8 @@ Imports:
   protoABC,
   airGR,
   ggplot2, 
-  tidyr
+  tidyr,
+  pracma
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
