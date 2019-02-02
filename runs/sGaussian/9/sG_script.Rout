@@ -1,0 +1,495 @@
+
+R version 3.5.1 (2018-07-02) -- "Feather Spray"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # Simulator sG
+> 
+> library(CurveRegistration)
+> library(protoABC)
+> library(parallel)
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> 
+> # Settings ----------------------
+> 
+> run_number = 1
+> 
+> set.seed(1)
+> 
+> Time <- seq(0, 300, by = 0.5)
+> alpha = seq(25, 300, by = 40)
+> theta = c(1, 0.01, 0.7)
+> 
+> n_runs = 4000
+> pacc_final = 0.01
+> 
+> var_mat <- diag(c(9, 0.01^2))
+> 
+> y <- simulator_sGaussian(Time, param = theta, alpha = alpha)
+> y_kmmd <- EasyMMD::kmmd(y, var = var_mat)
+> x <- simulator_sGaussian(Time, param = theta, alpha = alpha)
+> 
+> distance_fun(y, x, registration = TRUE, distance = "MMD", y_kmmd = y_kmmd, var = var_mat, threshold = 6)
+[1] 0.003383707
+> 
+> distance_args <- list(
++   Time = Time,
++   alpha = alpha,
++   obs = y,
++   var = var_mat,
++   threshold = 6,
++   registration = TRUE,
++   distance = "MMD",
++   method = "DP2",
++   mean_global = 0,
++   sigma_a = 5
++ )
+> 
+> distance_args$y_kmmd <- EasyMMD::kmmd(distance_args$obs, var = distance_args$var)
+> 
+> loss_sG(theta, distance_args)
+[1] 0.003325153
+> 
+> # ABC -----------------
+> 
+> prior_sGaussian <- prior_unif(c(0, 0, 0), c(3, 0.02, 2), var_names = c("sigma_phi", "sigma_e", "scale_phi"), eval = FALSE)
+> 
+> prior_sGaussian_eval <- prior_unif(c(0, 0, 0), c(3, 0.02, 2), var_names = c("sigma_phi", "sigma_e", "scale_phi"), eval = TRUE)
+> 
+> cov_func <- function(x){
++   robust::covRob(x)$cov
++ }
+> 
+> abc_control <- list(
++   prior_eval = prior_sGaussian_eval,
++   n = n_runs,
++   pacc_final = pacc_final
++ )
+> 
+> #cl <- makeCluster(detectCores() - 1) #USER
+> cl <- "mclapply" #HPC
+> 
+> ## sigma_a <- 5 -----------------
+> 
+> distance_args$sigma_a <- 5
+> 
+> ### Registration <- FALSE -------------
+> 
+> distance_args$registration <- FALSE
+> 
+> #### Distance <- "FR" -------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ABC_sG_5_RF_FR <- abc_start(prior_sGaussian, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     sigma_a      = distance_args$sigma_a
++   )
+********************************
+Acceptance prob of MCMC was 0.37195
+Number of MCMC moves for next iteration is 10
+Number of unique particles is 3921
+dist_max is 4.90871915900605
+dist_next is 4.56508344040808
+********************************
+Acceptance prob of MCMC was 0.27225
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 3777
+dist_max is 4.56508344040808
+dist_next is 4.3620432281126
+********************************
+Acceptance prob of MCMC was 0.170866666666667
+Number of MCMC moves for next iteration is 25
+Number of unique particles is 3669
+dist_max is 4.3620432281126
+dist_next is 4.22515174631776
+********************************
+Acceptance prob of MCMC was 0.10388
+Number of MCMC moves for next iteration is 42
+Number of unique particles is 3570
+dist_max is 4.22515174631776
+dist_next is 4.11267903110771
+********************************
+Acceptance prob of MCMC was 0.0595357142857143
+Number of MCMC moves for next iteration is 76
+Number of unique particles is 3504
+dist_max is 4.11267903110771
+dist_next is 4.01277038853476
+********************************
+Acceptance prob of MCMC was 0.0323355263157895
+Number of MCMC moves for next iteration is 141
+Number of unique particles is 3480
+dist_max is 4.01277038853476
+dist_next is 3.92486140966832
+********************************
+Acceptance prob of MCMC was 0.0185957446808511
+Number of MCMC moves for next iteration is 246
+Number of unique particles is 3509
+dist_max is 3.92486140966832
+dist_next is 3.84572858984418
+> 
+> save(ABC_sG_5_RF_FR, file = "ABC_sG_5_RF_FR.RData")
+> 
+> summary(ABC_sG_5_RF_FR)
+   sigma_phi            sigma_e            scale_phi      registration   
+ Min.   :0.0000568   Min.   :1.305e-06   Min.   :0.4015   Mode :logical  
+ 1st Qu.:1.7561718   1st Qu.:1.387e-03   1st Qu.:1.3352   FALSE:4000     
+ Median :2.2172807   Median :3.223e-03   Median :1.6175                  
+ Mean   :2.1435837   Mean   :4.003e-03   Mean   :1.5489                  
+ 3rd Qu.:2.6333991   3rd Qu.:5.943e-03   3rd Qu.:1.8346                  
+ Max.   :2.9995844   Max.   :1.790e-02   Max.   :2.0000                  
+   distance            sigma_a 
+ Length:4000        Min.   :5  
+ Class :character   1st Qu.:5  
+ Mode  :character   Median :5  
+                    Mean   :5  
+                    3rd Qu.:5  
+                    Max.   :5  
+> 
+> #### Distance <- "MMD" -------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ABC_sG_5_RF_MD <- abc_start(prior_sGaussian, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     sigma_a      = distance_args$sigma_a
++   )
+********************************
+Acceptance prob of MCMC was 0.3761
+Number of MCMC moves for next iteration is 10
+Number of unique particles is 3935
+dist_max is 0.00541756285153483
+dist_next is 0.0045891672655159
+********************************
+Acceptance prob of MCMC was 0.2839
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 3836
+dist_max is 0.0045891672655159
+dist_next is 0.0041097692951507
+********************************
+Acceptance prob of MCMC was 0.204964285714286
+Number of MCMC moves for next iteration is 21
+Number of unique particles is 3796
+dist_max is 0.0041097692951507
+dist_next is 0.00376633855360958
+********************************
+Acceptance prob of MCMC was 0.137142857142857
+Number of MCMC moves for next iteration is 32
+Number of unique particles is 3725
+dist_max is 0.00376633855360958
+dist_next is 0.00350993330692073
+********************************
+Acceptance prob of MCMC was 0.0900625
+Number of MCMC moves for next iteration is 49
+Number of unique particles is 3738
+dist_max is 0.00350993330692073
+dist_next is 0.00330020289220939
+********************************
+Acceptance prob of MCMC was 0.0567755102040816
+Number of MCMC moves for next iteration is 79
+Number of unique particles is 3723
+dist_max is 0.00330020289220939
+dist_next is 0.00311072447072418
+********************************
+Acceptance prob of MCMC was 0.0334303797468354
+Number of MCMC moves for next iteration is 136
+Number of unique particles is 3630
+dist_max is 0.00311072447072418
+dist_next is 0.00294100034182264
+********************************
+Acceptance prob of MCMC was 0.0188272058823529
+Number of MCMC moves for next iteration is 243
+Number of unique particles is 3602
+dist_max is 0.00294100034182264
+dist_next is 0.00279342531206544
+********************************
+Acceptance prob of MCMC was 0.0110925925925926
+Number of MCMC moves for next iteration is 413
+Number of unique particles is 3597
+dist_max is 0.00279342531206544
+dist_next is 0.00264958460944573
+> 
+> save(ABC_sG_5_RF_MD, file = "ABC_sG_5_RF_MD.RData")
+> 
+> summary(ABC_sG_5_RF_MD)
+   sigma_phi          sigma_e           scale_phi       registration   
+ Min.   :0.01534   Min.   :0.002958   Min.   :0.07491   Mode :logical  
+ 1st Qu.:0.56978   1st Qu.:0.008458   1st Qu.:0.43963   FALSE:4000     
+ Median :0.84910   Median :0.009856   Median :0.62907                  
+ Mean   :0.86673   Mean   :0.009884   Mean   :0.65422                  
+ 3rd Qu.:1.10937   3rd Qu.:0.011320   3rd Qu.:0.83605                  
+ Max.   :2.02473   Max.   :0.017650   Max.   :1.69126                  
+   distance            sigma_a 
+ Length:4000        Min.   :5  
+ Class :character   1st Qu.:5  
+ Mode  :character   Median :5  
+                    Mean   :5  
+                    3rd Qu.:5  
+                    Max.   :5  
+> 
+> ### Registration <- TRUE -------------
+> 
+> distance_args$registration <- TRUE
+> 
+> #### Distance <- "FR" -------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ABC_sG_5_RT_FR <- abc_start(prior_sGaussian, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     sigma_a      = distance_args$sigma_a
++   )
+********************************
+Acceptance prob of MCMC was 0.4209
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 3962
+dist_max is 2.63154274496173
+dist_next is 2.36336222941021
+********************************
+Acceptance prob of MCMC was 0.304333333333333
+Number of MCMC moves for next iteration is 13
+Number of unique particles is 3841
+dist_max is 2.36336222941021
+dist_next is 2.21044287383116
+********************************
+Acceptance prob of MCMC was 0.212153846153846
+Number of MCMC moves for next iteration is 20
+Number of unique particles is 3801
+dist_max is 2.21044287383116
+dist_next is 2.09670816039815
+********************************
+Acceptance prob of MCMC was 0.14695
+Number of MCMC moves for next iteration is 29
+Number of unique particles is 3775
+dist_max is 2.09670816039815
+dist_next is 2.0029672132785
+********************************
+Acceptance prob of MCMC was 0.0927586206896552
+Number of MCMC moves for next iteration is 48
+Number of unique particles is 3689
+dist_max is 2.0029672132785
+dist_next is 1.90953273375102
+********************************
+Acceptance prob of MCMC was 0.0605520833333333
+Number of MCMC moves for next iteration is 74
+Number of unique particles is 3702
+dist_max is 1.90953273375102
+dist_next is 1.82465868462469
+********************************
+Acceptance prob of MCMC was 0.0481824324324324
+Number of MCMC moves for next iteration is 94
+Number of unique particles is 3800
+dist_max is 1.82465868462469
+dist_next is 1.75779537899616
+********************************
+Acceptance prob of MCMC was 0.0390851063829787
+Number of MCMC moves for next iteration is 116
+Number of unique particles is 3821
+dist_max is 1.75779537899616
+dist_next is 1.70662205102599
+********************************
+Acceptance prob of MCMC was 0.0288275862068966
+Number of MCMC moves for next iteration is 158
+Number of unique particles is 3794
+dist_max is 1.70662205102599
+dist_next is 1.66516237463185
+********************************
+Acceptance prob of MCMC was 0.0191518987341772
+Number of MCMC moves for next iteration is 239
+Number of unique particles is 3732
+dist_max is 1.66516237463185
+dist_next is 1.63398711508255
+********************************
+Acceptance prob of MCMC was 0.0132510460251046
+Number of MCMC moves for next iteration is 346
+Number of unique particles is 3717
+dist_max is 1.63398711508255
+dist_next is 1.60642055259969
+> 
+> save(ABC_sG_5_RT_FR, file = "ABC_sG_5_RT_FR.RData")
+> 
+> summary(ABC_sG_5_RT_FR)
+   sigma_phi         sigma_e            scale_phi      registration  
+ Min.   :0.6644   Min.   :0.0005913   Min.   :0.4549   Mode:logical  
+ 1st Qu.:0.9771   1st Qu.:0.0030857   1st Qu.:0.7157   TRUE:4000     
+ Median :1.0846   Median :0.0040941   Median :0.8147                 
+ Mean   :1.0981   Mean   :0.0042744   Mean   :0.8243                 
+ 3rd Qu.:1.2100   3rd Qu.:0.0053000   3rd Qu.:0.9267                 
+ Max.   :1.7207   Max.   :0.0104892   Max.   :1.3602                 
+   distance            sigma_a 
+ Length:4000        Min.   :5  
+ Class :character   1st Qu.:5  
+ Mode  :character   Median :5  
+                    Mean   :5  
+                    3rd Qu.:5  
+                    Max.   :5  
+> 
+> #### Distance <- "MMD" -------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ABC_sG_5_RT_MD <- abc_start(prior_sGaussian, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     sigma_a      = distance_args$sigma_a
++   )
+********************************
+Acceptance prob of MCMC was 0.4136
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 3964
+dist_max is 0.00382276863595848
+dist_next is 0.0032292424916714
+********************************
+Acceptance prob of MCMC was 0.340222222222222
+Number of MCMC moves for next iteration is 12
+Number of unique particles is 3885
+dist_max is 0.0032292424916714
+dist_next is 0.0028493312565635
+********************************
+Acceptance prob of MCMC was 0.253541666666667
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 3833
+dist_max is 0.0028493312565635
+dist_next is 0.00258195331719246
+********************************
+Acceptance prob of MCMC was 0.17890625
+Number of MCMC moves for next iteration is 24
+Number of unique particles is 3775
+dist_max is 0.00258195331719246
+dist_next is 0.00238434881944179
+********************************
+Acceptance prob of MCMC was 0.122666666666667
+Number of MCMC moves for next iteration is 36
+Number of unique particles is 3739
+dist_max is 0.00238434881944179
+dist_next is 0.0022249823154419
+********************************
+Acceptance prob of MCMC was 0.08225
+Number of MCMC moves for next iteration is 54
+Number of unique particles is 3687
+dist_max is 0.0022249823154419
+dist_next is 0.00209499654351909
+********************************
+Acceptance prob of MCMC was 0.0551111111111111
+Number of MCMC moves for next iteration is 82
+Number of unique particles is 3706
+dist_max is 0.00209499654351909
+dist_next is 0.0019755617855775
+********************************
+Acceptance prob of MCMC was 0.03325
+Number of MCMC moves for next iteration is 137
+Number of unique particles is 3650
+dist_max is 0.0019755617855775
+dist_next is 0.00188631020935965
+********************************
+Acceptance prob of MCMC was 0.0229051094890511
+Number of MCMC moves for next iteration is 199
+Number of unique particles is 3708
+dist_max is 0.00188631020935965
+dist_next is 0.00180480887445417
+********************************
+Acceptance prob of MCMC was 0.0131708542713568
+Number of MCMC moves for next iteration is 348
+Number of unique particles is 3591
+dist_max is 0.00180480887445417
+dist_next is 0.00173737989594703
+> 
+> save(ABC_sG_5_RT_MD, file = "ABC_sG_5_RT_MD.RData")
+> 
+> summary(ABC_sG_5_RT_MD)
+   sigma_phi         sigma_e           scale_phi      registration  
+ Min.   :0.2457   Min.   :0.005838   Min.   :0.1352   Mode:logical  
+ 1st Qu.:0.8363   1st Qu.:0.008325   1st Qu.:0.4239   TRUE:4000     
+ Median :1.0249   Median :0.009167   Median :0.5715                 
+ Mean   :1.0431   Mean   :0.009271   Mean   :0.5905                 
+ 3rd Qu.:1.2200   3rd Qu.:0.010147   3rd Qu.:0.7315                 
+ Max.   :2.2621   Max.   :0.013624   Max.   :1.3978                 
+   distance            sigma_a 
+ Length:4000        Min.   :5  
+ Class :character   1st Qu.:5  
+ Mode  :character   Median :5  
+                    Mean   :5  
+                    3rd Qu.:5  
+                    Max.   :5  
+> 
+> # Packaging everything up
+> 
+> sessionInfo()
+R version 3.5.1 (2018-07-02)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: SUSE Linux Enterprise Server 12 SP2
+
+Matrix products: default
+BLAS/LAPACK: /pkg/suse12/software/openblas/0.2.20-gcc-6.4.0-2.28/lib/libopenblas_sandybridgep-r0.2.20.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] bindrcpp_0.2.2          dplyr_0.7.8             protoABC_0.4.8         
+[4] CurveRegistration_0.0.4
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.0        bindr_0.1.1       magrittr_1.5      splines_3.5.1    
+ [5] maps_3.3.0        tidyselect_0.2.5  doParallel_1.0.14 EasyMMD_0.5.1    
+ [9] viridisLite_0.3.0 lattice_0.20-38   R6_2.3.0          rlang_0.3.1      
+[13] foreach_1.4.4     matrixcalc_1.0-3  fields_9.6        dotCall64_1.0-0  
+[17] grid_3.5.1        spam_2.2-1        coda_0.19-2       iterators_1.0.10 
+[21] assertthat_0.2.0  tibble_2.0.1      crayon_1.3.4      purrr_0.3.0      
+[25] codetools_0.2-16  glue_1.3.0        fdasrvf_1.8.3     compiler_3.5.1   
+[29] pillar_1.3.1      mvtnorm_1.0-8     pkgconfig_2.0.2  
+> 
+> ABC_sG_5 <- dplyr::bind_rows(ABC_sG_5_RF_FR, ABC_sG_5_RF_MD, ABC_sG_5_RT_FR, ABC_sG_5_RT_MD)
+> 
+> save(ABC_sG_5, file = "ABC_sG_5.RData")
+> 
+> save.image()
+> 
+> 
+> 
+> 
+> 
+> proc.time()
+       user      system     elapsed 
+1229391.142    2380.227   89711.243 

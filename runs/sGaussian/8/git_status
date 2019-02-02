@@ -1,0 +1,22 @@
+On branch master
+Your branch is ahead of 'origin/master' by 2 commits.
+  (use "git push" to publish your local commits)
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	../5/git_log
+	../5/git_status
+	../5/sG_5.o3973842
+	../5/sG_script.Rout
+	../6/ABC_sG_5_RF_FR.RData
+	../6/git_log
+	../6/git_status
+	../6/sG_script.Rout
+	../7/ABC_sG_5_RF_FR.RData
+	../7/git_log
+	../7/git_status
+	../7/sG_script.Rout
+	git_log
+	git_status
+
+nothing added to commit but untracked files present (use "git add" to track)
