@@ -12,14 +12,14 @@ run_number = 1
 set.seed(1)
 
 Time <- seq(0, 200, by = 0.5)
-alpha = seq(20, 280, by = 20)
+alpha = seq(20, 180, by = 20)
 theta = c(1, 0.7, 0.01)
 
 alpha_norm   <- alpha[seq(1,length(alpha), by = 2)]
 alpha_cauchy <- alpha[seq(2,length(alpha), by = 2)]
 
 n_runs = 4000
-pacc_final = 0.005
+pacc_final = 0.002
 
 var_mat <- diag(c(9, 0.01^2))
 
