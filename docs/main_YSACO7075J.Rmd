@@ -129,8 +129,8 @@ The prior distributions for the parameters of interest are $\sigma_{\phi} \sim U
 ```{r sGExample, fig.cap="Example of model realisations from the Gaussian peak shift model with $\\sigma_b = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\mu_u$ values. The distribution of peak shifts is controlled by $\\sigma_b$, the peak widths are controlled by $\\sigma_{\\phi }$, and the noise is controlled by $\\sigma_{\\epsilon}$."}
 set.seed(1)
 
-t <- seq(0, 300, by = 0.5)
-alpha = seq(20, 280, by = 20)
+t <- seq(0, 200, by = 0.5)
+alpha = seq(20, 180, by = 20)
 theta = c(1, 0.8, 0.01)
 
 alpha_norm   <- alpha[seq(1,length(alpha), by = 2)]
@@ -158,11 +158,11 @@ load("../runs/sGaussian/9/ABC_sG_5.RData")
 
 output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
 
-output_tidy$parameter <- factor(output_tidy$parameter, labels = c("ρ[φ]", "σ[ε]", "σ[φ]"))
+output_tidy$parameter <- factor(output_tidy$parameter, labels = c("rho[phi]", "sigma[epsilon]", "sigma[phi]"))
 
 true_params = c(1, 0.01, 0.7)
 
-vline_df = data.frame(parameter = c("σ[φ]", "σ[ε]","ρ[φ]"), input = true_params, value = c(1, 1, 1))
+vline_df = data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","rho[phi]"), input = true_params, value = c(1, 1, 1))
 
 output_tidy <- output_tidy %>%
   mutate(distance = factor(distance)) %>%
