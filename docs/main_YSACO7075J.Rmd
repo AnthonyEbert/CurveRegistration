@@ -20,7 +20,7 @@ urlcolor: blue
 
 ```{r setup, include=FALSE}
 # knitr::knit_hooks$set(document = function(x) {sub('\\usepackage[]{color}', '\\usepackage{xcolor}', x, fixed = TRUE)})
-# knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE, cache.rebuild = FALSE)
+knitr::opts_chunk$set(echo = FALSE, autodep = TRUE, cache = TRUE, cache.rebuild = FALSE)
 library(CurveRegistration)
 library(dplyr)
 library(ggplot2)
@@ -137,8 +137,10 @@ alpha_norm   <- alpha[seq(1,length(alpha), by = 2)]
 alpha_cauchy <- alpha[seq(2,length(alpha), by = 2)]
 
 
-y <- simulator_sGaussian(t, param = theta, alpha_norm = alpha_norm, alpha_cauchy = alpha_cauchy)
-z <- simulator_sGaussian(t, param = theta, alpha_norm = alpha_norm, alpha_cauchy = alpha_cauchy)
+y <- simulator_sGaussian(t, param = theta, 
+  alpha_norm = alpha_norm, alpha_cauchy = alpha_cauchy)
+z <- simulator_sGaussian(t, param = theta, 
+  alpha_norm = alpha_norm, alpha_cauchy = alpha_cauchy)
 
 plot(y, type = "l", lwd = 1, xaxs = "i", yaxs = "i", col = "blue")
 lines(z, col = "red")
@@ -154,15 +156,17 @@ Density plots of posterior samples arising from the ABC sampler with all four lo
 We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
 
 ```{r, sGaussianPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
-load("../runs/sGaussian/9/ABC_sG_5.RData")
+load("../runs/sGaussian/11/ABC_sG.RData")
 
-output_tidy <- tidyr::gather(ABC_sG_5, "parameter", , -registration, -sigma_a, -distance)
+output_tidy <- tidyr::gather(ABC_sG, "parameter", , -registration, -sigma_a, -distance)
 
-output_tidy$parameter <- factor(output_tidy$parameter, labels = c("rho[phi]", "sigma[epsilon]", "sigma[phi]"))
+# output_tidy$parameter <- factor(output_tidy$parameter, labels = c("rho[phi]", "sigma[epsilon]", "sigma[phi]"))
 
 true_params = c(1, 0.01, 0.7)
 
 vline_df = data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","rho[phi]"), input = true_params, value = c(1, 1, 1))
+
+blank_df <- data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","rho[phi]"), value = c(3,0.02,2))
 
 output_tidy <- output_tidy %>%
   mutate(distance = factor(distance)) %>%
@@ -170,11 +174,13 @@ output_tidy <- output_tidy %>%
   mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
   mutate(registration = factor(registration, levels(registration)[c(2,1)]))
 
+output_tidy$parameter <- factor(output_tidy$parameter, levels = c("sigma[phi]", "rho[phi]", "sigma[epsilon]"))
+
 #blank_df <- data.frame(parameter = rep(levels(output_tidy$parameter), each = 2), value = c(0, 0.02, 0, 3), registration = rep(output_tidy$registration[1], 4), distance = rep(output_tidy$distance[1], 4))
 
 ggplot(output_tidy) +
   aes(x = value, col = registration, linetype = distance) +
-  stat_density(position = "identity", geom = "line") +
+  stat_density(position = "identity", geom = "line", adjust = 2) +
   facet_wrap(~parameter, scales = "free", labeller = label_parsed) +
   geom_vline(data = vline_df , mapping = aes(xintercept = input), col = true_color, lty = 1) +
   labs(colour = "Registration status") +
@@ -187,7 +193,7 @@ ggplot(output_tidy) +
     color = guide_legend(order = 0),
     lty = guide_legend(order = 1)
   ) + 
-  #geom_blank(data = blank_df) +
+  geom_blank(data = blank_df, mapping = aes(x = value), inherit.aes = FALSE) +
   color_scale
 ```
 
