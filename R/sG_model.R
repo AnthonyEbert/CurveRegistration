@@ -37,15 +37,6 @@ simulator_sGaussian <- function(Time, param = c(1, 0.7, 0.01), alpha_norm = c(20
   return(output)
 }
 
-density_fun <- function(x, mean, scale_param, i){
-
-  output <-
-    dnorm(x, mean = mean, sd = scale_param[1]) +
-    dcauchy(x, location = mean + 20, scale = scale_param[2])
-
-  return(output)
-
-}
 
 
 
