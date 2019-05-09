@@ -20,15 +20,15 @@ pacc_final = 0.015
 
 var_mat <- diag(c(9, 0.005^2))
 
-y <- simulator_skew(Time, param = theta, alpha_norm = alpha_norm)
+y <- simulator_skew(Time, param = theta, alpha_norm = alpha)
 y_kmmd <- EasyMMD::kmmd(y, var = var_mat)
-x <- simulator_skew(Time, param = theta, alpha_norm = alpha_norm)
+x <- simulator_skew(Time, param = theta, alpha_norm = alpha)
 
 distance_fun(y, x, registration = TRUE, distance = "MMD", y_kmmd = y_kmmd, var = var_mat, threshold = 6)
 
 distance_args <- list(
   Time = Time,
-  alpha_norm = alpha_norm,
+  alpha_norm = alpha,
   obs = y,
   var = var_mat,
   threshold = 6,
