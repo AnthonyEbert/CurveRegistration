@@ -15,8 +15,8 @@ Time <- seq(0, 200, by = 0.5)
 alpha = seq(20, 180, by = 20)
 theta = c(1, 0.9, 0.01)
 
-n_runs = 4000
-pacc_final = 0.005
+n_runs = 1000
+pacc_final = 0.015
 
 var_mat <- diag(c(9, 0.01^2))
 
@@ -46,9 +46,9 @@ loss_sG(theta, distance_args)
 
 # ABC -----------------
 
-prior_skew <- prior_unif(c(0, -1, 0), c(10, 1, 0.02), var_names = c("sigma[phi]", "skew[phi]", "sigma[epsilon]"), eval = FALSE)
+prior_skew <- prior_unif(c(0, -0.9, 0), c(10, 0.9, 0.02), var_names = c("sigma[phi]", "eta", "sigma[epsilon]"), eval = FALSE)
 
-prior_skew_eval <- prior_unif(c(0, -1, 0), c(10, 1, 0.02), var_names = c("sigma[phi]", "skew[phi]", "sigma[epsilon]"), eval = TRUE)
+prior_skew_eval <- prior_unif(c(0, -0.9, 0), c(10, 0.9, 0.02), var_names = c("sigma[phi]", "eta", "sigma[epsilon]"), eval = TRUE)
 
 cov_func <- function(x){
   robust::covRob(x)$cov
