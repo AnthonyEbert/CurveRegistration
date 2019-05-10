@@ -4,7 +4,7 @@ loss_sG <- function(param, inp){
 
   obs <- inp$obs
 
-  if(!isFALSE(inp$skew)){
+  if(!isTRUE(inp$skew)){
     sim <- simulator_sGaussian(inp$Time, param = param, alpha_norm = inp$alpha_norm, alpha_cauchy = inp$alpha_cauchy, mean_global = inp$mean_global, sigma_a = inp$sigma_a)
   } else {
     sim <- simulator_skew(inp$Time, param = param, alpha_norm = inp$alpha_norm, mean_global = inp$mean_global, sigma_a = inp$sigma_a)
