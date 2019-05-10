@@ -15,8 +15,8 @@ Time <- seq(0, 200, by = 0.5)
 alpha = seq(20, 180, by = 20)
 theta = c(1, 0.5, 0.01)
 
-n_runs = 1000
-pacc_final = 0.015
+n_runs = 100
+pacc_final = 0.002
 
 var_mat <- diag(c(9, 0.01^2))
 
