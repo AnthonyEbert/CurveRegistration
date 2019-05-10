@@ -13,7 +13,7 @@ set.seed(1)
 
 Time <- seq(0, 200, by = 0.5)
 alpha = seq(20, 180, by = 20)
-theta = c(1, 0.9, 0.01)
+theta = c(1, 0.5, 0.01)
 
 n_runs = 1000
 pacc_final = 0.015
@@ -36,7 +36,7 @@ distance_args <- list(
   distance = "MMD",
   method = "DP2",
   mean_global = 0,
-  sigma_a = 2.5,
+  sigma_a = 5,
   skew = TRUE
 )
 
