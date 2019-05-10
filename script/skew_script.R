@@ -13,12 +13,12 @@ set.seed(1)
 
 Time <- seq(0, 200, by = 0.5)
 alpha = seq(20, 180, by = 20)
-theta = c(2, 0.9, 0.0025)
+theta = c(1, 0.9, 0.01)
 
-n_runs = 4000
-pacc_final = 0.015
+n_runs = 1000
+pacc_final = 0.005
 
-var_mat <- diag(c(9, 0.005^2))
+var_mat <- diag(c(9, 0.01^2))
 
 y <- simulator_skew(Time, param = theta, alpha_norm = alpha)
 y_kmmd <- EasyMMD::kmmd(y, var = var_mat)
@@ -46,9 +46,9 @@ loss_sG(theta, distance_args)
 
 # ABC -----------------
 
-prior_skew <- prior_unif(c(0, -1, 0), c(10, 1, 0.005), var_names = c("sigma[phi]", "skew[phi]", "sigma[epsilon]"), eval = FALSE)
+prior_skew <- prior_unif(c(0, -1, 0), c(10, 1, 0.02), var_names = c("sigma[phi]", "skew[phi]", "sigma[epsilon]"), eval = FALSE)
 
-prior_skew_eval <- prior_unif(c(0, -1, 0), c(10, 1, 0.005), var_names = c("sigma[phi]", "skew[phi]", "sigma[epsilon]"), eval = TRUE)
+prior_skew_eval <- prior_unif(c(0, -1, 0), c(10, 1, 0.02), var_names = c("sigma[phi]", "skew[phi]", "sigma[epsilon]"), eval = TRUE)
 
 cov_func <- function(x){
   robust::covRob(x)$cov
@@ -57,7 +57,8 @@ cov_func <- function(x){
 abc_control <- list(
   prior_eval = prior_skew_eval,
   n = n_runs,
-  pacc_final = pacc_final
+  pacc_final = pacc_final,
+  a = 0.75
 )
 
 #cl <- makeCluster(detectCores() - 1) #USER
