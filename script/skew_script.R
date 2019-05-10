@@ -58,7 +58,7 @@ abc_control <- list(
   prior_eval = prior_skew_eval,
   n = n_runs,
   pacc_final = pacc_final,
-  a = 0.75
+  a = 0.5
 )
 
 #cl <- makeCluster(detectCores() - 1) #USER
