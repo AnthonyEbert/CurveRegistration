@@ -71,7 +71,7 @@ simulator_skew <- function(Time, param = c(1, 0.7, 0.01), alpha_norm = c(20, 40,
 
   for(i in 1:length(Time)){
     for(j in 1:length(alpha_norm)){
-      y[i,j] <- sn::dsn(Time[i], dp = sn::cp2dp(cp = c(alpha_norm[j], param[1:2]), "SN")) + rnorm(1, 0, sigma_e)
+      y[i,j] <- sn::dsn(Time[i], dp = sn::cp2dp(cp = c(alpha_norm[j] + a_norm[j], param[1:2]), "SN")) + rnorm(1, 0, sigma_e)
     }
   }
 
