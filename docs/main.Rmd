@@ -40,6 +40,9 @@ color_scale <- ggthemes::scale_color_wsj()
 \newcommand{\gsf}{\mathsf{g}}
 \newcommand{\E}{\mathsf{E}}
 
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
 # Abstract
 
 Likelihood-free inference on functional data requires sensible distance measures for these functions. We consider the problem of functional data displaying not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.  
@@ -52,11 +55,9 @@ A common problem when analysing functional data is misalignment, where features 
 
 Parameter inference with functional data is developed under many different names, including: self-modelling [@kneip1988convergence], functional-modelling [@ramsay2006functional], and longitudinal data analysis [@laird1982random]. However, these methods require that the likelihood function be evalutated; in many statistical models of interest the likelihood function is either unavailable or intractable but it is possible to draw realisations from the model conditional on parameter values. Approximate Bayesian computation (ABC) is a likelihood-free approach to parameter inference where proposed parameter values are accepted when a dissimilarity between model realisations and observed data is beneath some threshold [@sisson2018handbook]. 
 
+The dissimilarity is usually defined as a Euclidean distance between summary statistics of the observed data and the model realisation. For instance, @zhuestimating use wavelet compression to transform functional data into low-dimensional summary statistics and @wood_statistical_2010 use estimators parameters from an autoregressive model. Choosing the most effective summary statistics for a given problem is not trivial, and may be specific to the dataset in question [@nunes2010optimal]. Recently, there has been work on using estimators for metrics on probability measures such as the Wasserstein distance [@bernton_inference_2017] and maximum mean discrepancy (MMD) [@gretton_kernel_2012] and the Fisher-Rao metric [@srivastava2007riemannian] to work with functional data. These estimators have been used within ABC samplers by @park2016k2 and @bernton_inference_2017. 
+
 There is work applying ABC to models that produce functional data. Generally speaking the data are reduced to a set of summary statistics or an "inelastic" distance is computed directly between model realisations and data. For instance, @zhuestimating use wavelet compression to transform functional data into low-dimensional summary statistics; and @toni_approximate_2009 use sum of squared errors to directly compute dissimilarity between functional model realisations and functional data. 
-
-<!-- The citations here are not perfect since they do not deal with functional data, just the metric on probability distributions. -->
-
-Recently, there has been work on using metrics on probability measures such as the Wasserstein distance [@bernton_inference_2017] and maximum mean discrepancy (MMD) [@gretton_kernel_2012] and the Fisher-Rao metric [@srivastava2007riemannian] to work with functional data. 
 
 In the following section with provide some background to functional data analysis and introduce notation. In Section \@ref(sec:ABC) we do the same for ABC. In this work we extend ABC to functional data which displays both amplitude and phase variation. We demonstrate this with three examples: the first example is a toy example with a random distribution of peak shift position (Section \@ref(sec:sG)), the second example is of passenger flow in an international airport terminal (Section \@ref(sec:Airport)), and the third example is a model of hydrological modelling \@ref(sec:Hydro)). 
 
@@ -82,7 +83,7 @@ d_{\text{amp}}(\fsf,\gsf) := \inf_{\gamma \in \Gamma} d_{\text{FR}}(\fsf \circ \
 \end{align*}
 is symmetric [@srivastava2011registration]. In practice, $\fsf$ are smoothed empirical functions of noisy data $f$ observed on a countable subset of the domain. This point is briefly discussed by @tucker2014analysis, but not other authors. The R package fdasrvf [@tuckerCRAN], which we use, implements the approach of @srivastava2011registration. A cubic spline approximation approximates the smoothed first derivative $\fsf'(t)$. 
 
-For simplicity and without loss of generality we consider problems where the functional data comprise a single observed EFRV. We extend curve registration to the likelihood-free domain with approximate Bayesian computation (ABC). We proceed now with a brief background of ABC. 
+For simplicity we consider problems where the functional data comprise a single observed EFRV. We extend curve registration to the likelihood-free domain with approximate Bayesian computation (ABC). We proceed now with a brief background of ABC. 
 
 # Approximate Bayesian Computation \label{sec:ABC}
 
@@ -104,11 +105,10 @@ In summary, ABC samplers return samples of $\theta$ depending on the value of $d
 \caption{d-sampler}
 \label{alg:loss}
 \begin{algorithmic}[1]
-\Function{}{$\theta, f | p, d$}
+\Require $\theta, f$
+\Ensure $d_{\theta}$
 \State $f_{\theta} \sim p(\cdot|\theta)$
 \State $d_{\theta} = d(f, f_{\theta}) $
-\State \Return $d_{\theta}$
-\EndFunction
 \end{algorithmic}
 \end{algorithm}
 
@@ -120,24 +120,23 @@ To develop an ABC sampler for functional data, we develop d-samplers on $\theta$
 \caption{Registered d-sampler}
 \label{alg:regloss}
 \begin{algorithmic}[1]
-\Function{}{$\theta, f | p, d$}
+\Require $\theta, f$
+\Ensure $d_{\theta}$
 \State $f_{\theta} \sim p(\cdot|\theta)$
 \State $\gamma = \arg \inf_{\gamma \in \Gamma} d_{\text{FR}}(f, f_{\theta} \circ \gamma)$
 \State $d_{\theta} = d(f, f_{\theta} \circ \gamma)$
-\State \Return $d_{\theta}$
-\EndFunction
 \end{algorithmic}
 \end{algorithm}
 
-# Gaussian peak shift \label{sec:sG}
+# Peak shift \label{sec:sG}
 
 ## Method
 
-We first construct an artificial problem to demonstrate the method we suggest. The mean function $\mu(t)$ is a sum over 14 Gaussian functions, i.e. $\mu(t) = \sum_{u=1}^{14} \phi(t | \mu_u, \sigma_{\phi})$. The observed functional output corresponding to fixed sampling locations $t = (0, 0.5, \cdots, 300)$, are independent and normally distributed $y_j \sim N(\mu(t_j), \sigma_{\epsilon})$. What makes the problem of interest here is that the mean parameters $\mu_u$ are latent random variables $\mu_u = \alpha_u + b_u$, where $b_u \sim N(0, \sigma_b)$ with known values for $\sigma_b$ and each $\alpha_u$. The fact that $b_u$ is random and high dimensional makes inelastic dissimilarities inappropriate. 
+We first construct artificial problems to demonstrate the method we suggest. The first problem is as follows. The mean function $\mu(t)$ is a sum over five Gaussian density functions $\phi$ and four Cauchy density functions C, i.e. $\mu(t) = \sum_{u=1}^{5} \phi(t | \mu_u, \sigma_{\phi}) + \sum_{u=6}^{10} \text{C}(t|\mu_u, \sigma_{\text{C}})$. The observed functional output corresponding to fixed sampling locations $t = (0, 0.5, \cdots, 200)$, are independent and normally distributed $y_j \sim N(\mu(t_j), \sigma_{\epsilon})$. What makes the problem of interest here is that the mean parameters $\mu_u$ are latent random variables $\mu_u = \alpha_u + b_u$, where $b_u \sim N(0, \sigma_b)$ with known values for $\sigma_b$ and each $\alpha_u$. The fact that $b_u$ is random and high dimensional makes inelastic dissimilarities inappropriate. 
 
-The prior distributions for the parameters of interest are $\sigma_{\phi} \sim U(0, 10)$, and $\sigma_{\epsilon} \sim U(0, 0.1)$. An example of a model realisation from this distribution is shown in Figure \@ref(fig:sGExample).
+The prior distributions for the parameters of interest are $\sigma_{\phi} \sim U(0, 3)$, $\sigma_{\text{C}} \sim U(0, 2)$, and $\sigma_{\epsilon} \sim U(0, 0.1)$. An example of a model realisation from this distribution is shown in Figure \@ref(fig:sGExample).
 
-```{r sGExample, fig.cap="Example of model realisations from the Gaussian peak shift model with $\\sigma_b = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\mu_u$ values. The distribution of peak shifts is controlled by $\\sigma_b$, the peak widths are controlled by $\\sigma_{\\phi }$, and the noise is controlled by $\\sigma_{\\epsilon}$."}
+```{r sGExample, fig.cap="Example of model realisations from the peak shift model with $\\sigma_b = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\mu_u$ values. The distribution of peak shifts is controlled by $\\sigma_b$, the peak widths are controlled by $\\sigma_{\\phi }$, and the noise is controlled by $\\sigma_{\\epsilon}$."}
 set.seed(1)
 
 t <- seq(0, 200, by = 0.5)
@@ -158,7 +157,9 @@ lines(z, col = "red")
 abline(v = alpha, lty = 2)
 ```
 
-To test the effectiveness of registered loss functions in this situation, we compare all four combinations, i.e. MMD and FR with and without registration.  We set the covariance matrix for MMD to be the $2 \times 2$ diagonal matrix with elements 9 and $1 \times 10^{-4}$, this is related to the scale of the data (see Figure \@ref(fig:sGExample)).
+To test the effectiveness of registered loss functions in this situation, we compare all four combinations, i.e. MMD and FR with and without registration.  We set the covariance matrix for MMD to be the $2 \times 2$ diagonal matrix with elements 9 and $1 \times 10^{-4}$, these values are related to the scale of the data (see Figure \@ref(fig:sGExample)).
+
+The second artificial problem we construct is similar to the first, except we use a set of skewed normal [@azzalini2005skew] density functions SN. The mean function $\mu(t)$ here is $\mu(t) = \sum_{u=1}^{9} \text{SN}(t|\mu_u, \sigma_{\text{SN}}, \eta)$, where $\eta$ is the skewness parameter. The prior distributions for the parameters of interest are $\sigma_{\text{SN}} \sim U(0, 10)$, $\eta \sim U(-0.9, 0.9)$, and $\sigma_{\epsilon} \sim U(0, 0.02)$. 
 
 ## Results
 
@@ -166,7 +167,7 @@ Density plots of posterior samples arising from the ABC sampler with all four lo
 
 We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
 
-```{r, sGaussianPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
+```{r, sGaussianPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian/Cauchy peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
 load("../runs/sGaussian/11/ABC_sG.RData")
 
 output_tidy <- tidyr::gather(ABC_sG, "parameter", , -registration, -sigma_a, -distance)
@@ -208,18 +209,18 @@ ggplot(output_tidy) +
   color_scale
 ```
 
-```{r, skewPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
-load("../runs/skew/1/ABC_skew.RData")
+```{r, skewPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the skewed Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
+load("../runs/skew/8/ABC_skew.RData")
 
 output_tidy <- tidyr::gather(ABC_skew, "parameter", , -registration, -sigma_a, -distance)
 
 # output_tidy$parameter <- factor(output_tidy$parameter, labels = c("rho[phi]", "sigma[epsilon]", "sigma[phi]"))
 
-true_params = c(2, 0.0025, 0.9)
+true_params = c(1, 0.01, 0.5)
 
-vline_df = data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","skew[phi]"), input = true_params, value = c(1, 1, 1))
+vline_df = data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","eta"), input = true_params, value = c(1, 1, 1))
 
-blank_df <- data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","skew[phi]", "skew[phi]"), value = c(3,0.005,1,-1))
+blank_df <- data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","eta", "eta"), value = c(3,0.005,1,-1))
 
 output_tidy <- output_tidy %>%
   mutate(distance = factor(distance)) %>%
@@ -227,7 +228,7 @@ output_tidy <- output_tidy %>%
   mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
   mutate(registration = factor(registration, levels(registration)[c(2,1)]))
 
-output_tidy$parameter <- factor(output_tidy$parameter, levels = c("sigma[phi]", "skew[phi]", "sigma[epsilon]"))
+output_tidy$parameter <- factor(output_tidy$parameter, levels = c("sigma[phi]", "eta", "sigma[epsilon]"))
 
 #blank_df <- data.frame(parameter = rep(levels(output_tidy$parameter), each = 2), value = c(0, 0.02, 0, 3), registration = rep(output_tidy$registration[1], 4), distance = rep(output_tidy$distance[1], 4))
 
@@ -271,7 +272,8 @@ These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ represent i
 \caption{Airport d-sampler}
 \label{alg:AirportLoss}
 \begin{algorithmic}[1]
-\Function{}{$\theta, f^a, f^z, \text{type}$}
+\Require $\theta, f^a, f^z, \text{type}$
+\Ensure $d_{\theta}$
 \State $\mathbf{a}^{\text{imm}}_{\theta} \sim p_a(\cdot | \mu, \nu)$
 \State $f^a_{\theta} = \text{hist}(\mathbf{a}^{\text{imm}}_{\theta})$
 \State $\breve{\mathbf{a}}^{\text{imm}}_{\theta} = \mathbf{a}^{\text{imm}}_{\theta}$
@@ -287,8 +289,6 @@ These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ represent i
 \State $\mathbf{z}^{\text{imm}}_{\theta} \sim p_a(\cdot |\breve{\mathbf{a}}^{\text{imm}}_{\theta}, \lambda, K)$
 \State $f^z_{\theta} = \text{hist}(\mathbf{z}^{\text{imm}}_{\theta})$
 \State $d_{\theta} = d^a_{\theta} + d(f^z, f^z_{\theta})$
-\State \Return $d_{\theta}$
-\EndFunction
 \end{algorithmic}
 \end{algorithm}
 
