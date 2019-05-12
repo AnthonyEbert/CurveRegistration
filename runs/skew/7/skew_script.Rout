@@ -1,0 +1,653 @@
+
+R version 3.5.1 (2018-07-02) -- "Feather Spray"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # Simulator skew
+> 
+> library(CurveRegistration)
+> library(protoABC)
+> library(parallel)
+> library(dplyr)
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+> 
+> # Settings ----------------------
+> 
+> run_number = 1
+> 
+> set.seed(1)
+> 
+> Time <- seq(0, 200, by = 0.5)
+> alpha = seq(20, 180, by = 20)
+> theta = c(1, 0.5, 0.01)
+> 
+> n_runs = 100
+> pacc_final = 0.002
+> 
+> var_mat <- diag(c(9, 0.01^2))
+> 
+> y <- simulator_skew(Time, param = theta, alpha_norm = alpha)
+> y_kmmd <- EasyMMD::kmmd(y, var = var_mat)
+> x <- simulator_skew(Time, param = theta, alpha_norm = alpha)
+> 
+> distance_fun(y, x, registration = TRUE, distance = "MMD", y_kmmd = y_kmmd, var = var_mat, threshold = 6)
+[1] 0.003857541
+> 
+> distance_args <- list(
++   Time = Time,
++   alpha_norm = alpha,
++   obs = y,
++   var = var_mat,
++   threshold = 6,
++   registration = TRUE,
++   distance = "MMD",
++   method = "DP2",
++   mean_global = 0,
++   sigma_a = 5,
++   skew = TRUE
++ )
+> 
+> distance_args$y_kmmd <- EasyMMD::kmmd(distance_args$obs, var = distance_args$var)
+> 
+> loss_sG(theta, distance_args)
+[1] 0.004275892
+> 
+> # ABC -----------------
+> 
+> prior_skew <- prior_unif(c(0, -0.9, 0), c(10, 0.9, 0.02), var_names = c("sigma[phi]", "eta", "sigma[epsilon]"), eval = FALSE)
+> 
+> prior_skew_eval <- prior_unif(c(0, -0.9, 0), c(10, 0.9, 0.02), var_names = c("sigma[phi]", "eta", "sigma[epsilon]"), eval = TRUE)
+> 
+> cov_func <- function(x){
++   robust::covRob(x)$cov
++ }
+> 
+> abc_control <- list(
++   prior_eval = prior_skew_eval,
++   n = n_runs,
++   pacc_final = pacc_final,
++   a = 0.5
++ )
+> 
+> #cl <- makeCluster(detectCores() - 1) #USER
+> cl <- "mclapply" #HPC
+> 
+> ## sigma_a <- 5 -----------------
+> 
+> distance_args$sigma_a <- 2.5
+> 
+> ### Registration <- FALSE -------------
+> 
+> distance_args$registration <- FALSE
+> 
+> #### Distance <- "FR" -------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ABC_skew_RF_FR <- abc_start(prior_skew, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     sigma_a      = distance_args$sigma_a
++   )
+********************************
+Acceptance prob of MCMC was 0.418
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 99
+dist_max is 4.20960072695982
+dist_next is 3.87366115602038
+********************************
+Acceptance prob of MCMC was 0.322222222222222
+Number of MCMC moves for next iteration is 12
+Number of unique particles is 98
+dist_max is 3.87366115602038
+dist_next is 3.62204156254606
+********************************
+Acceptance prob of MCMC was 0.24
+Number of MCMC moves for next iteration is 17
+Number of unique particles is 94
+dist_max is 3.62204156254606
+dist_next is 3.42111079910662
+********************************
+Acceptance prob of MCMC was 0.418823529411765
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 99
+dist_max is 3.42111079910662
+dist_next is 3.15862720476418
+********************************
+Acceptance prob of MCMC was 0.411111111111111
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 99
+dist_max is 3.15862720476418
+dist_next is 3.01168949847747
+********************************
+Acceptance prob of MCMC was 0.333333333333333
+Number of MCMC moves for next iteration is 12
+Number of unique particles is 96
+dist_max is 3.01168949847747
+dist_next is 2.90253238379781
+********************************
+Acceptance prob of MCMC was 0.375
+Number of MCMC moves for next iteration is 10
+Number of unique particles is 96
+dist_max is 2.90253238379781
+dist_next is 2.78522896721105
+********************************
+Acceptance prob of MCMC was 0.42
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 97
+dist_max is 2.78522896721105
+dist_next is 2.64916268721693
+********************************
+Acceptance prob of MCMC was 0.386666666666667
+Number of MCMC moves for next iteration is 10
+Number of unique particles is 95
+dist_max is 2.64916268721693
+dist_next is 2.57250337909932
+********************************
+Acceptance prob of MCMC was 0.388
+Number of MCMC moves for next iteration is 10
+Number of unique particles is 97
+dist_max is 2.57250337909932
+dist_next is 2.52568741685188
+********************************
+Acceptance prob of MCMC was 0.276
+Number of MCMC moves for next iteration is 15
+Number of unique particles is 93
+dist_max is 2.52568741685188
+dist_next is 2.49459519945069
+********************************
+Acceptance prob of MCMC was 0.221333333333333
+Number of MCMC moves for next iteration is 19
+Number of unique particles is 94
+dist_max is 2.49459519945069
+dist_next is 2.47459039419185
+********************************
+Acceptance prob of MCMC was 0.125263157894737
+Number of MCMC moves for next iteration is 35
+Number of unique particles is 85
+dist_max is 2.47459039419185
+dist_next is 2.46268494058914
+********************************
+Acceptance prob of MCMC was 0.125714285714286
+Number of MCMC moves for next iteration is 35
+Number of unique particles is 94
+dist_max is 2.46268494058914
+dist_next is 2.44951398279302
+********************************
+Acceptance prob of MCMC was 0.0771428571428571
+Number of MCMC moves for next iteration is 58
+Number of unique particles is 93
+dist_max is 2.44951398279302
+dist_next is 2.44155142464539
+********************************
+Acceptance prob of MCMC was 0.0506896551724138
+Number of MCMC moves for next iteration is 89
+Number of unique particles is 95
+dist_max is 2.44155142464539
+dist_next is 2.43608446812549
+********************************
+Acceptance prob of MCMC was 0.0296629213483146
+Number of MCMC moves for next iteration is 153
+Number of unique particles is 98
+dist_max is 2.43608446812549
+dist_next is 2.42683887727205
+********************************
+Acceptance prob of MCMC was 0.0125490196078431
+Number of MCMC moves for next iteration is 365
+Number of unique particles is 90
+dist_max is 2.42683887727205
+dist_next is 2.42100272398069
+********************************
+Acceptance prob of MCMC was 0.00926027397260274
+Number of MCMC moves for next iteration is 495
+Number of unique particles is 92
+dist_max is 2.42100272398069
+dist_next is 2.41269346710721
+********************************
+Acceptance prob of MCMC was 0.00351515151515151
+Number of MCMC moves for next iteration is 1308
+Number of unique particles is 81
+dist_max is 2.41269346710721
+dist_next is 2.40703825850854
+********************************
+Acceptance prob of MCMC was 0.0023394495412844
+Number of MCMC moves for next iteration is 1967
+Number of unique particles is 93
+dist_max is 2.40703825850854
+dist_next is 2.39778954840304
+> 
+> save(ABC_skew_RF_FR, file = "ABC_skew_RF_FR.RData")
+> 
+> summary(ABC_skew_RF_FR)
+   sigma[phi]          eta         sigma[epsilon]      registration   
+ Min.   :0.8407   Min.   :0.2360   Min.   :0.0001223   Mode :logical  
+ 1st Qu.:0.9281   1st Qu.:0.4920   1st Qu.:0.0005687   FALSE:100      
+ Median :0.9621   Median :0.5735   Median :0.0007532                  
+ Mean   :0.9625   Mean   :0.5600   Mean   :0.0007609                  
+ 3rd Qu.:0.9965   3rd Qu.:0.6348   3rd Qu.:0.0009281                  
+ Max.   :1.1085   Max.   :0.7757   Max.   :0.0016522                  
+   distance            sigma_a   
+ Length:100         Min.   :2.5  
+ Class :character   1st Qu.:2.5  
+ Mode  :character   Median :2.5  
+                    Mean   :2.5  
+                    3rd Qu.:2.5  
+                    Max.   :2.5  
+> 
+> #### Distance <- "MMD" -------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ABC_skew_RF_MD <- abc_start(prior_skew, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     sigma_a      = distance_args$sigma_a
++   )
+********************************
+Acceptance prob of MCMC was 0.368
+Number of MCMC moves for next iteration is 11
+Number of unique particles is 99
+dist_max is 0.00725712723698946
+dist_next is 0.00613397342540909
+********************************
+Acceptance prob of MCMC was 0.409090909090909
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 98
+dist_max is 0.00613397342540909
+dist_next is 0.00509723051092777
+********************************
+Acceptance prob of MCMC was 0.411111111111111
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 99
+dist_max is 0.00509723051092777
+dist_next is 0.00468030537549358
+********************************
+Acceptance prob of MCMC was 0.322222222222222
+Number of MCMC moves for next iteration is 12
+Number of unique particles is 98
+dist_max is 0.00468030537549358
+dist_next is 0.00435719500012026
+********************************
+Acceptance prob of MCMC was 0.311666666666667
+Number of MCMC moves for next iteration is 13
+Number of unique particles is 96
+dist_max is 0.00435719500012026
+dist_next is 0.00417291747810199
+********************************
+Acceptance prob of MCMC was 0.256923076923077
+Number of MCMC moves for next iteration is 16
+Number of unique particles is 95
+dist_max is 0.00417291747810199
+dist_next is 0.00401892932581251
+********************************
+Acceptance prob of MCMC was 0.21
+Number of MCMC moves for next iteration is 20
+Number of unique particles is 97
+dist_max is 0.00401892932581251
+dist_next is 0.0038998235210843
+********************************
+Acceptance prob of MCMC was 0.104
+Number of MCMC moves for next iteration is 42
+Number of unique particles is 90
+dist_max is 0.0038998235210843
+dist_next is 0.00377548312370219
+********************************
+Acceptance prob of MCMC was 0.0619047619047619
+Number of MCMC moves for next iteration is 73
+Number of unique particles is 94
+dist_max is 0.00377548312370219
+dist_next is 0.00369204797705983
+********************************
+Acceptance prob of MCMC was 0.0413698630136986
+Number of MCMC moves for next iteration is 109
+Number of unique particles is 99
+dist_max is 0.00369204797705983
+dist_next is 0.0036168862074832
+********************************
+Acceptance prob of MCMC was 0.0227522935779817
+Number of MCMC moves for next iteration is 201
+Number of unique particles is 91
+dist_max is 0.0036168862074832
+dist_next is 0.00355054759403291
+********************************
+Acceptance prob of MCMC was 0.0138308457711443
+Number of MCMC moves for next iteration is 331
+Number of unique particles is 90
+dist_max is 0.00355054759403291
+dist_next is 0.00350116346299245
+********************************
+Acceptance prob of MCMC was 0.00936555891238671
+Number of MCMC moves for next iteration is 490
+Number of unique particles is 94
+dist_max is 0.00350116346299245
+dist_next is 0.00344101487303104
+********************************
+Acceptance prob of MCMC was 0.00461224489795918
+Number of MCMC moves for next iteration is 997
+Number of unique particles is 90
+dist_max is 0.00344101487303104
+dist_next is 0.00338538475428031
+********************************
+Acceptance prob of MCMC was 0.00270812437311936
+Number of MCMC moves for next iteration is 1699
+Number of unique particles is 88
+dist_max is 0.00338538475428031
+dist_next is 0.00331805897270861
+> 
+> save(ABC_skew_RF_MD, file = "ABC_skew_RF_MD.RData")
+> 
+> summary(ABC_skew_RF_MD)
+   sigma[phi]          eta          sigma[epsilon]     registration   
+ Min.   :0.6231   Min.   :-0.8123   Min.   :0.008224   Mode :logical  
+ 1st Qu.:0.8809   1st Qu.:-0.2131   1st Qu.:0.009567   FALSE:100      
+ Median :0.9940   Median : 0.2372   Median :0.010134                  
+ Mean   :0.9718   Mean   : 0.1569   Mean   :0.010363                  
+ 3rd Qu.:1.1069   3rd Qu.: 0.5306   3rd Qu.:0.011045                  
+ Max.   :1.3343   Max.   : 0.8896   Max.   :0.012983                  
+   distance            sigma_a   
+ Length:100         Min.   :2.5  
+ Class :character   1st Qu.:2.5  
+ Mode  :character   Median :2.5  
+                    Mean   :2.5  
+                    3rd Qu.:2.5  
+                    Max.   :2.5  
+> 
+> ### Registration <- TRUE -------------
+> 
+> distance_args$registration <- TRUE
+> 
+> #### Distance <- "FR" -------------------
+> 
+> distance_args$distance <- "FR"
+> 
+> ABC_skew_RT_FR <- abc_start(prior_skew, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     sigma_a      = distance_args$sigma_a
++   )
+********************************
+Acceptance prob of MCMC was 0.31
+Number of MCMC moves for next iteration is 13
+Number of unique particles is 95
+dist_max is 3.02922512046143
+dist_next is 2.88327320214602
+********************************
+Acceptance prob of MCMC was 0.295384615384615
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 96
+dist_max is 2.88327320214602
+dist_next is 2.65038287265419
+********************************
+Acceptance prob of MCMC was 0.41
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 98
+dist_max is 2.65038287265419
+dist_next is 2.3615084541259
+********************************
+Acceptance prob of MCMC was 0.375555555555556
+Number of MCMC moves for next iteration is 10
+Number of unique particles is 96
+dist_max is 2.3615084541259
+dist_next is 2.20247709694
+********************************
+Acceptance prob of MCMC was 0.288
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 94
+dist_max is 2.20247709694
+dist_next is 2.14142061162214
+********************************
+Acceptance prob of MCMC was 0.288571428571429
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 98
+dist_max is 2.14142061162214
+dist_next is 2.06785261855604
+********************************
+Acceptance prob of MCMC was 0.208571428571429
+Number of MCMC moves for next iteration is 20
+Number of unique particles is 99
+dist_max is 2.06785261855604
+dist_next is 2.03074828515579
+********************************
+Acceptance prob of MCMC was 0.114
+Number of MCMC moves for next iteration is 39
+Number of unique particles is 96
+dist_max is 2.03074828515579
+dist_next is 1.99515902332333
+********************************
+Acceptance prob of MCMC was 0.0712820512820513
+Number of MCMC moves for next iteration is 63
+Number of unique particles is 95
+dist_max is 1.99515902332333
+dist_next is 1.9646196456775
+********************************
+Acceptance prob of MCMC was 0.0342857142857143
+Number of MCMC moves for next iteration is 133
+Number of unique particles is 91
+dist_max is 1.9646196456775
+dist_next is 1.93889642878915
+********************************
+Acceptance prob of MCMC was 0.0219548872180451
+Number of MCMC moves for next iteration is 208
+Number of unique particles is 95
+dist_max is 1.93889642878915
+dist_next is 1.91532999402368
+********************************
+Acceptance prob of MCMC was 0.00894230769230769
+Number of MCMC moves for next iteration is 513
+Number of unique particles is 87
+dist_max is 1.91532999402368
+dist_next is 1.89454230049034
+********************************
+Acceptance prob of MCMC was 0.0050682261208577
+Number of MCMC moves for next iteration is 907
+Number of unique particles is 88
+dist_max is 1.89454230049034
+dist_next is 1.87557270909378
+********************************
+Acceptance prob of MCMC was 0.00224917309812569
+Number of MCMC moves for next iteration is 2046
+Number of unique particles is 86
+dist_max is 1.87557270909378
+dist_next is 1.86045005912074
+> 
+> save(ABC_skew_RT_FR, file = "ABC_skew_RT_FR.RData")
+> 
+> summary(ABC_skew_RT_FR)
+   sigma[phi]          eta           sigma[epsilon]     registration  
+ Min.   :0.8299   Min.   :-0.64464   Min.   :0.003731   Mode:logical  
+ 1st Qu.:0.9424   1st Qu.:-0.25565   1st Qu.:0.004964   TRUE:100      
+ Median :1.0388   Median :-0.07146   Median :0.005553                 
+ Mean   :1.0357   Mean   : 0.02422   Mean   :0.005614                 
+ 3rd Qu.:1.0975   3rd Qu.: 0.36819   3rd Qu.:0.006099                 
+ Max.   :1.4092   Max.   : 0.75255   Max.   :0.008348                 
+   distance            sigma_a   
+ Length:100         Min.   :2.5  
+ Class :character   1st Qu.:2.5  
+ Mode  :character   Median :2.5  
+                    Mean   :2.5  
+                    3rd Qu.:2.5  
+                    Max.   :2.5  
+> 
+> #### Distance <- "MMD" -------------------
+> 
+> distance_args$distance <- "MMD"
+> 
+> ABC_skew_RT_MD <- abc_start(prior_skew, loss_sG, distance_args = distance_args, method = "RABC", control = abc_control, cl = cl) %>%
++   mutate(
++     registration = distance_args$registration,
++     distance     = distance_args$distance,
++     sigma_a      = distance_args$sigma_a
++   )
+********************************
+Acceptance prob of MCMC was 0.344
+Number of MCMC moves for next iteration is 11
+Number of unique particles is 97
+dist_max is 0.00766095538639694
+dist_next is 0.00659541100698501
+********************************
+Acceptance prob of MCMC was 0.354545454545455
+Number of MCMC moves for next iteration is 11
+Number of unique particles is 96
+dist_max is 0.00659541100698501
+dist_next is 0.0051500244579999
+********************************
+Acceptance prob of MCMC was 0.412727272727273
+Number of MCMC moves for next iteration is 9
+Number of unique particles is 99
+dist_max is 0.0051500244579999
+dist_next is 0.0046360660020727
+********************************
+Acceptance prob of MCMC was 0.282222222222222
+Number of MCMC moves for next iteration is 14
+Number of unique particles is 94
+dist_max is 0.0046360660020727
+dist_next is 0.00442415938645581
+********************************
+Acceptance prob of MCMC was 0.228571428571429
+Number of MCMC moves for next iteration is 18
+Number of unique particles is 95
+dist_max is 0.00442415938645581
+dist_next is 0.00426507959261065
+********************************
+Acceptance prob of MCMC was 0.18
+Number of MCMC moves for next iteration is 24
+Number of unique particles is 94
+dist_max is 0.00426507959261065
+dist_next is 0.00411045646619794
+********************************
+Acceptance prob of MCMC was 0.1025
+Number of MCMC moves for next iteration is 43
+Number of unique particles is 91
+dist_max is 0.00411045646619794
+dist_next is 0.00400262446333163
+********************************
+Acceptance prob of MCMC was 0.067906976744186
+Number of MCMC moves for next iteration is 66
+Number of unique particles is 93
+dist_max is 0.00400262446333163
+dist_next is 0.00389992478264301
+********************************
+Acceptance prob of MCMC was 0.0318181818181818
+Number of MCMC moves for next iteration is 143
+Number of unique particles is 93
+dist_max is 0.00389992478264301
+dist_next is 0.00380632231297698
+********************************
+Acceptance prob of MCMC was 0.0170629370629371
+Number of MCMC moves for next iteration is 268
+Number of unique particles is 94
+dist_max is 0.00380632231297698
+dist_next is 0.00372004219024906
+********************************
+Acceptance prob of MCMC was 0.0076865671641791
+Number of MCMC moves for next iteration is 597
+Number of unique particles is 87
+dist_max is 0.00372004219024906
+dist_next is 0.00364932408855114
+********************************
+Acceptance prob of MCMC was 0.0061641541038526
+Number of MCMC moves for next iteration is 745
+Number of unique particles is 90
+dist_max is 0.00364932408855114
+dist_next is 0.00357836074980281
+********************************
+Acceptance prob of MCMC was 0.00319463087248322
+Number of MCMC moves for next iteration is 1440
+Number of unique particles is 92
+dist_max is 0.00357836074980281
+dist_next is 0.00352007748945201
+> 
+> save(ABC_skew_RT_MD, file = "ABC_skew_RT_MD.RData")
+> 
+> summary(ABC_skew_RT_MD)
+   sigma[phi]          eta          sigma[epsilon]     registration  
+ Min.   :0.4797   Min.   :-0.8484   Min.   :0.008399   Mode:logical  
+ 1st Qu.:0.8530   1st Qu.:-0.2559   1st Qu.:0.010085   TRUE:100      
+ Median :0.9734   Median : 0.2096   Median :0.011051                 
+ Mean   :0.9713   Mean   : 0.1474   Mean   :0.011048                 
+ 3rd Qu.:1.1023   3rd Qu.: 0.5670   3rd Qu.:0.012131                 
+ Max.   :1.4215   Max.   : 0.8953   Max.   :0.013590                 
+   distance            sigma_a   
+ Length:100         Min.   :2.5  
+ Class :character   1st Qu.:2.5  
+ Mode  :character   Median :2.5  
+                    Mean   :2.5  
+                    3rd Qu.:2.5  
+                    Max.   :2.5  
+> 
+> # Packaging everything up
+> 
+> sessionInfo()
+R version 3.5.1 (2018-07-02)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: SUSE Linux Enterprise Server 12 SP2
+
+Matrix products: default
+BLAS/LAPACK: /pkg/suse12/software/openblas/0.2.20-gcc-6.4.0-2.28/lib/libopenblas_sandybridgep-r0.2.20.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] parallel  stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+[1] dplyr_0.8.0.1           protoABC_0.4.8          CurveRegistration_0.2.1
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.0        magrittr_1.5      splines_3.5.1     maps_3.3.0       
+ [5] tidyselect_0.2.5  mnormt_1.5-5      doParallel_1.0.14 EasyMMD_0.5.1    
+ [9] viridisLite_0.3.0 lattice_0.20-38   R6_2.4.0          rlang_0.3.1      
+[13] foreach_1.4.4     matrixcalc_1.0-3  fields_9.6        dotCall64_1.0-0  
+[17] grid_3.5.1        spam_2.2-1        coda_0.19-2       iterators_1.0.10 
+[21] assertthat_0.2.0  tibble_2.0.1      numDeriv_2016.8-1 crayon_1.3.4     
+[25] purrr_0.3.1       codetools_0.2-16  glue_1.3.0        fdasrvf_1.8.3    
+[29] sn_1.5-3          compiler_3.5.1    pillar_1.3.1      stats4_3.5.1     
+[33] mvtnorm_1.0-8     pkgconfig_2.0.2  
+> 
+> ABC_skew <- dplyr::bind_rows(ABC_skew_RF_FR, ABC_skew_RF_MD, ABC_skew_RT_FR, ABC_skew_RT_MD)
+> 
+> save(ABC_skew, file = "ABC_skew.RData")
+> 
+> save.image()
+> 
+> 
+> 
+> 
+> 
+> proc.time()
+      user     system    elapsed 
+171931.037     61.153  15888.400 

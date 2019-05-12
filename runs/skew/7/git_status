@@ -1,0 +1,23 @@
+On branch master
+Your branch is up-to-date with 'origin/master'.
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	deleted:    ../../../Zotero_link.bib
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	../5/git_log
+	../5/git_status
+	../5/skew_5.o4452686
+	../5/skew_script.Rout
+	../6/ABC_skew_RF_FR.RData
+	../6/git_log
+	../6/git_status
+	../6/skew_script.Rout
+	git_log
+	git_status
+
+no changes added to commit (use "git add" and/or "git commit -a")
