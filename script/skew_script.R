@@ -36,7 +36,7 @@ distance_args <- list(
   distance = "MMD",
   method = "DP2",
   mean_global = 0,
-  sigma_a = 5,
+  sigma_a = 2.5,
   skew = TRUE
 )
 
