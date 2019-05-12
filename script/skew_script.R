@@ -15,14 +15,14 @@ Time <- seq(0, 200, by = 0.5)
 alpha = seq(20, 180, by = 20)
 theta = c(1, 0.75, 0.01)
 
-n_runs = 2000
-pacc_final = 0.01
+n_runs = 1000
+pacc_final = 0.005
 
 var_mat <- diag(c(9, 0.01^2))
 
-y <- simulator_skew(Time, param = theta, alpha_norm = alpha)
+y <- simulator_skew(Time, param = theta, alpha_norm = alpha, sigma_a = 2.5)
 y_kmmd <- EasyMMD::kmmd(y, var = var_mat)
-x <- simulator_skew(Time, param = theta, alpha_norm = alpha)
+x <- simulator_skew(Time, param = theta, alpha_norm = alpha, sigma_a = 2.5)
 
 distance_fun(y, x, registration = TRUE, distance = "MMD", y_kmmd = y_kmmd, var = var_mat, threshold = 6)
 
@@ -63,10 +63,6 @@ abc_control <- list(
 
 #cl <- makeCluster(detectCores() - 1) #USER
 cl <- "mclapply" #HPC
-
-## sigma_a <- 5 -----------------
-
-distance_args$sigma_a <- 2.5
 
 ### Registration <- FALSE -------------
 
