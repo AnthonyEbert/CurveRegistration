@@ -16,7 +16,7 @@ alpha = seq(20, 180, by = 20)
 theta = c(1, 0.75, 0.01)
 
 n_runs = 1000
-pacc_final = 0.005
+pacc_final = 0.02
 
 var_mat <- diag(c(9, 0.01^2))
 
