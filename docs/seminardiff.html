@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- This file was created with the aha Ansi HTML Adapter. https://github.com/theZiz/aha -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="stylesheet" type="text/css" href="seminardiff.css">
+<meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8" />
+<title>stdin</title>
+</head>
+<body>
+<pre>
+<span style="font-weight:bold;">diff --git a/docs/main.Rmd b/docs/main.Rmd</span>
+<span style="font-weight:bold;">index 943f97f..664145a 100644</span>
+<span style="font-weight:bold;">--- a/docs/main.Rmd</span>
+<span style="font-weight:bold;">+++ b/docs/main.Rmd</span>
+<span style="color:teal;">@@ -40,35 +40,38 @@</span> color_scale &lt;- ggthemes::scale_color_wsj()
+
+
+<div>
+# Abstract
+
+Likelihood-free inference on functional data requires sensible distance measures for these functions. We consider the problem of functional data displaying not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.  
+
+# Introduction
+
+In statistical problems of interest, what constitutes the sample space <span style="color:red;">[-can-]</span><span style="color:green;">{+is+}</span> sometimes<span style="color:red;">[-be-]</span> a matter of perspective. For instance, in spectroscopy, if we <span style="color:red;">[-take-]</span><span style="color:green;">{+measure+}</span> the spectra of a series of <span style="color:red;">[-samples-]</span><span style="color:green;">{+samples,+}</span> then we<span style="color:red;">[-will-]</span> have a measurement for each combination of frequency and sample. The sample space could <span style="color:red;">[-be-]</span><span style="color:green;">{+comprise+}</span> the <span style="color:green;">{+output+}</span> range of the <span style="color:red;">[-measurement (0 to 1), or,-]</span><span style="color:green;">{+machine (a subset of the real line), or+}</span> alternatively, the <span style="color:green;">{+function space of the+}</span> set of all possible <span style="color:red;">[-spectra could be the sample space, which is a function space. In-]</span><span style="color:green;">{+spectra. Such data are termed+}</span> functional <span style="color:green;">{+data. Functional+}</span> data analysis (FDA), <span style="color:red;">[-we take the-]</span><span style="color:green;">{+proceeds with this+}</span> latter approach and <span style="color:red;">[-focus-]</span><span style="color:green;">{+focuses+}</span> on problems where this perspective provides useful insight [@hsing2015theoretical,@ramsay2006functional]. 
+
+<span style="color:red;">[-Data representing these problems are termed functional data.-]</span>A common problem when analysing functional data is <span style="color:red;">[-that these data are misaligned, if data are misaligned it-]</span><span style="color:green;">{+misalignment, where features of the functions do not correspond on the domain, which we refer to as the time axis. It+}</span> can be difficult to compare observations or to derive meaningful <span style="color:red;">[-statistics. Alignment-]</span><span style="color:green;">{+statistics whenever there+}</span> is <span style="color:green;">{+misalignment. It's+}</span> not always <span style="color:red;">[-achieved-]</span><span style="color:green;">{+possible to align functions+}</span> with<span style="color:red;">[-a-]</span> simple <span style="color:red;">[-shift-]</span><span style="color:green;">{+shifts+}</span> of <span style="color:red;">[-the time axis,-]</span><span style="color:green;">{+explanatory axes,+}</span> sometimes<span style="color:red;">[-a-]</span> more complex <span style="color:red;">[-warping-]</span><span style="color:green;">{+warpings+}</span> of <span style="color:red;">[-this time axis is-]</span><span style="color:green;">{+axes are+}</span> required. <span style="color:red;">[-Common-]</span><span style="color:green;">{+Standard+}</span> statistical methods assume that only the amplitude of a function is subject to <span style="color:red;">[-noise, however-]</span><span style="color:green;">{+noise; however,+}</span> it is possible to consider<span style="color:red;">[-these warpings of-]</span> the time axis <span style="color:green;">{+to be subject to noise+}</span> as <span style="color:red;">[-another type of noise,-]</span><span style="color:green;">{+well,+}</span> which must be <span style="color:red;">[-accounted for.-]</span><span style="color:green;">{+taken into account.+}</span> @Kneip2008 elegantly <span style="color:red;">[-terms-]</span><span style="color:green;">{+describe+}</span> this as separation of amplitude and phase variation within a functional dataset. @srivastava2011registration <span style="color:red;">[-extended this-]</span><span style="color:green;">{+extend the+}</span> paradigm by developing <span style="color:red;">[-a-]</span><span style="color:green;">{+an elastic+}</span> distance, with mathematically convenient properties, between functions displaying amplitude and phase variation. <span style="color:red;">[-Such distances, which take into account both sources of variability, are termed-]</span><span style="color:green;">{+@srivastava2011registration develop this distance by generalising the Fisher-Rao [@rao1945information;@maybank2008fisher] metric from probability density functions to absolutely continuous functions. This+}</span> elastic <span style="color:red;">[-distances.-]</span><span style="color:green;">{+distance on functions is also the restriction of one developed for planar shapes [@joshi2007novel].+}</span> 
+
+Parameter inference<span style="color:red;">[-where-]</span> with functional data <span style="color:red;">[-has been-]</span><span style="color:green;">{+is+}</span> developed under many different names, <span style="color:red;">[-including:-]</span><span style="color:green;">{+including+}</span> self-modelling [@kneip1988convergence], functional-modelling <span style="color:red;">[-[@ramsay2006functional].-]</span><span style="color:green;">{+[@ramsay2006functional], and longitudinal data analysis [@laird1982random].+}</span> However, these methods require <span style="color:red;">[-that-]</span><span style="color:green;">{+evaluation of+}</span> the likelihood <span style="color:red;">[-function be evalutated. In-]</span><span style="color:green;">{+function; in+}</span> many<span style="color:red;">[-complex-]</span> statistical <span style="color:red;">[-models,-]</span><span style="color:green;">{+models of interest+}</span> the likelihood function is either unavailable or <span style="color:red;">[-intractable-]</span><span style="color:green;">{+intractable,+}</span> but it is possible to draw realisations from the model conditional on parameter values. Approximate Bayesian computation (ABC) is a likelihood-free approach to parameter inference where proposed parameter values are accepted <span style="color:red;">[-only whenever-]</span><span style="color:green;">{+when+}</span> a dissimilarity between model realisations and observed data is <span style="color:red;">[-below-]</span><span style="color:green;">{+beneath+}</span> some <span style="color:red;">[-threshold.-]</span><span style="color:green;">{+threshold [@sisson2018handbook].+}</span> 
+
+<span style="color:red;">[-There-]</span><span style="color:green;">{+The dissimilarity+}</span> is <span style="color:red;">[-work applying ABC to models with functional data. Generally speaking the data are reduced to-]</span><span style="color:green;">{+usually defined as+}</span> a <span style="color:red;">[-set of summary statistics or an &quot;inelastic&quot;-]</span><span style="color:green;">{+Euclidean+}</span> distance<span style="color:red;">[-is computed directly-]</span> between <span style="color:red;">[-model realisations-]</span><span style="color:green;">{+summary statistics of the observed data+}</span> and <span style="color:red;">[-data.-]</span><span style="color:green;">{+the model realisation.+}</span> For instance, @zhuestimating use wavelet compression to transform functional data into low-dimensional summary <span style="color:red;">[-statistics;-]</span><span style="color:green;">{+statistics,+}</span> and <span style="color:red;">[-@toni_approximate_2009-]</span><span style="color:green;">{+@wood_statistical_2010+}</span> use <span style="color:red;">[-sum of squared errors to directly compute dissimilarity between functional model realisations-]</span><span style="color:green;">{+estimators for parameters from an autoregressive model. Choosing the most effective summary statistics for a given problem is not trivial,+}</span> and <span style="color:red;">[-functional data.-]</span><span style="color:green;">{+may be specific to the dataset in question [@nunes2010optimal].+}</span> Recently, there has been work on using <span style="color:green;">{+estimators for+}</span> metrics on probability measures such as the Wasserstein distance [@bernton_inference_2017] and maximum mean discrepancy (MMD) [@gretton_kernel_2012] <span style="color:green;">{+and the Fisher-Rao metric [@srivastava2007riemannian]+}</span> to work with functional data. <span style="color:green;">{+These estimators have been used within ABC samplers by @park2016k2 and @bernton_inference_2017.+}</span> 
+
+In the following <span style="color:red;">[-section with-]</span><span style="color:green;">{+section, we+}</span> provide some background to functional data analysis and introduce notation. In Section \@ref(sec:ABC) we do the same for ABC. In this <span style="color:red;">[-work-]</span><span style="color:green;">{+work,+}</span> we extend ABC to functional data which displays both amplitude and phase variation. We demonstrate this with three examples: the first example is a toy example with a random distribution of peak shift position (Section \@ref(sec:sG)), the second example is of passenger flow in an international airport terminal (Section \@ref(sec:Airport)), and the third example is a model of hydrological modelling \@ref(sec:Hydro)). 
+
+# Function data analysis
+
+Functional data analysis (FDA) is <span style="color:red;">[-the analysis-]</span><span style="color:green;">{+a well established field+}</span> of <span style="color:red;">[-data generated by curves or functions [@hsing2015theoretical].-]</span><span style="color:green;">{+study [@ramsay2006functional].+}</span> Special-cases of functional datasets include longitudinal data and time <span style="color:red;">[-series. However,-]</span><span style="color:green;">{+series; however,+}</span> the field of FDA is much broader<span style="color:red;">[-than this-]</span> [@wang2016functional]. Functional random variables take values in a function space $\mathsf{f} \in \mathcal{F}$ with associated probability measure $p$ (see @delaigle2010defining). In practice, <span style="color:red;">[-the functional random variables-]</span><span style="color:green;">{+$\fsf$+}</span> are <span style="color:green;">{+smoothed empirical functions of noisy data $f$+}</span> observed<span style="color:red;">[-with error-]</span> on a countable subset of the <span style="color:red;">[-domain of the function.-]</span><span style="color:green;">{+domain.+}</span> This is what we refer to as an empirical functional random variable (EFRV). An EFRV $f$ is itself a set of pairs $f_1, f_2, \cdots$ of the form $f_i = (t^f_{i},y^f_{i})$ representing sampling location $t^f_i$ and corresponding function output $y^f_{i}$. Therefore $f$ is of the form $\{ (t^f_{1},y^f_{1}), \cdots , (t^f_{j}, y^f_{j}), \cdots, (t^f_{n}, y^f_{n}) \}$. We append the superscript $f$ to keep track of which sampling points and functional outputs refer to which EFRV. 
+
+When analysing functional data, a statistic of interest is an estimate of the mean function $\mu(t) = \underset{\fsf \sim p}{\E}[\mathsf{f}](t)$. In the case of EFRVs with a shared set of sampling locations ($t^{f_1} = \cdots = t^{f_i} = \cdots$), this is usually estimated with $\hat{\mu}(t_j) = 1/n_i \sum_{i = 1}^{n_i} y^{f_i}_j$. In such cases, it is possible that the resulting function is not an element of $\mathcal{F}$ due to phase variation. For instance, if $\mathcal{F}$ is the set of Gaussian functions <span style="color:red;">[-$\phi(\mu,\sigma)$-]</span><span style="color:green;">{+$\phi(t | \mu,\sigma)$+}</span> with $\mu \sim U(0, 5)$, $\sigma = 1$ then the mean function <span style="color:green;">{+$\mu(t) = \frac{1}{n_i} \sum_{i=1}^{n_i} \phi(t|\mu_i, \sigma)$+}</span> is not <span style="color:red;">[-Gaussian.-]</span><span style="color:green;">{+Gaussian over $t$.+}</span>
+
+There are many approaches in the literature which seek to provide statistical tools for functional data in the presence of phase variation. These include: dynamic time warping [@Padoy2012632; @wang1997alignment], the Frechet distance [@rote2007computing], curve registration and, elastic functions [@srivastava2011registration]. Applications of curve registration <span style="color:red;">[-include:-]</span><span style="color:green;">{+include+}</span> growth curves [@cheng2016bayesian] and surgical workflow [@Padoy2012632]. 
+
+We <span style="color:red;">[-standardise-]</span><span style="color:green;">{+assume+}</span> the domain of <span style="color:red;">[-$\mathsf{f^*} \in \mathbb{R}^{[0, T]}$ from $[0,T]$ to $[0,1]$ by setting $\mathsf{f}(t) = \mathsf{f^*}(t \times T)$.-]</span><span style="color:green;">{+$\mathcal{F}$ is $\mathbb{R}^{[0, T]}$, for some $T&gt;0$.+}</span> The idea of curve registration is to align elements of $\mathcal{F}$ with <span style="color:green;">{+increasing and invertible+}</span> warping functions <span style="color:red;">[-$\gamma^{\mathsf{f}}: [0,1]-]</span><span style="color:green;">{+$\gamma: [0,T]+}</span> \mapsto <span style="color:red;">[-[0,1]$,-]</span><span style="color:green;">{+[0,T]$,+}</span> such that elements of the set $\mathcal{G} := \{\mathsf{f} \circ <span style="color:red;">[-\gamma^{\mathsf{f}}-]</span><span style="color:green;">{+\gamma+}</span> | \mathsf{f} \in \mathcal{F} \}$ have aligned features according to some criteria. We adopt the elastic functions approach of @srivastava2011registration, who align $\fsf$ to another functional random variable $\mathsf{g}$ using the Fisher-Rao <span style="color:red;">[-metric:-]</span><span style="color:green;">{+metric for functions:+}</span>
+\begin{align}
+d_{\text{FR}}(\fsf,\gsf) = \int [ q^{\fsf}(t) - q^{\gsf}(t) ]^2 \text{d} t, (\#eq:FR)
+\end{align} 
+where $q^{\fsf}(t) = \text{sign}(\fsf^{\prime}(t)) \times \sqrt{|\fsf^{\prime}(t)|}$. Curve $\fsf$ is aligned to $\gsf$ by <span style="color:red;">[-defining a warping function $\gamma \in \Gamma$ where $\Gamma = \{\gamma \in [0,1]^{[0, 1]} | \gamma \text{ is invertible and } \gamma(0) = 0 \}$ to minimise-]</span><span style="color:green;">{+finding $\gamma$ which minimises+}</span> $d_{\text{FR}}(\fsf \circ \gamma, \gsf)$. One advantage of using $d_{\text{FR}}$ for curve registration is that:
+\begin{align*} 
+d_{\text{FR}}(\fsf, \gsf) = d_{\text{FR}}(\fsf \circ \gamma, \gsf \circ \gamma), 
+\end{align*}
+<span style="color:teal;">@@ -76,64 +79,62 @@</span> in other words, the Fisher-Rao metric is invariant to shared warpings. This impl
+\begin{align*}
+d_{\text{amp}}(\fsf,\gsf) := \inf_{\gamma \in \Gamma} d_{\text{FR}}(\fsf \circ \gamma, \gsf),
+\end{align*}
+is symmetric [@srivastava2011registration].<span style="color:red;">[-In practice, $\fsf$ are smoothed empirical functions of noisy data $f$ observed on a countable subset of the domain. This point is briefly discussed by @tucker2014analysis, but not other authors.-]</span> The R package fdasrvf [@tuckerCRAN], which <span style="color:green;">{+we use,+}</span> implements the approach of <span style="color:red;">[-@srivastava2011registration, uses a-]</span><span style="color:green;">{+@srivastava2011registration. A+}</span> cubic spline approximation <span style="color:red;">[-to approximate-]</span><span style="color:green;">{+approximates+}</span> the smoothed first derivative $\fsf'(t)$. 
+
+For <span style="color:red;">[-simplicity and without loss of generality-]</span><span style="color:green;">{+simplicity,+}</span> we consider problems where the functional data comprise a single observed EFRV. We extend curve registration to the likelihood-free domain with approximate Bayesian computation (ABC). We proceed now with a brief background of <span style="color:red;">[-ABC, for a detailed exposition on the subject see @sisson2018handbook.-]</span><span style="color:green;">{+ABC.+}</span> 
+
+# Approximate Bayesian Computation \label{sec:ABC}
+
+Suppose <span style="color:red;">[-we can-]</span><span style="color:green;">{+it is possible to+}</span> draw samples from, but not evaluate a probability distribution $p(\cdot|\theta)$. Furthermore, we wish to<span style="color:red;">[-draw samples $\pi(\theta|x)$ with observed data $x$ to-]</span> perform inference on $\theta$. In such cases simulation-based approaches might be necessary; these are useful whenever $p(\cdot|\theta)$ represents a complicated simulator for generating realisations $x_{\theta} \sim p(\cdot|\theta)$. 
+
+The theoretical foundation of ABC rests on the fact that if we draw samples $\theta$ independently from the prior $\pi(\theta)$ and use each $\theta$ to generate a corresponding $x_{\theta}$ from $p(\cdot|\theta)$, then the set $\{\theta | x_{\theta} = x\}$ is sampled from $\pi(\theta|x)$. Such an approach would never work in practice as the proportion of $x_{\theta}$ samples equal to $x$ for models with continuous support is zero. For this reason, a dissimilarity $d$ between $x$ and $x_{\theta}$ is used within a decision rule to accept or reject $\theta$. In other words, we sample the set $\{\theta|d(x, x_{\theta}) \leq \epsilon \}$ for some fixed threshold $\epsilon &gt; 0$. Dissimilarity, as defined by @jousselme2012distances, is a weaker notion than distance---without the triangle inequality and where $x{=}y \implies d(x, y){=}0$ is true but the converse $d(x, y){=}0 \implies x{=}y$ is not true in general. 
+
+The FR metric <span style="color:green;">{+for functions+}</span> (Equation \@ref(eq:FR)) is a dissimilarity, another dissimilarity which we use is the estimator for maximum mean discrepancy ($d_{\text{MMD}}$), developed by @gretton_kernel_2007 as a non-parametric two-sample statistic for testing whether samples come from the same distribution. @park2016k2 use $d_{\text{MMD}}$ as a dissimilarity within an ABC algorithm. In our case, inputs to dissimilarities are functional data; which we emphasis by denoting them as $f$ and $g$. The definition of $d_{\text{MMD}}(f,g)$ is as follows:
+\begin{align}
+d_{\text{MMD}}(f,g) &amp;=  \frac{1}{m^2} \sum_{j=1}^m \sum_{j^{\prime} = 1}^{m} k(f_j, f_{j^{\prime}}) + \nonumber \\
+&amp;\quad \quad \frac{1}{n^2} \sum_{j=1}^n \sum_{j^{\prime}  = 1 }^n k(g_j, g_{j^{\prime}}) \nonumber \nonumber \\
+&amp;\quad \quad - \frac{2}{mn} \sum_{j=1}^m \sum_{j^{\prime}  = 1 }^n  k(f_j, g_{j^{\prime}}), (\#eq:MMD)
+\end{align}
+where $m$ is the cardinality of $f$, $n$ is the cardinality of $g$ and $k$ is a kernel function. A common choice of kernel function is the Gaussian kernel, $k(f_j,g_{j^{\prime}}) = \exp \left[ -0.5 \sqrt{(t^f_j-t^g_{j^{\prime}})^T S^{-1} (y^f_j-y^g_{j^{\prime}})} \right]$, where $S$ is a fixed tuning covariance matrix. @gretton_kernel_2012 showed that $d_{\text{MMD}}$ is equivalent to a kernel-smoothed <span style="color:red;">[-L2 norm-]</span><span style="color:green;">{+L$_2$ metric+}</span> between EFRVs. We can, therefore, use $\hat{\rho}_{\text{MMD}}$ as a dissimilarity on EFRVs rather than probability measures.
+
+In summary, ABC samplers return samples of $\theta$ depending on the value of $d(f, f_{\theta})$. There exist many varieties of ABC samplers in the literature <span style="color:red;">[-including: accept-reject,-]</span><span style="color:green;">{+including accept-reject [@tavare_inferring_1997],+}</span> replenishment [@drovandi_estimation_2011]; <span style="color:green;">{+and+}</span> simulated annealing [@albert_simulated_2015]. We find it useful in this paper to introduce an additional abstraction called a dissimilarity sampler (d-sampler) (Algorithm \@ref(alg:loss)), which helps to simplify the clarify the language used later. <span style="color:green;">{+In other words, we consider the dissimilarity to be a random variable conditional on $\theta$.+}</span> 
+
+\begin{algorithm}
+\caption{d-sampler}
+\label{alg:loss}
+\begin{algorithmic}[1]
+<span style="color:red;">[-\Function{}{$\theta, f | p, d$}-]</span><span style="color:green;">{+\Require $\theta, f$+}</span>
+<span style="color:green;">{+\Ensure $d_{\theta}$+}</span>
+\State $f_{\theta} \sim p(\cdot|\theta)$
+\State $d_{\theta} = d(f, f_{\theta}) $
+<span style="color:red;">[-\State \Return $d_{\theta}$-]</span>
+<span style="color:red;">[-\EndFunction-]</span>
+\end{algorithmic}
+\end{algorithm}
+
+This notion makes ABC samplers easier to describe. For instance, the rejection sampler can be written as a for loop over $i$ with $\left( \theta_i \sim \pi(\cdot), d_i = \text{d-sampler}(\theta_i, f) \right)$ keeping only pairs with $d_i$ less than $\epsilon$. We adopt the ABC sampler as defined by Drovandi and Pettitt termed the replenishment ABC sampler (Appendix). 
+
+To develop an ABC sampler for functional data, we develop d-samplers on $\theta$ and $f$ based on the warping $\gamma$ of @srivastava2011registration, combined with a discrepancy (either FR \@ref(eq:FR) or MMD \@ref(eq:MMD)) as is shown in Algorithm \@ref(alg:regloss). In the next <span style="color:red;">[-section-]</span><span style="color:green;">{+section,+}</span> we compare these loss functions against their unregistered versions (Algorithm \@ref(alg:loss)). 
+
+\begin{algorithm}
+\caption{Registered d-sampler}
+\label{alg:regloss}
+\begin{algorithmic}[1]
+<span style="color:red;">[-\Function{}{$\theta, f | p, d$}-]</span><span style="color:green;">{+\Require $\theta, f$+}</span>
+<span style="color:green;">{+\Ensure $d_{\theta}$+}</span>
+\State $f_{\theta} \sim p(\cdot|\theta)$
+\State $\gamma = \arg \inf_{\gamma \in \Gamma} d_{\text{FR}}(f, f_{\theta} \circ \gamma)$
+\State $d_{\theta} = d(f, f_{\theta} \circ \gamma)$
+<span style="color:red;">[-\State \Return $d_{\theta}$-]</span>
+<span style="color:red;">[-\EndFunction-]</span>
+\end{algorithmic}
+\end{algorithm}
+
+# <span style="color:red;">[-Gaussian peak-]</span><span style="color:green;">{+Peak+}</span> shift \label{sec:sG}
+
+## Method
+
+We first construct<span style="color:red;">[-an-]</span> artificial <span style="color:red;">[-problem-]</span><span style="color:green;">{+problems+}</span> to demonstrate the method we suggest. The <span style="color:green;">{+first problem is as follows. The+}</span> mean function $\mu(t)$ is a sum over <span style="color:red;">[-14-]</span><span style="color:green;">{+five+}</span> Gaussian <span style="color:red;">[-functions,-]</span><span style="color:green;">{+density functions $\phi$ and four Cauchy density functions C,+}</span> i.e. $\mu(t) = <span style="color:red;">[-\sum_{u=1}^{14}-]</span><span style="color:green;">{+\sum_{u=1}^{5}+}</span> \phi(t | \mu_u, <span style="color:red;">[-\sigma_{\phi})$.-]</span><span style="color:green;">{+\sigma_{\phi}) + \sum_{u=6}^{10} \text{C}(t|\mu_u, \sigma_{\text{C}})$.+}</span> The observed functional output corresponding to fixed sampling locations $t = (0, 0.5, \cdots, <span style="color:red;">[-300)$,-]</span><span style="color:green;">{+200)$,+}</span> are independent and normally distributed $y_j \sim N(\mu(t_j), \sigma_{\epsilon})$. What makes the problem of interest here is that the mean parameters $\mu_u$ are latent random variables $\mu_u = \alpha_u + b_u$, where $b_u \sim N(0, \sigma_b)$ with known values for $\sigma_b$ and each $\alpha_u$. The fact that $b_u$ is random and high dimensional makes inelastic dissimilarities inappropriate. 
+
+The prior distributions for the parameters of interest are $\sigma_{\phi} \sim U(0, <span style="color:red;">[-10)$,-]</span><span style="color:green;">{+3)$, $\sigma_{\text{C}} \sim U(0, 2)$,+}</span> and $\sigma_{\epsilon} \sim U(0, 0.1)$. An example of a model realisation from this distribution is shown in Figure \@ref(fig:sGExample).
+
+```{r sGExample, fig.cap=&quot;Example of model realisations from the<span style="color:red;">[-Gaussian-]</span> peak shift model with $\\sigma_b = 5, \\sigma_{\\phi} = 1$, and $\\sigma_{\\epsilon} = 0.01$. The dotted lines are the $\\mu_u$ values. The distribution of peak shifts is controlled by $\\sigma_b$, the peak widths are controlled by $\\sigma_{\\phi }$, and the noise is controlled by $\\sigma_{\\epsilon}$.&quot;}
+set.seed(1)
+
+t &lt;- seq(0, 200, by = 0.5)
+<span style="color:teal;">@@ -154,7 +155,9 @@</span> lines(z, col = &quot;red&quot;)
+abline(v = alpha, lty = 2)
+```
+
+To test the effectiveness of registered loss functions in this situation, we compare all four combinations, i.e. MMD and FR with and without registration.  We set the covariance matrix <span style="color:green;">{+$S$+}</span> for MMD to be the $2 \times 2$ diagonal matrix with elements 9 and $1 \times <span style="color:red;">[-10^{-4}$. We use the R package fdasrvf [@tuckerCRAN]-]</span><span style="color:green;">{+10^{-4}$, these values are related+}</span> to<span style="color:red;">[-align-]</span> the <span style="color:red;">[-simulated and observed functional datasets. To compute-]</span><span style="color:green;">{+scale of+}</span> the <span style="color:red;">[-elastic distance between functions as defined by @srivastava2011registration-]</span><span style="color:green;">{+data (see Figure \@ref(fig:sGExample)).+}</span>
+
+<span style="color:green;">{+The second artificial problem we construct is similar to the first, except+}</span> we use <span style="color:green;">{+a set of skewed normal [@azzalini2005skew] density functions SN. The mean function $\mu(t)$ here is $\mu(t) = \sum_{u=1}^{9} \text{SN}(t|\mu_u, \sigma_{\text{SN}}, \eta)$, where $\sigma_{\text{SN}}$ is+}</span> the <span style="color:red;">[-implementation contained in-]</span><span style="color:green;">{+scale parameter and $\eta$ is the skewness parameter. See+}</span> the <span style="color:red;">[-R package fdasrvf [@tuckerCRAN].-]</span><span style="color:green;">{+centred parameterisation of @azzalini1999statistical. The prior distributions for the parameters of interest are $\sigma_{\text{SN}} \sim U(0, 10)$, $\eta \sim U(-0.9, 0.9)$, and $\sigma_{\epsilon} \sim U(0, 0.02)$.+}</span> 
+
+## Results
+
+<span style="color:teal;">@@ -162,7 +165,7 @@</span> Density plots of posterior samples arising from the ABC sampler with all four lo
+
+We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
+
+
+# Passenger processing at an international airport \label{sec:Airport}
+
+Rising demand for air travel and enhanced security screening places pressure on existing airport infrastructure. Airport terminal infrastructure, for financial and geographical reasons, is difficult to upgrade at such a rate as to match this demand. With this in mind, operational planners at airports seek to optimise day-to-day operations. However, any optimisation framework requires a somewhat realistic model. To be a realistic model is will necessarily become complicated and this combined with the data collection scheme leads inevitably to intractable likelihoods. On the other hand, simulators are straight-forward to construct, although computationally <span style="color:red;">[-demanding-]</span><span style="color:green;">{+demanding, this+}</span> has prevented simulation-based approaches in the past.
+
+A faster algorithm for queueing based algorithms called QDC [@ebert_computationally_2017] was used by @ebert2018likelihood to construct an ABC sampler for this problem. However, there were problems with misalignment as noted in the discussion of this paper. We consider a simplified (for the sake of exposition) version of the model and data as @ebert2018likelihood. The purpose of this model is to predict passenger flows through an airport terminal in response to particular flight schedules and staff rosters. The data comprise records of passenger numbers passing through certain check-points for each minute of the day. The flight schedule and staff rosters can be thought of as explanatory variables since they are known and affect the response variable (passenger flows) to some degree which we wish to infer. 
+
+<span style="color:teal;">@@ -224,7 +270,8 @@</span> These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ represent i
+\caption{Airport d-sampler}
+\label{alg:AirportLoss}
+\begin{algorithmic}[1]
+<span style="color:red;">[-\Function{}{$\theta,-]</span><span style="color:green;">{+\Require $\theta,+}</span> f^a, f^z, <span style="color:red;">[-\text{type}$}-]</span><span style="color:green;">{+\text{type}$+}</span>
+<span style="color:green;">{+\Ensure $d_{\theta}$+}</span>
+\State $\mathbf{a}^{\text{imm}}_{\theta} \sim p_a(\cdot | \mu, \nu)$
+\State $f^a_{\theta} = \text{hist}(\mathbf{a}^{\text{imm}}_{\theta})$
+\State $\breve{\mathbf{a}}^{\text{imm}}_{\theta} = \mathbf{a}^{\text{imm}}_{\theta}$
+<span style="color:teal;">@@ -240,8 +287,6 @@</span> These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ represent i
+\State $\mathbf{z}^{\text{imm}}_{\theta} \sim p_a(\cdot |\breve{\mathbf{a}}^{\text{imm}}_{\theta}, \lambda, K)$
+\State $f^z_{\theta} = \text{hist}(\mathbf{z}^{\text{imm}}_{\theta})$
+\State $d_{\theta} = d^a_{\theta} + d(f^z, f^z_{\theta})$
+<span style="color:red;">[-\State \Return $d_{\theta}$-]</span>
+<span style="color:red;">[-\EndFunction-]</span>
+\end{algorithmic}
+\end{algorithm}
+
+<span style="color:teal;">@@ -336,7 +381,7 @@</span> ggplot(Hydrodata) +
+  theme(legend.position = &quot;top&quot;, axis.title.x = element_blank()) + scale_color_gradient2(midpoint = 2, low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;grey&quot;) + guides(col = guide_colourbar(title = &quot;Evaporation&quot;), linetype = guide_legend(title = element_blank()))
+```
+
+Parameter estimation proceeds with either expert opinion or automatic calibration. Automatic calibration is typically performed with a goodness-of-fit function such as sum of squared errors rather than a likelihood function. Parameter estimation for hydrological methods is an active area of research [@kavetski2018parameter]. @mcinerney2018simplified argues that once parameters are estimated the parameter uncertainty itself contributes little to overall uncertainty compared to the residual error structure. We apply approximate Bayesian computation to this application for the first time and <span style="color:red;">[-apply-]</span><span style="color:green;">{+use+}</span> the methodology of curve-registration. 
+
+## Methods
+
+<span style="color:teal;">@@ -345,7 +390,7 @@</span> The simulation model we use is the GR4J model of @perrin2003improvement. This mo
+	f^z &amp;= B^{-1}[B[\mathcal{H}(\theta, f^a)] + \epsilon], \\
+	\epsilon &amp;\sim N(0, \sigma^2).
+\end{align}
+The model is an input/output model like the airport example, <span style="color:red;">[-however,-]</span><span style="color:green;">{+however;+}</span> in this case, the input observation $f^a$ and the latent input variable are one and the same, so we do not include a corrected loss. We use the same loss functions as were used in the peak shifted example (Algorithms \@ref(alg:loss) and \@ref(alg:regloss)). 
+
+## Results
+
+<span style="color:teal;">@@ -386,9 +431,7 @@</span> ggplot(hydro_syn_tidy %&gt;% filter(distance == &quot;MMD&quot;)) +
+
+# Discussion
+
+We have demonstrated two ways through which curve registration can be used in aid of likelihood-free inference for functional data. In the peak shifts example of Section \@ref(sec:sG) we saw how registered loss based on both FR and MMD dissimilarities outperform their unregistered types. Another use of the curve registration is shown in the airport example of Section \@ref(sec:Airport) where curve registration was used to convert input data to produce more realistic output data. Finally, in the hydrological example, the ABC sampler correctly identifies appropriate values for $\theta_4$ making unregistered loss functions unnecessary. <span style="color:red;">[-* Mention alternative of estimating $b_u$ and how we avoid this problem with elastic distances.-]</span><span style="color:green;">{+Since the peak positions are fixed, there is no advantage to curve registration.+}</span> 
+
+# References
+</div>
+</pre>
+</body>
+</html>
