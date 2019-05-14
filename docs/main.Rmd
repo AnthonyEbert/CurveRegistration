@@ -1,7 +1,7 @@
 ---
-title: "Registration of functional data for likelihood-free inference"
+title: "Curve registration of functional data for approximate Bayesian computation"
 author: "Anthony Ebert, Paul Wu, Kerrie Mengersen, Fabrizio Ruggeri"
-date: "16 October 2018"
+date: "14 May 2019"
 geometry: margin=2cm
 output:
   bookdown::pdf_document2:
@@ -27,8 +27,8 @@ library(dplyr)
 library(ggplot2)
 
 true_color <- "black"
-#color_scale <- scale_color_manual(values = c("red", "blue", "grey"))
-color_scale <- ggthemes::scale_color_wsj()
+color_scale <- scale_color_manual(values = c("Registered" = "red", "Unregistered" = "blue", "Corrected" = "orange"))
+#color_scale <- ggthemes::scale_color_wsj()
 ```
 
 \setlength{\abovedisplayskip}{-15pt}
@@ -45,27 +45,25 @@ color_scale <- ggthemes::scale_color_wsj()
 
 # Abstract
 
-Likelihood-free inference on functional data requires sensible distance measures for these functions. We consider the problem of functional data displaying not only amplitude variation but also phase variation. We show how current methods in curve registration can be applied to approximate Bayesian computation with the help of kernel-based methods recently developed for metrics for probability measures.  
+Approximate Bayesian computation is a likelihood-free inference method which relies on comparing model realisations to observed data with informative distance measures. We consider functional data that are not only measured with error on their observational axis, but are also subject to a random warping along their time axis. Conventional distances on functions, such as the the L$_2$ distance are not informative under these conditions. The Fisher-Rao metric, generalised by @srivastava2011registration from the space of probability distributions to the space of functions, is an ideal objective function for aligning one function to another by warping the time axis. We examine the utility of this alignment with the distance for the purposes of approximate Bayesian computation with four examples: two toy examples, airport processing at an international airport and hydrological flow modelling. We find that while the Fisher-Rao metric works well as an objective function for alignment; however, once the functions are aligned it is not necessarily the most informative distance for inference. This means that likelihood-free inference may require two distances, one for alignment and one for parameter inference. 
 
 # Introduction
 
 In statistical problems of interest, what constitutes the sample space is sometimes a matter of perspective. For instance, in spectroscopy, if we measure the spectra of a series of samples, then we have a measurement for each combination of frequency and sample. The sample space could comprise the output range of the machine (a subset of the real line), or alternatively, the function space of the set of all possible spectra. Such data are termed functional data. Functional data analysis (FDA), proceeds with this latter approach and focuses on problems where this perspective provides useful insight [@hsing2015theoretical,@ramsay2006functional]. 
 
-A common problem when analysing functional data is misalignment, where features of the functions do not correspond on the domain, which we refer to as the time axis. It can be difficult to compare observations or to derive meaningful statistics whenever there is misalignment. It's not always possible to align functions with simple shifts of explanatory axes, sometimes more complex warpings of axes are required. Standard statistical methods assume that only the amplitude of a function is subject to noise; however, it is possible to consider the time axis to be subject to noise as well, which must be taken into account. @Kneip2008 elegantly describe this as separation of amplitude and phase variation within a functional dataset. @srivastava2011registration extend the paradigm by developing an elastic distance, with mathematically convenient properties, between functions displaying amplitude and phase variation. @srivastava2011registration develop this distance by generalising the Fisher-Rao [@rao1945information;@maybank2008fisher] metric from probability density functions to absolutely continuous functions. This elastic distance on functions is also the restriction of one developed for planar shapes [@joshi2007novel]. 
+A common problem when analysing functional data is misalignment, features of the functions do not correspond with one another on the domain, which we refer to as the time axis since we consider only functions which map $\mathbb{R}_+$ to $\mathbb{R}$. It can be difficult to compare observations or to derive meaningful statistics in the presence of misalignment. It's not always possible to align functions with simple shifts of the time axis, sometimes more complex warpings are required. Standard statistical methods assume that only the amplitude of a function is subject to noise; however, it is possible to consider warping of the time axis as a type of noise. @Kneip2008 elegantly describe this as separation of amplitude and phase variation within a functional dataset. @srivastava2011registration extend the paradigm by developing an elastic distance, with mathematically convenient properties, between functions displaying amplitude and phase variation. @srivastava2011registration develop this distance by generalising the Fisher-Rao [@rao1945information;@maybank2008fisher] metric from the space of probability density functions to absolutely continuous functions. This elastic distance on functions is also the restriction of one developed for planar shapes [@joshi2007novel]. Dynamic time warping [@wang1997alignment;itakura1975minimum] and curve registration [@srivastava2011registration] are alternate terms used in the engineering and statistical literature respectively for function alignment which involve warping the time axis. Applications of curve registration include growth curves [@cheng2016bayesian] and surgical workflow [@Padoy2012632]. 
 
-Parameter inference with functional data is developed under many different names, including self-modelling [@kneip1988convergence], functional-modelling [@ramsay2006functional], and longitudinal data analysis [@laird1982random]. However, these methods require evaluation of the likelihood function; in many statistical models of interest the likelihood function is either unavailable or intractable, but it is possible to draw realisations from the model conditional on parameter values. Approximate Bayesian computation (ABC) is a likelihood-free approach to parameter inference where proposed parameter values are accepted when a dissimilarity between model realisations and observed data is beneath some threshold [@sisson2018handbook]. 
+Parameter inference with functional data is developed under many different names, including self-modelling [@kneip1988convergence], functional-modelling [@ramsay2006functional], and longitudinal data analysis [@laird1982random]. However, these methods require evaluation of the likelihood function; in many statistical models of interest the likelihood function is either unavailable or intractable, but it is possible to draw realisations from the model conditional on parameter values. Approximate Bayesian computation (ABC) is a likelihood-free approach to parameter inference where proposed parameter values are accepted when a distance between model realisations and observed data is beneath some threshold [@sisson2018handbook]. 
 
-The dissimilarity is usually defined as a Euclidean distance between summary statistics of the observed data and the model realisation. For instance, @zhuestimating use wavelet compression to transform functional data into low-dimensional summary statistics, and @wood_statistical_2010 use estimators for parameters from an autoregressive model. Choosing the most effective summary statistics for a given problem is not trivial, and may be specific to the dataset in question [@nunes2010optimal]. Recently, there has been work on using estimators for metrics on probability measures such as the Wasserstein distance [@bernton_inference_2017] and maximum mean discrepancy (MMD) [@gretton_kernel_2012] and the Fisher-Rao metric [@srivastava2007riemannian] to work with functional data. These estimators have been used within ABC samplers by @park2016k2 and @bernton_inference_2017. 
+The distance is usually defined as a Euclidean distance between summary statistics of the observed data and the model realisation. For instance, @zhuestimating use wavelet compression to transform functional data into low-dimensional summary statistics, and @wood_statistical_2010 use estimators for parameters from an autoregressive model. Choosing the most effective summary statistics for a given problem is not trivial, and may be specific to the dataset in question [@nunes2010optimal]. Recently, there has been work on using estimators for metrics on probability measures such as the Wasserstein distance [@bernton_inference_2017] and maximum mean discrepancy (MMD) [@gretton_kernel_2012] and the Fisher-Rao metric [@srivastava2007riemannian] to work with functional data. These estimators have been used within ABC samplers by @park2016k2 and @bernton_inference_2017. 
 
 In the following section, we provide some background to functional data analysis and introduce notation. In Section \@ref(sec:ABC) we do the same for ABC. In this work, we extend ABC to functional data which displays both amplitude and phase variation. We demonstrate this with three examples: the first example is a toy example with a random distribution of peak shift position (Section \@ref(sec:sG)), the second example is of passenger flow in an international airport terminal (Section \@ref(sec:Airport)), and the third example is a model of hydrological modelling \@ref(sec:Hydro)). 
 
 # Function data analysis
 
-Functional data analysis (FDA) is a well established field of study [@ramsay2006functional]. Special-cases of functional datasets include longitudinal data and time series; however, the field of FDA is much broader [@wang2016functional]. Functional random variables take values in a function space $\mathsf{f} \in \mathcal{F}$ with associated probability measure $p$ (see @delaigle2010defining). In practice, $\fsf$ are smoothed empirical functions of noisy data $f$ observed on a countable subset of the domain. This is what we refer to as an empirical functional random variable (EFRV). An EFRV $f$ is itself a set of pairs $f_1, f_2, \cdots$ of the form $f_i = (t^f_{i},y^f_{i})$ representing sampling location $t^f_i$ and corresponding function output $y^f_{i}$. Therefore $f$ is of the form $\{ (t^f_{1},y^f_{1}), \cdots , (t^f_{j}, y^f_{j}), \cdots, (t^f_{n}, y^f_{n}) \}$. We append the superscript $f$ to keep track of which sampling points and functional outputs refer to which EFRV. 
+Functional data analysis (FDA) is a well established field of study [@ramsay2006functional]. Special-cases of functional datasets include longitudinal data and time series; however, the field of FDA is much broader [@wang2016functional]. Functional random variables take values in a function space $\mathsf{f} \in \mathcal{F}$ (see @delaigle2010defining). In practice, $\fsf$ are smoothed empirical functions of noisy data $f$ observed on a countable subset of the domain. This is what we refer to as an empirical functional random variable (EFRV). An EFRV $f$ is itself a set of pairs $f_1, f_2, \cdots$ of the form $f_i = (t^f_{i},y^f_{i})$ representing sampling location $t^f_i$ and corresponding function output $y^f_{i}$. Therefore $f$ is of the form $\{ (t^f_{1},y^f_{1}), \cdots , (t^f_{j}, y^f_{j}), \cdots, (t^f_{n}, y^f_{n}) \}$. We append the superscript $f$ to keep track of which sampling points and functional outputs refer to which EFRV. 
 
 When analysing functional data, a statistic of interest is an estimate of the mean function $\mu(t) = \underset{\fsf \sim p}{\E}[\mathsf{f}](t)$. In the case of EFRVs with a shared set of sampling locations ($t^{f_1} = \cdots = t^{f_i} = \cdots$), this is usually estimated with $\hat{\mu}(t_j) = 1/n_i \sum_{i = 1}^{n_i} y^{f_i}_j$. In such cases, it is possible that the resulting function is not an element of $\mathcal{F}$ due to phase variation. For instance, if $\mathcal{F}$ is the set of Gaussian functions $\phi(t | \mu,\sigma)$ with $\mu \sim U(0, 5)$, $\sigma = 1$ then the mean function $\mu(t) = \frac{1}{n_i} \sum_{i=1}^{n_i} \phi(t|\mu_i, \sigma)$ is not Gaussian over $t$.
-
-There are many approaches in the literature which seek to provide statistical tools for functional data in the presence of phase variation. These include: dynamic time warping [@Padoy2012632; @wang1997alignment], the Frechet distance [@rote2007computing], curve registration and, elastic functions [@srivastava2011registration]. Applications of curve registration include growth curves [@cheng2016bayesian] and surgical workflow [@Padoy2012632]. 
 
 We assume the domain of $\mathcal{F}$ is $\mathbb{R}^{[0, T]}$, for some $T>0$. The idea of curve registration is to align elements of $\mathcal{F}$ with increasing and invertible automorphisms on the time axis called warping functions $\gamma: [0,T] \mapsto [0,T]$, such that elements of the set $\mathcal{G} := \{\mathsf{f} \circ \gamma | \mathsf{f} \in \mathcal{F} \}$ have aligned features according to some criteria. We adopt the elastic functions approach of @srivastava2011registration, who align $\fsf$ to another functional random variable $\mathsf{g}$ using the Fisher-Rao metric for functions:
 \begin{align}
@@ -87,17 +85,17 @@ For simplicity, we consider problems where the functional data comprise a single
 
 Suppose it is possible to draw samples from, but not evaluate a probability distribution $p(\cdot|\theta)$. Furthermore, we wish to perform inference on $\theta$. In such cases simulation-based approaches might be necessary; these are useful whenever $p(\cdot|\theta)$ represents a complicated simulator for generating realisations $x_{\theta} \sim p(\cdot|\theta)$. 
 
-The theoretical foundation of ABC rests on the fact that if we draw samples $\theta$ independently from the prior $\pi(\theta)$ and use each $\theta$ to generate a corresponding $x_{\theta}$ from $p(\cdot|\theta)$, then the set $\{\theta | x_{\theta} = x\}$ is sampled from $\pi(\theta|x)$. Such an approach would never work in practice as the proportion of $x_{\theta}$ samples equal to $x$ for models with continuous support is zero. For this reason, a dissimilarity $d$ between $x$ and $x_{\theta}$ is used within a decision rule to accept or reject $\theta$. In other words, we sample the set $\{\theta|d(x, x_{\theta}) \leq \epsilon \}$ for some fixed threshold $\epsilon > 0$. Dissimilarity, as defined by @jousselme2012distances, is a weaker notion than distance---without the triangle inequality and where $x{=}y \implies d(x, y){=}0$ is true but the converse $d(x, y){=}0 \implies x{=}y$ is not true in general. 
+The theoretical foundation of ABC rests on the fact that if we draw samples $\theta$ independently from the prior $\pi(\theta)$ and use each $\theta$ to generate a corresponding $x_{\theta}$ from $p(\cdot|\theta)$, then the set $\{\theta | x_{\theta} = x\}$ is sampled from $\pi(\theta|x)$. Such an approach would never work in practice as the proportion of $x_{\theta}$ samples equal to $x$ for models with continuous support is zero. For this reason, a distance $d$ between $x$ and $x_{\theta}$ is used within a decision rule to accept or reject $\theta$. In other words, we sample the set $\{\theta|d(x, x_{\theta}) \leq \epsilon \}$ for some fixed threshold $\epsilon > 0$. We should say dissimilarity, as defined by @jousselme2012distances, rather than distance since for ABC only a weaker notion than distance is needed, without the triangle inequality and where $x{=}y \implies d(x, y){=}0$ is true but the converse $d(x, y){=}0 \implies x{=}y$ is not true in general. 
 
-The FR metric for functions (Equation \@ref(eq:FR)) is a dissimilarity, another dissimilarity which we use is the estimator for maximum mean discrepancy ($d_{\text{MMD}}$), developed by @gretton_kernel_2007 as a non-parametric two-sample statistic for testing whether samples come from the same distribution. @park2016k2 use $d_{\text{MMD}}$ as a dissimilarity within an ABC algorithm. In our case, inputs to dissimilarities are functional data; which we emphasis by denoting them as $f$ and $g$. The definition of $d_{\text{MMD}}(f,g)$ is as follows:
+The FR metric for functions (Equation \@ref(eq:FR)) is a distance, another distance which we use is the estimator for maximum mean discrepancy ($d_{\text{MMD}}$), developed by @gretton_kernel_2007 as a non-parametric two-sample statistic for testing whether samples come from the same distribution. @park2016k2 use $d_{\text{MMD}}$ as a distance within an ABC algorithm. In our case, inputs to dissimilarities are functional data; which we emphasis by denoting them as $f$ and $g$. The definition of $d_{\text{MMD}}(f,g)$ is as follows:
 \begin{align}
 d_{\text{MMD}}(f,g) &=  \frac{1}{m^2} \sum_{j=1}^m \sum_{j^{\prime} = 1}^{m} k(f_j, f_{j^{\prime}}) + \nonumber \\
 &\quad \quad \frac{1}{n^2} \sum_{j=1}^n \sum_{j^{\prime}  = 1 }^n k(g_j, g_{j^{\prime}}) \nonumber \nonumber \\
 &\quad \quad - \frac{2}{mn} \sum_{j=1}^m \sum_{j^{\prime}  = 1 }^n  k(f_j, g_{j^{\prime}}), (\#eq:MMD)
 \end{align}
-where $m$ is the cardinality of $f$, $n$ is the cardinality of $g$ and $k$ is a kernel function. A common choice of kernel function is the Gaussian kernel, $k(f_j,g_{j^{\prime}}) = \exp \left[ -0.5 \sqrt{(t^f_j-t^g_{j^{\prime}})^T S^{-1} (y^f_j-y^g_{j^{\prime}})} \right]$, where $S$ is a fixed tuning covariance matrix. @gretton_kernel_2012 showed that $d_{\text{MMD}}$ is equivalent to a kernel-smoothed L$_2$ metric between EFRVs. We can, therefore, use $\hat{\rho}_{\text{MMD}}$ as a dissimilarity on EFRVs rather than probability measures.
+where $m$ is the cardinality of $f$, $n$ is the cardinality of $g$ and $k$ is a kernel function. A common choice of kernel function is the Gaussian kernel, $k(f_j,g_{j^{\prime}}) = \exp \left[ -0.5 \sqrt{(t^f_j-t^g_{j^{\prime}})^T S^{-1} (y^f_j-y^g_{j^{\prime}})} \right]$, where $S$ is a fixed tuning covariance matrix. @gretton_kernel_2012 showed that $d_{\text{MMD}}$ is equivalent to a kernel-smoothed L$_2$ metric between EFRVs. We can, therefore, use $\hat{\rho}_{\text{MMD}}$ as a distance on EFRVs rather than probability measures.
 
-In summary, ABC samplers return samples of $\theta$ depending on the value of $d(f, f_{\theta})$. There exist many varieties of ABC samplers in the literature including accept-reject [@tavare_inferring_1997], replenishment [@drovandi_estimation_2011]; and simulated annealing [@albert_simulated_2015]. We find it useful in this paper to introduce an additional abstraction called a dissimilarity sampler (d-sampler) (Algorithm \@ref(alg:loss)), which helps to simplify the clarify the language used later. In other words, we consider the dissimilarity to be a random variable conditional on $\theta$. 
+In summary, ABC samplers return samples of $\theta$ depending on the value of $d(f, f_{\theta})$. There exist many varieties of ABC samplers in the literature including accept-reject [@tavare_inferring_1997], replenishment [@drovandi_estimation_2011]; and simulated annealing [@albert_simulated_2015]. We find it useful in this paper to introduce an additional abstraction called a distance sampler (d-sampler) (Algorithm \@ref(alg:loss)), which helps to simplify the clarify the language used later. In other words, we consider the distance to be a random variable conditional on $\theta$. 
 
 \begin{algorithm}
 \caption{d-sampler}
@@ -161,11 +159,11 @@ The second artificial problem we construct is similar to the first, except we us
 
 ## Results
 
-Density plots of posterior samples arising from the ABC sampler with all four loss functions, registered and unregistered, (Figure \@ref(fig:sGaussianPost)) show that registered loss functions outperform their unregistered counterparts. Interestingly the distance used for registration, FR, when used as the dissimilarity for ABC is outperformed by MMD which leads us to believe that the best dissimilarity for registration and the best dissimilarity for ABC do not always coincide. The reason MMD outperforms FR for $\sigma_{\epsilon}$, in particular, is its penalty term. The first term in Equation penalises the concentration of $y^{f_{\theta}}$ such that the algorithm is lead to a higher value of $\sigma_{\epsilon}$ to match the noise in $y^{f}$. We are interested in the effect of registration rather than the dissimilarity, so in further examples, we proceed only with MMD. 
+Density plots of posterior samples arising from the ABC sampler for the first toy problem with all four loss functions, registered and unregistered, are shown for the first toy problem (Figure \@ref(fig:sGaussianPost)) and the second toy problem (Figure \@ref(fig:skewPost)) show that registered loss functions outperform their unregistered counterparts. Interestingly the distance used for registration, FR, when used as the distance for ABC is sometimes outperformed by MMD which leads us to believe that the best distance for registration and the best distance for ABC do not always coincide, depending on the parameter of interest. The reason MMD outperforms FR for $\sigma_{\epsilon}$, in particular, is its penalty term. The first term in Equation penalises the concentration of $y^{f_{\theta}}$ such that the algorithm is lead to a higher value of $\sigma_{\epsilon}$ to match the noise in $y^{f}$. It is interesting that the same pattern of density plots is seen between the two examples, with the registered distances outperforming others for the scale parameters and the MMD distance (both registered and unregistered) outperforming the Fisher-Rao distance. 
 
-We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
+The relative merits of each distance are not our major concern here, we are interested in the effect of registration rather than the distance, so in further examples, we proceed only with MMD. We demonstrate now a more complex example with a dynamic queueing network model of an international airport terminal. 
 
-```{r, sGaussianPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the Gaussian/Cauchy peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
+```{r, sGaussianPost, fig.asp = 0.5, fig.cap="Gaussian/Cauchy peak shift example. Density plots of posterior samples arising from the replenishment ABC sampler. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
 load("../runs/sGaussian/11/ABC_sG.RData")
 
 output_tidy <- tidyr::gather(ABC_sG, "parameter", , -registration, -sigma_a, -distance)
@@ -199,16 +197,12 @@ ggplot(output_tidy) +
   ggthemes::theme_few() +
   ylab(latex2exp::TeX('$\\pi_{ABC} (\\theta | y)$')) +
   theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
-  guides(
-    color = guide_legend(order = 0),
-    lty = guide_legend(order = 1)
-  ) + 
   geom_blank(data = blank_df, mapping = aes(x = value), inherit.aes = FALSE) +
   color_scale
 ```
 
-```{r, skewPost, fig.asp = 0.5, fig.cap="Density plots of posterior samples arising from the replenishment ABC sampler [@drovandi_estimation_2011] for the skewed Gaussian peak shift example. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
-load("../runs/skew/9/ABC_skew.RData")
+```{r, skewPost, fig.asp = 0.5, fig.cap="Skewed Gaussian peak shift example. Density plots of posterior samples arising from the replenishment ABC sampler. Distances shown include MMD (Maximum mean discrepancy) and FR (Fisher-Rao) in on both registered and unregistered data. Vertical black solid lines represent true values. "}
+load("../runs/skew/14/ABC_skew.RData")
 
 output_tidy <- tidyr::gather(ABC_skew, "parameter", , -registration, -sigma_a, -distance)
 
@@ -241,12 +235,9 @@ ggplot(output_tidy) +
   ggthemes::theme_few() +
   ylab(latex2exp::TeX('$\\pi_{ABC} (\\theta | y)$')) +
   theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
-  guides(
-    color = guide_legend(order = 0),
-    lty = guide_legend(order = 1)
-  ) + 
   geom_blank(data = blank_df, mapping = aes(x = value), inherit.aes = FALSE) +
   color_scale
+
 ```
 
 
@@ -264,7 +255,7 @@ Once passengers have deplaned, they walk to the immigration system and queue for
 
 We require a queueing simulator to compute the times at which passengers leave their queueing system. A queueing simulator (QueueSim) is a function which (conditional on arrival times, service times and number of servers) deterministically computes times at which passengers leave their queueing system (departure times). First, we partition the arrival times $a_{u,v}^{\text{imm}}$ by $\text{nat}_{u,v}$; then we sample service times $s_{u,v} \sim \text{Exp}(\lambda_{\text{nat}_{u,v}})$. The number of servers $K_{\text{nat}}$ are known. The departure times from the queueing systems are $\mathbf{z}^{\text{imm}}_{\text{nat}} = \text{QueueSim}(\mathbf{a}^{\text{imm}}_{\text{nat}}, \mathbf{s}_{\text{nat}},   K_{\text{nat}})$, the variables are written in boldface to denote the full vectors partitioned by nationality since the movements of each passenger, once queueing begins, are no longer independent. We bin $\mathbf{a}_{\theta}^{\text{imm}}$ and $\mathbf{z}^{\text{imm}}$ by minute to construct $f^{a}_{\theta}$ and $f^{z}_{\theta}$ respectively. The synthetic data were also constructed in this manner so that we could know the true parameter values. 
 
-These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ represent input and output of the immigration system respectively. We cannot use input data $f^{a}$ directly within the model to produce realisations $f^{z}_{\theta} | f^{a}, \theta$ since the transformation from $\mathbf{a}_{\theta}^{\text{imm}}$ is non-invertible, and we do not know the flight number for observed passengers. We can use curve registration to find the warping function $\gamma$ from $f^{a}_{\theta}$ to $f^{a}$ and apply this warping (warp) to the latent variable $\mathbf{a}^{\text{imm}}$ so as to produce "corrected" $\mathbf{z}^{\text{imm}}$ and ultimately corrected $f^{z}_{\theta}$ (Algorithm \@ref(alg:AirportLoss)). The type argument encodes whether the d-sampler is unregistered, registered or corrected. For the registered d-sampler, only the dissimilarity on $f^{a}_{\theta}$ is registered, the corrected d-sampler uses a registered dissimilarity on $f^{a}_{\theta}$ and uses the $\gamma$ to correct the input for a more accurate output sample $\mathbf{z}^{\text{imm}}$. 
+These two functional variables $f^{a}_{\theta}$ and $f^{z}_{\theta}$ represent input and output of the immigration system respectively. We cannot use input data $f^{a}$ directly within the model to produce realisations $f^{z}_{\theta} | f^{a}, \theta$ since the transformation from $\mathbf{a}_{\theta}^{\text{imm}}$ is non-invertible, and we do not know the flight number for observed passengers. We can use curve registration to find the warping function $\gamma$ from $f^{a}_{\theta}$ to $f^{a}$ and apply this warping (warp) to the latent variable $\mathbf{a}^{\text{imm}}$ so as to produce "corrected" $\mathbf{z}^{\text{imm}}$ and ultimately corrected $f^{z}_{\theta}$ (Algorithm \@ref(alg:AirportLoss)). The type argument encodes whether the d-sampler is unregistered, registered or corrected. For the registered d-sampler, only the distance on $f^{a}_{\theta}$ is registered, the corrected d-sampler uses a registered distance on $f^{a}_{\theta}$ and uses the $\gamma$ to correct the input for a more accurate output sample $\mathbf{z}^{\text{imm}}$. 
 
 \begin{algorithm}
 \caption{Airport d-sampler}
@@ -327,6 +318,7 @@ ggplot(airport_tidy %>% filter(distance == "MMD")) +
   theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
   geom_blank(data = blank_df) +
   color_scale
+
 ```
 
 # Hydrological modelling \label{sec:Hydro}
@@ -394,7 +386,7 @@ The model is an input/output model like the airport example, however; in this ca
 
 ## Results
 
-Although this example includes peak shifting as is found in the previous two examples we see from density plots of posterior samples (Figure \@ref(fig:HydroPost)) that the unregistered loss outperforms the unregistered loss. In those cases, there was a high dimensional latent variable $b_u$ affecting peak shift location, in this case, there is only one variable $\theta_4$. The process of registration is here unnecessary and adds noise to the loss function flattening the posterior densities.  
+Although this example includes peak shifting as is found in the previous two examples we see from density plots of posterior samples (Figure \@ref(fig:HydroPost)) that the unregistered loss outperforms the unregistered loss. In those cases, there was a high dimensional latent variable $b_u$ affecting peak shift location, in this case, there is only one variable $\theta_4$. The process of registration is here unnecessary and adds noise to the loss function flattening the posterior densities. Since the peak positions are fixed, there is no advantage to curve registration. 
 
 ```{r, HydroPost, warning = FALSE, fig.cap = "Density plots of posterior samples from the hydrological model using unregistered and registered loss function."}
 load("../runs/hydrology/3/ABC_hydro_syn.RData")
@@ -427,11 +419,14 @@ ggplot(hydro_syn_tidy %>% filter(distance == "MMD")) +
   theme(axis.ticks.y = element_blank(), axis.text.y = element_blank(), panel.spacing.x = unit(2, "lines"), legend.title = element_blank(), axis.title.x = element_blank() , legend.position = "bottom" , plot.margin = unit(c(0, 2, 0, 0),  "lines")) +
   geom_blank(data = blank_df) +
   color_scale
+
 ```
 
 # Discussion
 
-We have demonstrated two ways through which curve registration can be used in aid of likelihood-free inference for functional data. In the peak shifts example of Section \@ref(sec:sG) we saw how registered loss based on both FR and MMD dissimilarities outperform their unregistered types. Another use of the curve registration is shown in the airport example of Section \@ref(sec:Airport) where curve registration was used to convert input data to produce more realistic output data. Finally, in the hydrological example, the ABC sampler correctly identifies appropriate values for $\theta_4$ making unregistered loss functions unnecessary. Since the peak positions are fixed, there is no advantage to curve registration. 
+In this article, we applied curve registration techniques to the problem of misaligned functional data for likelihood-free inference for the first time. We used the Fisher-Rao metric for functional data [@srivastava2011registration] as an objective function to align model realisations to observed data through warping of the time axis, once aligned we compared the Fisher-Rao metric and maximum mean discrepancy as distances for the purposes of posterior inference within an ABC sampler. 
+
+We tested this process with three examples, the peak shifts example (Section \@ref(sec:sG)), the airport example (Section \@ref(sec:Airport)), and the hydrology example (Section \@ref(sec:Hydro)). These examples highlighted different aspects and use-cases of applying curve registration techniques to ABC. In the peak shifts example of Section we saw how registered loss based on both FR and MMD dissimilarities outperform their unregistered types. Another use of the curve registration is shown in the airport example of Section where curve registration was used to convert input data to produce more realistic output data. Finally, in the hydrological example, the ABC sampler correctly identifies appropriate values for $\theta_4$, making unregistered loss functions unnecessary. 
 
 # References
 
