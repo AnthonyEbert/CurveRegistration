@@ -168,13 +168,15 @@ load("../runs/sGaussian/11/ABC_sG.RData")
 
 output_tidy <- tidyr::gather(ABC_sG, "parameter", , -registration, -sigma_a, -distance)
 
+output_tidy$parameter[which(output_tidy$parameter == "rho[phi]")] <- "sigma[C]"
+
 # output_tidy$parameter <- factor(output_tidy$parameter, labels = c("rho[phi]", "sigma[epsilon]", "sigma[phi]"))
 
 true_params = c(1, 0.01, 0.7)
 
-vline_df = data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","rho[phi]"), input = true_params, value = c(1, 1, 1))
+vline_df = data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","sigma[C]"), input = true_params, value = c(1, 1, 1))
 
-blank_df <- data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","rho[phi]"), value = c(3,0.02,2))
+blank_df <- data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","sigma[C]"), value = c(3,0.02,2))
 
 output_tidy <- output_tidy %>%
   mutate(distance = factor(distance)) %>%
@@ -182,7 +184,7 @@ output_tidy <- output_tidy %>%
   mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
   mutate(registration = factor(registration, levels(registration)[c(2,1)]))
 
-output_tidy$parameter <- factor(output_tidy$parameter, levels = c("sigma[phi]", "rho[phi]", "sigma[epsilon]"))
+output_tidy$parameter <- factor(output_tidy$parameter, levels = c("sigma[phi]", "sigma[C]", "sigma[epsilon]"))
 
 #blank_df <- data.frame(parameter = rep(levels(output_tidy$parameter), each = 2), value = c(0, 0.02, 0, 3), registration = rep(output_tidy$registration[1], 4), distance = rep(output_tidy$distance[1], 4))
 
@@ -206,13 +208,15 @@ load("../runs/skew/14/ABC_skew.RData")
 
 output_tidy <- tidyr::gather(ABC_skew, "parameter", , -registration, -sigma_a, -distance)
 
+output_tidy$parameter[which(output_tidy$parameter == "sigma[phi]")] <- "sigma[SN]"
+
 # output_tidy$parameter <- factor(output_tidy$parameter, labels = c("rho[phi]", "sigma[epsilon]", "sigma[phi]"))
 
 true_params = c(1, 0.01, 0.5)
 
-vline_df = data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","eta"), input = true_params, value = c(1, 1, 1))
+vline_df = data.frame(parameter = c("sigma[SN]", "sigma[epsilon]","eta"), input = true_params, value = c(1, 1, 1))
 
-blank_df <- data.frame(parameter = c("sigma[phi]", "sigma[epsilon]","eta", "eta"), value = c(3,0.005,1,-1))
+blank_df <- data.frame(parameter = c("sigma[SN]", "sigma[epsilon]","eta", "eta"), value = c(3,0.005,1,-1))
 
 output_tidy <- output_tidy %>%
   mutate(distance = factor(distance)) %>%
@@ -220,7 +224,7 @@ output_tidy <- output_tidy %>%
   mutate(registration = factor(ifelse(registration, "Registered", "Unregistered"))) %>%
   mutate(registration = factor(registration, levels(registration)[c(2,1)]))
 
-output_tidy$parameter <- factor(output_tidy$parameter, levels = c("sigma[phi]", "eta", "sigma[epsilon]"))
+output_tidy$parameter <- factor(output_tidy$parameter, levels = c("sigma[SN]", "eta", "sigma[epsilon]"))
 
 #blank_df <- data.frame(parameter = rep(levels(output_tidy$parameter), each = 2), value = c(0, 0.02, 0, 3), registration = rep(output_tidy$registration[1], 4), distance = rep(output_tidy$distance[1], 4))
 
@@ -290,7 +294,7 @@ load(file = "../runs/airport/2/ABC_airport.RData")
 
 # data file ABC_airport
 
-param_names <- c("mu", "nu", "lambda[f]", "lambda[l]")
+param_names <- c("rho", "nu", "lambda[f]", "lambda[l]")
 true_params <- c(0.02, 0.64, 0.4, 0.5)
 
 vline_df = data.frame(parameter = param_names, input = true_params, value = rep(1, 4))
@@ -302,7 +306,7 @@ airport_tidy <- ABC_airport %>% tidyr::gather("parameter", , -registration, -dis
 
 # %>% mutate(distance = paste0(distance, ifelse(registration, "", " (reg)")))
 
-airport_tidy$parameter <- factor(airport_tidy$parameter, labels = c("lambda[f]", "lambda[l]", "mu", "nu"))
+airport_tidy$parameter <- factor(airport_tidy$parameter, labels = c("lambda[f]", "lambda[l]", "rho", "nu"))
 
 blank_df <- data.frame(parameter = rep(levels(airport_tidy$parameter), each = 2), value = c(0, 1, 0, 1, 0, 0.05, 0, 1), out = rep(airport_tidy$out[1], 4))
 
