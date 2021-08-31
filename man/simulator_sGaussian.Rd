@@ -4,8 +4,14 @@
 \alias{simulator_sGaussian}
 \title{Simulated example 1 (Gaussian and Cauchy peaks)}
 \usage{
-simulator_sGaussian(Time, param = c(1, 0.7, 0.01), alpha_norm = c(20,
-  60), alpha_cauchy = c(40, 80), mean_global = 0, sigma_a = 5)
+simulator_sGaussian(
+  Time,
+  param = c(1, 0.7, 0.01),
+  alpha_norm = c(20, 60),
+  alpha_cauchy = c(40, 80),
+  mean_global = 0,
+  sigma_a = 5
+)
 }
 \description{
 Simulated example 1 (Gaussian and Cauchy peaks)

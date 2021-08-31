@@ -1,0 +1,62 @@
+
+R version 4.1.0 (2021-05-18) -- "Camp Pontanezen"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(airGR)
+> library(ggplot2)
+> data(L0123001)
+> 
+> InputsModel <-
++   CreateInputsModel(
++     FUN_MOD = RunModel_GR4J,
++     DatesR = BasinObs$DatesR,
++     Precip = BasinObs$P,
++     PotEvap = BasinObs$E
++   )
+> 
+> Ind_Run <-
++   seq(which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/03/1997"),
++       which(format(BasinObs$DatesR, format = "%d/%m/%Y") == "01/01/1998"))
+> 
+> RunOptions <- CreateRunOptions(
++   FUN_MOD = RunModel_GR4J,
++   InputsModel = InputsModel,
++   IndPeriod_Run = Ind_Run,
++   IniStates = NULL,
++   IniResLevels = NULL,
++   IndPeriod_WarmUp = NULL
++ )
+Warning message:
+In CreateRunOptions(FUN_MOD = RunModel_GR4J, InputsModel = InputsModel,  :
+  model warm up period not defined: default configuration used
+  the year preceding the run period is used 
+
+> 
+> Param <- c(257, 1, 88, 2.2, 0.05)
+> 
+> OutputsModel <-
++   RunModel_GR4J(InputsModel = InputsModel,
++                 RunOptions = RunOptions,
++                 Param = Param[1:4])
+> 
+> #plot(OutputsModel, Qobs = BasinObs$Qmm[Ind_Run], which = c("Precip", "Flows"))
+> 
+> Hydrodata <- BasinObs[Ind_Run,] %>% mutate(Flowrate = as.factor("Flow-rate"))
+Error in BasinObs[Ind_Run, ] %>% mutate(Flowrate = as.factor("Flow-rate")) : 
+  could not find function "%>%"
+Execution halted

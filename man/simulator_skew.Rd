@@ -4,8 +4,13 @@
 \alias{simulator_skew}
 \title{Simulated example 2 (Gaussian skewed peaks)}
 \usage{
-simulator_skew(Time, param = c(1, 0.7, 0.01), alpha_norm = c(20, 40,
-  60, 80), mean_global = 0, sigma_a = 5)
+simulator_skew(
+  Time,
+  param = c(1, 0.7, 0.01),
+  alpha_norm = c(20, 40, 60, 80),
+  mean_global = 0,
+  sigma_a = 5
+)
 }
 \description{
 Simulated example 2 (Gaussian skewed peaks)
